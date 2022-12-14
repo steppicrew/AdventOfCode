@@ -1,8 +1,9 @@
-# https://adventofcode.com/2022/day/1
+# https://adventofcode.com/2022/day/6
 from pathlib import Path
 from functools import reduce
+import re
 
-ref = 0
+ref = 1
 part = "_1"
 
 ext = "_ref" + str(ref) + ".txt" if ref else ".txt"
@@ -13,15 +14,14 @@ inputs = open(path/("input" + ext), "r").read().rstrip().split("\n")
 
 def run():
     result = 0
-    calories: list[int] = [0]
-    for input in inputs:
-        if input:
-            calories[-1] += int(input)
-        else:
-            calories.append(0)
-
-    calories.sort(reverse=True)
-    result = calories[0]
+    input = inputs[0]
+    i = 0
+    while True:
+        marker = input[i:i+4]
+        if len(set(marker)) == 4:
+            result = i+4
+            break
+        i += 1
 
     return result
 

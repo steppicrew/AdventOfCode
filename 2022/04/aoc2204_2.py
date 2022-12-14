@@ -1,4 +1,4 @@
-# https://adventofcode.com/2022/day/1
+# https://adventofcode.com/2022/day/4
 from pathlib import Path
 from functools import reduce
 
@@ -13,15 +13,14 @@ inputs = open(path/("input" + ext), "r").read().rstrip().split("\n")
 
 def run():
     result = 0
-    calories: list[int] = [0]
     for input in inputs:
-        if input:
-            calories[-1] += int(input)
-        else:
-            calories.append(0)
-
-    calories.sort(reverse=True)
-    result = calories[0]
+        (elf1range, elf2range) = input.split(",")
+        (elf1start, elf1stop) = elf1range.split("-")
+        (elf2start, elf2stop) = elf2range.split("-")
+        elf1 = set(range(int(elf1start), int(elf1stop)+1))
+        elf2 = set(range(int(elf2start), int(elf2stop)+1))
+        if len(elf1.intersection(elf2)):
+            result += 1
 
     return result
 

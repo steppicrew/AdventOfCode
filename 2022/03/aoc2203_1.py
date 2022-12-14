@@ -1,4 +1,4 @@
-# https://adventofcode.com/2022/day/1
+# https://adventofcode.com/2022/day/3
 from pathlib import Path
 from functools import reduce
 
@@ -13,15 +13,17 @@ inputs = open(path/("input" + ext), "r").read().rstrip().split("\n")
 
 def run():
     result = 0
-    calories: list[int] = [0]
     for input in inputs:
-        if input:
-            calories[-1] += int(input)
+        contents = list(input)
+        bag1 = set(contents[:int(len(contents)/2)])
+        bag2 = set(contents[int(len(contents)/2):])
+        common = ord(list(bag1.intersection(bag2))[0])-ord('A')
+        if common > 25:
+            common += ord('A') - ord('a') + 1
         else:
-            calories.append(0)
+            common += 27
 
-    calories.sort(reverse=True)
-    result = calories[0]
+        result += common
 
     return result
 

@@ -1,4 +1,4 @@
-# https://adventofcode.com/2022/day/1
+# https://adventofcode.com/2022/day/2
 from pathlib import Path
 from functools import reduce
 
@@ -13,15 +13,17 @@ inputs = open(path/("input" + ext), "r").read().rstrip().split("\n")
 
 def run():
     result = 0
-    calories: list[int] = [0]
     for input in inputs:
-        if input:
-            calories[-1] += int(input)
+        (opponent, me) = input.split(" ", maxsplit=2)
+        opponent = ord(opponent) - ord('A')
+        me = ord(me) - ord('X')
+        result += me+1
+        if (me + 1) % 3 == opponent:
+            result += 0
+        elif(opponent+1) % 3 == me:
+            result += 6
         else:
-            calories.append(0)
-
-    calories.sort(reverse=True)
-    result = calories[0]
+            result += 3
 
     return result
 
