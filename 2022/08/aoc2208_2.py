@@ -2,9 +2,11 @@
 from pathlib import Path
 from functools import reduce
 import re
+from typing import Iterator, Tuple
 
 ref = 0
-part = "_1"
+part_match = re.search(r'_(\d+)\.py', __file__)
+part = "_" + part_match[1] if part_match else ""
 
 ext = "_ref" + str(ref) + ".txt" if ref else ".txt"
 path = Path(__file__).parent.absolute()
@@ -26,37 +28,18 @@ def run():
             height = trees[row][col]
             this_score = 1
 
-            count = 0
-            for c in range(col+1, cols):
-                count += 1
-                if trees[row][c] >= height:
-                    break
-            this_score *= count
+            def get_count(it: Iterator[Tuple[int, int]]) -> int:
+                count = 0
+                for (row, col) in it:
+                    count += 1
+                    if trees[row][col] >= height:
+                        break
+                return count
 
-            count = 0
-            left = list(range(col))
-            left.reverse()
-            for c in left:
-                count += 1
-                if trees[row][c] >= height:
-                    break
-            this_score *= count
-
-            count = 0
-            for r in range(row+1, rows):
-                count += 1
-                if trees[r][col] >= height:
-                    break
-            this_score *= count
-
-            count = 0
-            up = list(range(row))
-            up.reverse()
-            for r in up:
-                count += 1
-                if trees[r][col] >= height:
-                    break
-            this_score *= count
+            this_score *= get_count((row, c) for c in range(col+1, cols))
+            this_score *= get_count((row, c) for c in reversed(range(col)))
+            this_score *= get_count((r, col) for r in range(row+1, rows))
+            this_score *= get_count((r, col) for r in reversed(range(row)))
 
             if this_score > max_score:
                 max_score = this_score

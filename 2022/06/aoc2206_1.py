@@ -4,7 +4,8 @@ from functools import reduce
 import re
 
 ref = 1
-part = "_1"
+part_match = re.search(r'_(\d+)\.py', __file__)
+part = "_" + part_match[1] if part_match else ""
 
 ext = "_ref" + str(ref) + ".txt" if ref else ".txt"
 path = Path(__file__).parent.absolute()

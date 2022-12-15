@@ -4,7 +4,8 @@ from functools import reduce
 import re
 
 ref = 0
-part = "_1"
+part_match = re.search(r'_(\d+)\.py', __file__)
+part = "_" + part_match[1] if part_match else ""
 
 ext = "_ref" + str(ref) + ".txt" if ref else ".txt"
 path = Path(__file__).parent.absolute()
@@ -37,7 +38,6 @@ def run():
 
     candidates = [key for key in sizes.keys() if sizes[key] >= needed_space]
     candidates.sort(key=lambda key: sizes[key])
-    print(list((candidate, sizes[candidate])for candidate in candidates))
     result = sizes[candidates[0]]
 
     return result
