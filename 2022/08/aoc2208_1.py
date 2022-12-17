@@ -19,11 +19,11 @@ def run():
     trees: list[list[int]] = []
     visible: set[Tuple[int, int]] = set()
 
-    def get_visible(outer: list[int], inner: list[int], to_col_row: Callable[[int, int], Tuple[int, int]]) -> None:
+    def get_visible(outer: list[int], inner: list[int], to_row_col: Callable[[int, int], Tuple[int, int]]) -> None:
         for o in outer:
             max = -1
             for i in inner:
-                (row, col) = to_col_row(o, i)
+                (row, col) = to_row_col(o, i)
                 if trees[row][col] > max:
                     max = trees[row][col]
                     visible.add((row, col))
@@ -35,11 +35,9 @@ def run():
     cols = list(range(len(trees[0])))
 
     get_visible(rows, cols, lambda r, c: (r, c))
-    cols.reverse()
-    get_visible(rows, cols, lambda r, c: (r, c))
+    get_visible(rows, list(reversed(cols)), lambda r, c: (r, c))
     get_visible(cols, rows, lambda c, r: (r, c))
-    rows.reverse()
-    get_visible(cols, rows, lambda c, r: (r, c))
+    get_visible(cols, list(reversed(rows)), lambda c, r: (r, c))
 
     result = len(visible)
 
