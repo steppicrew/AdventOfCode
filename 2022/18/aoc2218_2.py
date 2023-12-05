@@ -23,159 +23,126 @@ Vervielfältige den wiederholten Abschnitt und gehe vom letzmöglichen Zeitpunkz
 def run():
     result = 0
 
-    room: list[list[bool]] = []
-    room_width: int = 7
-    stones: list[list[list[bool]]] = [
-        # 1 -
-        [
-            [True, True, True, True],
-        ],
-        # 2 +
-        [
-            [False, True, False],
-            [True, True, True],
-            [False, True, False],
-        ],
-        # 3 J
-        [
-            [True, True, True],
-            [False, False, True],
-            [False, False, True],
-        ],
-        # 4 I
-        [
-            [True],
-            [True],
-            [True],
-            [True],
-        ],
-        # 5 o
-        [
-            [True, True],
-            [True, True],
-        ]
-    ]
-    stone_count = len(stones)
-    jets: Tuple[bool] = tuple(
-        c == '>' for c in inputs[0]
-    )
-    jet_count = len(jets)
+    room: dict[tuple[int, int, int], int] = dict()
 
-    removed_rows = 0
-    removed_rows_0 = 0
+    max_x = max_y = max_z = 0
 
-    def place_stone(stone: list[list[bool]], x: int, y: int, place: bool = False) -> bool:
-        nonlocal removed_rows, room
+    XM = 1 << 0
+    XP = 1 << 1
+    YM = 1 << 2
+    YP = 1 << 3
+    ZM = 1 << 4
+    ZP = 1 << 5
 
-        width = len(stone[0])
-        if y < 0 or x < 0 or x + width - 1 >= room_width:
-            return False
-        for _y, row in enumerate(stone):
-            if y + _y >= len(room):
-                if place:
-                    room.append([False for _ in range(room_width)])
-                else:
-                    return True
+    '''
+    directions2 = {
+        XM: (
+            (((-1, -1, 0), YP), ((0, -1, 0), XM), ((0, 0, 0), YM)),
+            (((-1, 0, -1), ZP), ((0, 0, -1), XM), ((0, 0, 0), ZM)),
+            (((-1,  1, 0), YM), ((0, 1,  0), XM), ((0, 0, 0), YP)),
+            (((-1, 0,  1), ZM), ((0, 0,  1), XM), ((0, 0, 0), ZP)),
+        ),
+        XP: (
+            (((1, -1, 0), YP), ((0, -1, 0), XP), ((0, 0, 0), YM)),
+            (((1, 0, -1), ZP), ((0, 0, -1), XP), ((0, 0, 0), ZM)),
+            (((1,  1, 0), YM), ((0, 1,  0), XP), ((0, 0, 0), YP)),
+            (((1, 0,  1), ZM), ((0, 0,  1), XP), ((0, 0, 0), ZP)),
+        ),
+    }
+    '''
 
-            for _x, part in enumerate(row):
-                if part:
-                    if place:
-                        room[y + _y][x + _x] = True
-                    elif room[y + _y][x + _x]:
-                        return False
-        if place:
-            max_rows = [0 for _ in room[0]]
-            for col in range(len(room[0])):
-                for row in range(len(room)):
-                    if room[row][col]:
-                        max_rows[col] = row + 1
+    dir_face_map = {
+        XM: ((-1, 0, 0), (), (-1, 1), (-1, 1)),
+        XP: ((1, 0, 0), (), (-1, 1), (-1, 1)),
+        YM: ((0, -1, 0), (-1, 1), (), (-1, 1)),
+        YP: ((0, 1, 0), (-1, 1), (), (-1, 1)),
+        ZM: ((0, 0, -1), (-1, 1), (-1, 1), ()),
+        ZP: ((0, 0, 1), (-1, 1), (-1, 1), ()),
+    }
+    directions: dict[int, list[tuple[tuple[tuple[int, int, int], int],
+                                     tuple[tuple[int, int, int], int], tuple[tuple[int, int, int], int]]]] = {}
+    for dir_face, values in dir_face_map.items():
+        directions[dir_face] = []
+        sx, sy, sz = values[0]
 
-            remove = min(max_rows)
-            if remove:
-                removed_rows += remove
-                room = room[remove:]
-        return True
+        def get_face(x: int, y: int, z: int):
+            if x == -1:
+                return XP
+            elif x == 1:
+                return XM
+            elif y == -1:
+                return YP
+            elif y == 1:
+                return YM
+            elif z == -1:
+                return ZP
+            elif z == 1:
+                return ZM
+            raise Exception("Something went wrong")
 
-    def print_room():
-        for line in reversed(room):
-            print(''.join('#' if s else '.' for s in line))
+        def add(x: int, y: int, z: int):
+            v1 = ((x + sx, y + sy, z + sz), get_face(x, y, z))
+            v2 = ((x, y, z), dir_face)
+            v3 = ((0, 0, 0), get_face(-x, -y, -z))
+            directions[dir_face].append((v1, v2, v3))
 
-    def drop_stone(stone_index: int, jet_index: int) -> int:
-        stone = stones[stone_index]
-        x, y = 2, len(room) + 3
+        for x in values[1]:
+            add(x, 0, 0)
+        for y in values[2]:
+            add(0, y, 0)
+        for z in values[3]:
+            add(0, 0, z)
 
-        while True:
-            jet = jets[jet_index]
-            jet_index += 1
-            if jet_index == jet_count:
-                jet_index = 0
+    for input in inputs:
+        x, y, z = [int(c) for c in input.split(',')]
 
-            try_x = x + (1 if jet else -1)
-            if place_stone(stone, try_x, y):
-                x = try_x
-            if place_stone(stone, x, y - 1):
-                y -= 1
-            else:
-                place_stone(stone, x, y, True)
-                return jet_index
+        room[(x, y, z)] = 0b111111
+        if x > max_x:
+            max_x = x
+        if y > max_y:
+            max_y = y
+        if z > max_z:
+            max_z = z
 
-    jet_index = 0
-    jet_stone_rooms: dict[tuple[int, int, str], tuple[int, int]] = dict()
-    MAX = 1_000_000_000_000
-    # MAX = 2022
+    for x, y, z in room:
+        for i, c in enumerate(((x-1, y, z), (x+1, y, z), (x, y-1, z), (x, y+1, z), (x, y, z-1), (x, y, z+1))):
+            if c in room:
+                room[c] ^= 1 << i
 
-    class RepeatValue(NamedTuple):
-        last_stone_no: int
-        last_removed_rows: int
-        this_stone_no: int
-        this_removed_rows: int
-        jet_index: int
-        room_height: int
+    # find an outer stone
+    outer_stone = None
+    for x in range(max_x):
+        for y in range(max_y):
+            if (x, y, max_z) in room:
+                outer_stone = (x, y, max_z)
+                break
 
-    repeat_values: RepeatValue | None = None
+    seen_stone_faces: set[tuple[tuple[int, int, int], int]] = set()
 
-    # Find first repitition
-    for stone_no in range(MAX):
-        stone_index = stone_no % stone_count
-        jet_stone_room = (jet_index, stone_index, "|".join(
-            ''.join('#' if s else '.' for s in line) for line in room))
-        if jet_stone_room in jet_stone_rooms:
-            repeat_values = RepeatValue(
-                last_stone_no=jet_stone_rooms[jet_stone_room][0],
-                last_removed_rows=jet_stone_rooms[jet_stone_room][1],
-                this_stone_no=stone_no,
-                this_removed_rows=removed_rows,
-                jet_index=jet_index,
-                room_height=len(room),
-            )
-            print("Wiederholung!", repeat_values, jet_stone_room)
-            print("removed rows", removed_rows)
-            break
-        else:
-            jet_stone_rooms[jet_stone_room] = (stone_no, removed_rows)
+    if outer_stone:
+        stone_face_queue: set[tuple[tuple[int, int, int], int]] = set(
+            ((outer_stone, ZP),))
+        seen_stone_faces = set(stone_face_queue)
+        while len(stone_face_queue):
+            current_stone_face = stone_face_queue.pop()
+            seen_stone_faces.add(current_stone_face)
 
-        jet_index = drop_stone(stone_index=stone_index, jet_index=jet_index)
+            (x, y, z), current_face = current_stone_face
+            for dir in directions[current_face]:
+                for (dx, dy, dz), next_face in dir:
+                    next_stone_face = ((x+dx, y+dy, z+dz), next_face)
+                    # print("Checking", next_stone_face, current_stone_face)
+                    if next_stone_face[0] in room:
+                        # print("Match!")
+                        if next_stone_face not in seen_stone_faces:
+                            # print("Not in queue already")
+                            stone_face_queue.add(next_stone_face)
+                            seen_stone_faces.add(next_stone_face)
+                        break
 
-    # Setze kurz vor Ende fort und extrapoliere die übersprungenen enfernten Zeilen
-    if repeat_values:
-        stone_diff = repeat_values.this_stone_no - repeat_values.last_stone_no
-        removed_rows_diff = repeat_values.this_removed_rows - \
-            repeat_values.last_removed_rows
+            print("queue length", len(stone_face_queue), len(seen_stone_faces))
 
-        skip = (MAX-repeat_values.last_stone_no) // stone_diff
-        removed_rows_0 = removed_rows_diff * skip + repeat_values.last_removed_rows
-
-        print("Starting at", stone_diff * skip + repeat_values.last_stone_no)
-        print(f"Skipping {skip}*{stone_diff} + {repeat_values.last_stone_no}")
-
-        removed_rows = 0
-        for stone_no in range(stone_diff * skip + repeat_values.last_stone_no, MAX):
-            stone_index = stone_no % stone_count
-
-            jet_index = drop_stone(
-                stone_index=stone_index, jet_index=jet_index)
-
-    result = removed_rows_0 + removed_rows + len(room)
+    result = len(seen_stone_faces)
     return result
 
 
