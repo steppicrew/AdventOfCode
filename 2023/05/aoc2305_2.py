@@ -18,8 +18,8 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
 
     maps: dict[str, tuple[str, list[tuple[int, int, int]]]] = {}
 
-    seeds = [(int(seed_pair.split(' ')[0]), int(seed_pair.split(' ')[0]) + int(seed_pair.split(' ')[1]) - 1)
-             for seed_pair in re.findall(r'\d+\s+\d+', inputs[0].split(':')[1])]
+    seed_ranges = [(int(seed_pair.split(' ')[0]), int(seed_pair.split(' ')[0]) + int(seed_pair.split(' ')[1]) - 1)
+                   for seed_pair in re.findall(r'\d+\s+\d+', inputs[0].split(':')[1])]
 
     source: str = ''
 
@@ -35,7 +35,7 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
             continue
 
         m = tuple(int(n) for n in re.findall(r'\d+', input))
-        maps[source][1].append((m[0], m[1], m[2]))
+        maps[source][1].append((m[0] - m[1], m[1], m[1] + m[2]))
 
     def _map(values: list[tuple[int, int]], maps: list[tuple[int, int, int]]) -> list[tuple[int, int]]:
         ranges: list[tuple[int, int]] = []
@@ -46,34 +46,26 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
 
         for v, v_end in values:
 
-            for dest_start, source_start, length in maps:
-                if v >= source_start + length:
-                    continue
-
-                if v < source_start:
-                    ranges.append((v, min(v_end, source_start - 1)))
-                    v = source_start
-
-                if v > v_end:
-                    break
-
-                ranges.append((
-                    max(v, source_start) - source_start + dest_start,
-                    min(v_end, source_start + length - 1) -
-                    source_start + dest_start
-                ))
-                v = min(v_end, source_start + length - 1)+1
-
-                if v > v_end:
-                    break
+            for dest_offset, source_start, source_end in maps:
+                while v < source_end and v <= v_end:
+                    if v < source_start:
+                        ranges.append((v, min(v_end, source_start - 1)))
+                        v = source_start
+                    else:
+                        this_end = min(v_end, source_end - 1)
+                        ranges.append((
+                            max(v, source_start) + dest_offset,
+                            this_end + dest_offset
+                        ))
+                        v = this_end+1
 
             if v < v_end:
                 ranges.append((v, v_end))
 
         ranges.sort(key=lambda r: r[0])
 
+        # clean up ranges
         _ranges: list[tuple[int, int]] = [ranges[0]]
-
         for r in ranges[1:]:
             if r[0] <= _ranges[-1][1] + 1:
                 _ranges[-1] = (_ranges[-1][0], r[1])
@@ -82,20 +74,13 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
 
         return _ranges
 
-    locations: dict[tuple[int, int], list[tuple[int, int]]] = {}
+    source = 'seed'
+    value_ranges = seed_ranges
+    while source != 'location':
+        source, source_maps = maps[source]
+        value_ranges = _map(value_ranges, source_maps)
 
-    for seed in seeds:
-        source = 'seed'
-        value = [seed]
-        while True:
-            if source == 'location':
-                locations[seed] = value
-                break
-
-            value = _map(value, maps[source][1])
-            source = maps[source][0]
-
-    result = min(p[0][0] for p in locations.values())
+    result = min(p[0] for p in value_ranges)
 
     return result
 
