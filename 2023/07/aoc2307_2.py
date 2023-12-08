@@ -14,20 +14,73 @@ with open(file=path/("input" + EXT), mode="r", encoding='utf-8') as file:
 
 
 def run() -> int:  # pylint: disable=[missing-function-docstring]
-    result: int = 1  # pylint: disable=[redefined-outer-name]
+    result: int = 0  # pylint: disable=[redefined-outer-name]
 
-    time_distances = zip(
-        (int(t) for t in re.findall(r'\d+', inputs[0].replace(" ", ""))),
-        (int(d) for d in re.findall(r'\d+', inputs[1].replace(" ", "")))
-    )
+    card_values: dict[str, str] = {
+        "2": "2",
+        "3": "3",
+        "4": "4",
+        "5": "5",
+        "6": "6",
+        "7": "7",
+        "8": "8",
+        "9": "9",
+        "T": "a",
+        "J": "1",
+        "Q": "c",
+        "K": "d",
+        "A": "e",
+    }
 
-    for time, distance in time_distances:
+    def get_deck_rank(deck: str):
+        joker_count = deck.count('J')
+        cards = list(deck)
+        cards.sort()
+        deck = ''.join(c for c in cards if c != 'J')
+        counts: list[int] = []
+        while deck:
+            match = re.match(r'(.)\1*', deck)
+            if match:
+                cards = match.group()
+                counts.append(len(cards))
+                deck = deck[len(cards):]
 
-        count = 0
-        for t in range(1, time):
-            if t * (time - t) > distance:
-                count += 1
-        result *= count
+        counts.sort(reverse=True)
+        if len(counts) == 0:
+            counts.append(joker_count)
+        else:
+            counts[0] += joker_count
+
+        if counts[0] == 5 or counts[0] == 4:
+            return counts[0] + 2
+        if counts[0] == 3 and counts[1] == 2:
+            return 5
+        if counts[0] == 3:
+            return 4
+        if counts[0] == 2 and counts[1] == 2:
+            return 3
+        if counts[0] == 2:
+            return 2
+        return 1
+
+    def get_deck_value(deck: str):
+        return ''.join(card_values[c] for c in deck)
+
+    decks: list[tuple[int, str, int]] = []
+    for input in inputs:  # pylint: disable=[redefined-builtin]
+        deck, bet = input.split(" ")
+        decks.append((
+            get_deck_rank(deck),
+            get_deck_value(deck),
+            int(bet)
+        ))
+    decks.sort(key=lambda deck: (deck[0], deck[1]))
+
+    for deck in decks:
+        print(deck)
+
+    for i, deck in enumerate(decks):
+        result += (i+1) * deck[2]
 
     return result
 
