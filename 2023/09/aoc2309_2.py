@@ -1,5 +1,4 @@
 # https://adventofcode.com/2023/day/01
-import math
 import re
 from pathlib import Path
 
@@ -17,49 +16,25 @@ with open(file=path/("input" + EXT), mode="r", encoding='utf-8') as file:
 def run() -> int:  # pylint: disable=[missing-function-docstring]
     result: int = 0  # pylint: disable=[redefined-outer-name]
 
-    directions = [(0 if d == 'L' else 1) for d in inputs[0]]
-    navigation: dict[str, tuple[str, str]] = {}
+    for input in inputs:  # pylint: disable=[redefined-builtin]
+        diffs: list[list[int]] = [
+            [int(v) for v in reversed(re.findall(r'\-?\d+', input))]]
+        while [d for d in diffs[-1] if d != 0]:
+            diffs.append(
+                [
+                    v - diffs[-1][i - 1]
+                    for i, v in enumerate(diffs[-1])
+                    if i > 0
+                ]
+            )
 
-    for input in inputs[2:]:  # pylint: disable=[redefined-builtin]
-        if match := re.match(r'\s*(\w\w\w)\s*=\s*\(\s*(\w\w\w)\s*,\s*(\s*\w\w\w)\s*\)', input):
-            navigation[match.group(1)] = (match.group(2), match.group(3))
+        diffs[-1].append(0)
 
-    positions = [p for p in navigation if p[-1] == 'A']
+        for i in range(len(diffs)-1, 0, -1):
+            diffs[i-1].append(diffs[i][-1] + diffs[i-1][-1])
 
-    dir_len = len(directions)
-    p_ends: list[tuple[int, int]] = []
-    for p in positions:
-        step = 0
-        zs: list[int] = []
-        while True:
-            if p[-1] == 'Z':
-                zs.append(step)
-                if len(zs) == 2:
-                    break
-            direction = directions[step % dir_len]
-            p = navigation[p][direction]
-            step += 1
+        result += diffs[0][-1]
 
-        p_ends.append((2 * zs[0]-zs[1], zs[1] - zs[0]))
-
-    offsets: dict[int, int] = {}
-    for pe in p_ends:
-        if pe[0] not in offsets:
-            offsets[pe[0]] = pe[1]
-        else:
-            offsets[pe[0]] = math.lcm(offsets[pe[0]], pe[1])
-
-    max_lcm = max(offsets.values())
-    max_offset = [key for key in offsets if offsets[key] == max_lcm][0]
-
-    n = 1
-    while True:
-        step = max_offset + n * max_lcm
-        if len([1 for offset, lcm in offsets.items() if (step - offset) % lcm != 0]) == 0:
-            break
-        n += 1
-
-    result = step
     return result
 
 
