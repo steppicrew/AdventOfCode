@@ -1,6 +1,9 @@
 # https://adventofcode.com/2023/day/01
 import re
 from pathlib import Path
+from typing import Tuple
+
+from memoized import Memoized
 
 REF = 0
 part_match = re.search(r'_(\d+)\.py', __file__)
@@ -16,28 +19,18 @@ with open(file=path/("input" + EXT), mode="r", encoding='utf-8') as file:
 def run() -> int:  # pylint: disable=[missing-function-docstring]
     result: int = 0  # pylint: disable=[redefined-outer-name]
 
-    cache: dict[tuple[str, str], int] = {}
-
-    def count_matches(groups: list[str], stats: list[int]) -> int:
-        key = ('.'.join(groups), ','.join(str(s) for s in stats))
-
-        _cache = cache.get(key)
-        if _cache is not None:
-            return _cache
-
-        def set_cache(value):
-            cache[key] = value
-            return value
+    @Memoized
+    def count_matches(groups: Tuple[str, ...], stats: Tuple[int, ...]) -> int:
 
         if not stats:
-            return set_cache(
+            return (
                 1
                 if ''.join(groups).find('#') < 0
                 else 0
             )
 
         if not groups:
-            return set_cache(0)
+            return 0
 
         count = 0
 
@@ -53,32 +46,30 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
                 while group[range_max] == '#' and range_max >= 0:
                     range_max -= 1
                 if range_max < 0:
-                    return set_cache(0)
+                    return 0
 
         for start in range(0, range_max - stat + 1):
             if start + stat < len(group) and group[start + stat] == '#':
                 continue
             count += count_matches(
-                [
+                (
                     group[start + stat + 1:],
                     *groups[1:]
-                ],
+                ),
                 stats[1:]
             )
 
-        return set_cache(count)
+        return count
 
-    for input in inputs[:]:  # pylint: disable=[redefined-builtin]
+    for input in inputs:  # pylint: disable=[redefined-builtin]
         line, _stats = input.split(" ")
-        line = re.sub(r'\.\.+', '.', line)
-        full_line = '?'.join((line, line, line, line, line))
-        full_stats = [
+        full_line = '?'.join(5 * (line,))
+        full_stats = 5 * tuple(
             int(s)
-            for s in ','.join((_stats, _stats, _stats, _stats, _stats)).split(',')
-        ]
-        groups = full_line.split('.')
+            for s in _stats.split(',')
+        )
+        groups = tuple(re.split(r'\.+', full_line))
 
-        cache.clear()
         count = count_matches(groups, full_stats)
 
         # print(groups, full_line, full_stats, count)
