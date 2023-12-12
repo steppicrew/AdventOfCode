@@ -1,10 +1,7 @@
 # https://adventofcode.com/2022/day/19
-from math import ceil, floor, sqrt
-from pathlib import Path
-from functools import reduce
 import re
-from typing import Callable, Iterable, NamedTuple, Tuple
-import json
+from math import ceil
+from pathlib import Path
 
 ref = 0
 part_match = re.search(r'_(\d+)\.py', __file__)
@@ -12,7 +9,8 @@ part = "_" + part_match[1] if part_match else ""
 
 ext = "_ref" + str(ref) + ".txt" if ref else ".txt"
 path = Path(__file__).parent.absolute()
-inputs = open(path/("input" + ext), "r").read().rstrip().split("\n")
+inputs = open(file=path/("input" + ext), mode="r",
+              encoding="utf-8").read().rstrip().split("\n")
 # ---
 
 
