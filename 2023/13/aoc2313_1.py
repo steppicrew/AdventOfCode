@@ -1,6 +1,7 @@
 # https://adventofcode.com/2023/day/01
 import re
 from pathlib import Path
+from typing import Iterable
 
 REF = 0
 part_match = re.search(r'_(\d+)\.py', __file__)
@@ -18,7 +19,8 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
 
     field: list[str] = []
 
-    def parse_field(field: list[str]) -> int:
+    def parse_field(_field: Iterable[str]) -> int:
+        field = tuple(_field)
         for i in range(1, len(field)):
             max_rows = min(i, len(field) - i)
             mirror = True
@@ -28,24 +30,19 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
                 return i
         return 0
 
-    def flipped(field: list[str]) -> list[str]:
-        return [
-            ''.join(
-                field[r][c] for r, _ in enumerate(field)
-            )
-            for c, _ in enumerate(field[0])
-        ]
+    def flip_field(field: Iterable[str]) -> Iterable[str]:
+        return (''.join(l) for l in zip(*field))
 
     for input in inputs[:] + ['']:  # pylint: disable=[redefined-builtin]
-        if not input:
+        if input:
+            field.append(input)
+        else:
             hor = parse_field(field)
-            ver = parse_field(flipped(field))
+            ver = parse_field(flip_field(field))
 
             result += hor * 100
             result += ver
-            field = []
-            continue
-        field.append(input)
+            field.clear()
 
     return result
 
