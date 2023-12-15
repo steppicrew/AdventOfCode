@@ -13,10 +13,10 @@ with open(file=path/("input" + EXT), mode="r", encoding='utf-8') as file:
 # ---
 
 
-def run() -> int:  # pylint: disable=[missing-function-docstring]
-    result: int = 0  # pylint: disable=[redefined-outer-name]
+def run() -> int:
+    result: int = 0
 
-    for input in inputs:  # pylint: disable=[redefined-builtin]
+    for input in inputs:
         match = re.findall(r'\d', input)
         number = int(match[0] + match[-1])
         result += number
