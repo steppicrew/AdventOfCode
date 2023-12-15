@@ -13,8 +13,8 @@ with open(file=path/("input" + EXT), mode="r", encoding='utf-8') as file:
 # ---
 
 
-def run() -> int:  # pylint: disable=[missing-function-docstring]
-    result: int = 0  # pylint: disable=[redefined-outer-name]
+def run() -> int:
+    result: int = 0
 
     values = inputs[0].split(',')
 
