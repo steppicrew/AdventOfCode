@@ -21,7 +21,6 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
 
     @Memoized
     def count_matches(groups: Tuple[str, ...], stats: Tuple[int, ...]) -> int:
-
         if not stats:
             return (
                 1
@@ -38,9 +37,15 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
         stat = stats[0]
         first_fix = group.find('#')
         if first_fix < 0:
+
+            # if there is no '#', try by skipping this group first
             count += count_matches(groups[1:], stats)
+
+            # ...and try any position in the current group next
             range_max = len(group)
         else:
+
+            # if there is a '#', this match cannot end after that (and possible following '#'s)
             range_max = min(len(group), first_fix + stat)
             if range_max < len(group):
                 while group[range_max] == '#' and range_max >= 0:
@@ -48,7 +53,8 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
                 if range_max < 0:
                     return 0
 
-        for start in range(0, range_max - stat + 1):
+        # now look for matches in the estimated range
+        for start in range(range_max - stat + 1):
             if start + stat < len(group) and group[start + stat] == '#':
                 continue
             count += count_matches(
@@ -70,10 +76,7 @@ def run() -> int:  # pylint: disable=[missing-function-docstring]
         )
         groups = tuple(re.split(r'\.+', full_line))
 
-        count = count_matches(groups, full_stats)
-
-        # print(groups, full_line, full_stats, count)
-        result += count
+        result += count_matches(groups, full_stats)
 
     return result
 
