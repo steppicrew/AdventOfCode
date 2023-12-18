@@ -2,7 +2,7 @@
 import re
 from pathlib import Path
 
-REF = 0
+REF = 1
 part_match = re.search(r'_(\d+)\.py', __file__)
 part: str = "_" + part_match[1] if part_match else ""
 
@@ -13,13 +13,22 @@ with open(file=path/("input" + EXT), mode="r", encoding='utf-8') as file:
 # ---
 
 
+def print_on(*args):
+    print(*args)
+
+
+def print_off(*args):  # pylint: disable=unused-argument
+    pass
+
+
+debug = print_on
+
+
 def run() -> int:
     result: int = 0
 
     for input in inputs:
-        match = re.findall(r'\d', input)
-        number = int(match[0] + match[-1])
-        result += number
+        debug(input)
 
     return result
 

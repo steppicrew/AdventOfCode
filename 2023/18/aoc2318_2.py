@@ -29,7 +29,7 @@ def run() -> int:
         if dir == '0':
             pos_dirs.append((pos, (1, 0), count))
             pos = (pos[0] + count, pos[1])
-        elif dir == "2":
+        elif dir == '2':
             pos_dirs.append((pos, (-1, 0), count))
             pos = (pos[0] - count, pos[1])
         elif dir == '3':
@@ -49,14 +49,13 @@ def run() -> int:
 
         # print("*** process", current_line, line_no, last_line_no, last_blocks)
 
-        if last_line_no is not None:
-            count = sum(block[1] - block[0] + 1 for block in last_blocks)
-            number_of_lines = line_no - last_line_no
-            if result == 0:
-                number_of_lines += 1
-            result += count * number_of_lines
-            # print('count', last_line_no, line_no,
-            #       last_blocks, count, number_of_lines, result)
+        count = sum(block[1] - block[0] + 1 for block in last_blocks)
+        number_of_lines = line_no - last_line_no if last_line_no is not None else 1
+        result += count * number_of_lines
+        # print(
+        #     'count', last_line_no, line_no,
+        #     last_blocks, count, number_of_lines, result
+        # )
 
         last_line = set((
             *[lb[0] for lb in last_blocks],
