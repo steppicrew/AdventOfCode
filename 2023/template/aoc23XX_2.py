@@ -13,15 +13,11 @@ with open(file=path/("input" + EXT), mode="r", encoding='utf-8') as file:
 # ---
 
 
-def print_on(*args):
-    print(*args)
-
-
 def print_off(*args):  # pylint: disable=unused-argument
     pass
 
 
-debug = print_on
+debug = print
 
 
 def run() -> int:
