@@ -173,7 +173,7 @@ def run() -> int:
 
     debug(counts)
 
-    result = lcm(*(c for _, c in counts.items()))
+    result = lcm(*counts.values())
 
     return result
 

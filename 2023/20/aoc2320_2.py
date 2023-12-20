@@ -153,6 +153,7 @@ def run() -> int:
                 process_signal(queue[0], *queue[1])
 
     def get_cycle_counts(names: set[str] | list[str]) -> dict[str, int]:
+        reset_states()
         counts: dict[str, int] = {}
         sources: dict[str, set[str]] = {
             name: get_sources(name)
@@ -165,9 +166,9 @@ def run() -> int:
             name: set((freeze_state(sources[name]), ))
             for name in names
         }
-        reset_states()
         count = 0
         while len(names) > len(counts):
+            count += 1
             button_press()
             for name in names:
                 if name in counts:
@@ -176,7 +177,6 @@ def run() -> int:
                 if new_state in states[name]:
                     counts[name] = count
                 states[name].add(new_state)
-            count += 1
         return counts
 
     counts = get_cycle_counts(
@@ -187,7 +187,7 @@ def run() -> int:
 
     debug(counts)
 
-    result = lcm(*(c for _, c in counts.items() if c != 0))
+    result = lcm(*counts.values())
 
     return result
 
