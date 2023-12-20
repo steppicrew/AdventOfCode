@@ -17,7 +17,7 @@ def print_off(*args):  # pylint: disable=unused-argument
     pass
 
 
-debug = print
+debug = print_off
 
 
 def run() -> int:
@@ -50,6 +50,10 @@ def run() -> int:
             if con_name in module[1]:
                 con_state[source_name] = False
 
+    def print_signal(source: str, destinations: tuple[str, ...], signal: bool) -> None:
+        for dest in destinations:
+            debug(source, '-' + ("high" if signal else "low") + '->', dest)
+
     def process_signal(source_name: str, name: str, signal: bool):
         nonlocal high_count, low_count
         if signal:
@@ -58,7 +62,7 @@ def run() -> int:
             low_count += 1
 
         if name not in modules:
-            debug("Reciveing on", name, signal)
+            # debug("Reciveing on", name, signal)
             return
 
         module = modules[name]
@@ -73,16 +77,14 @@ def run() -> int:
             out_signal = len([True for _ in state.values() if not _]) > 0
 
         if out_signal is not None:
-            debug("Sending", out_signal, "from",
-                  name, "to", ', '.join(module[1]))
+            print_signal(name, module[1], out_signal)
             for dest_name in module[1]:
                 queue.append((name, dest_name, out_signal))
 
     def button():
         nonlocal low_count
         low_count += 1
-        debug("Sending", False, "from",
-              "broadcast", "to", ', '.join(broadcaster[1]))
+        print_signal("broadcaster", broadcaster[1], False)
         for module in broadcaster[1]:
             queue.append(('broadcaster', module, False))
         while queue:
