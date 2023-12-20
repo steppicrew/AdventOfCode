@@ -17,7 +17,7 @@ def print_off(*args):  # pylint: disable=unused-argument
     pass
 
 
-debug = print_off
+debug = print
 
 
 def run() -> int:
@@ -64,7 +64,7 @@ def run() -> int:
         item, name = queue.pop(0)
 
         if name == 'A':
-            debug("accepted", item)
+            # debug("accepted", item)
             accepted_items.append(item)
         if name not in workflows:
             continue
@@ -92,10 +92,10 @@ def run() -> int:
                 break
             item = fail_item
 
-    for item in accepted_items:
-        debug(item)
+    # for item in accepted_items:
+    #     debug(item)
 
-    for item in set(accepted_items):
+    for item in accepted_items:
         r = 1
         for _range in item:
             r *= _range[1] - _range[0] + 1
