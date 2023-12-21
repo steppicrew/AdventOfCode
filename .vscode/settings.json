@@ -8,6 +8,6 @@
     },
     "files.autoSave": "onFocusChange",
     "pylint.args": [
-        "--disable=W0621,W0622,C0116"
+        "--disable=W0105,W0621,W0622,C0116"
     ]
 }
