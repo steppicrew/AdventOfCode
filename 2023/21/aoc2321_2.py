@@ -18,7 +18,7 @@ def print_off(*args):  # pylint: disable=unused-argument
     pass
 
 
-debug = print
+debug = print_off
 
 
 def run() -> int:
@@ -93,6 +93,19 @@ def run() -> int:
     STEP = 3
 
     STEP_COUNT = 26501365
+
+    """
+    After analyzing data:
+    1. Start is the eact center of the square field
+    2. There is a free horizontal and vertical path through the center
+    Way to solve:
+    1. Because there is an odd width/height of the field the count for odd/even fields alternates
+    2. Because there is an odd number of steps to perform we must start in the center field counting odd steps
+    3. We need to get the number of fully explored fields
+    4. On each axis end we need to get the valid steps inside the remainder, starting from the middle of the entry point
+    5. Diagonal to each axis end (diagonal to this) (corner) we have half the width/height additionally to the remainder, starting from the field's corner
+    6. We have another corner field with radius of reminder minus half the width/height, starting from the corner
+    """
 
     if STEP == 1:
         debug("west", get_next_border(lambda p: p[0] == 0))
@@ -169,26 +182,34 @@ def run() -> int:
         count1 = (full_radius + 1) * (full_radius + 1)
         count2 = full_radius * full_radius
 
-        # all full fields
+        # all full fields - point 3
         result = count1 * full_middle_field_count[middle_not_outer_index] + \
             count2 * full_middle_field_count[middle_outer_index]
 
         debug("center_index@start", center_index,
-              field_counts["middle-east"][1][(offset, offset)], field_counts["middle-east"][1][(offset, offset)] % 2 == center_index)
+              field_counts["middle-east"][1][(offset, offset)],
+              field_counts["middle-east"][1][(offset, offset)] % 2 == center_index)
         debug("center_index@right", center_index,
-              field_counts["middle-east"][1][(len(field[0]) - 1, offset)], field_counts["middle-east"][1][(len(field[0]) - 1, offset)] % 2 == center_index)
+              field_counts["middle-east"][1][(len(field[0]) - 1, offset)],
+              field_counts["middle-east"][1][(len(field[0]) - 1, offset)] % 2 == center_index)
         debug("next to center_index@left", next_to_center_index,
-              field_counts["middle-east"][1][(0, offset)], field_counts["middle-east"][1][(0, offset)] % 2 == next_to_center_index)
+              field_counts["middle-east"][1][(0, offset)],
+              field_counts["middle-east"][1][(0, offset)] % 2 == next_to_center_index)
         debug("next to center_index@right", next_to_center_index,
-              field_counts["middle-east"][1][(len(field[0]) - 1, offset)], field_counts["middle-east"][1][(len(field[0]) - 1, offset)] % 2 == next_to_center_index)
+              field_counts["middle-east"][1][(len(field[0]) - 1, offset)],
+              field_counts["middle-east"][1][(len(field[0]) - 1, offset)] % 2 == next_to_center_index)
         debug("next to next to center_index@left", alternate_index,
-              field_counts["middle-east"][1][(0, offset)], field_counts["middle-east"][1][(0, offset)] % 2 == alternate_index)
+              field_counts["middle-east"][1][(0, offset)],
+              field_counts["middle-east"][1][(0, offset)] % 2 == alternate_index)
         debug("middle_outer_index@left", middle_outer_index,
-              field_counts["middle-east"][1][(0, offset)], field_counts["middle-east"][1][(0, offset)] % 2 == middle_outer_index)
+              field_counts["middle-east"][1][(0, offset)],
+              field_counts["middle-east"][1][(0, offset)] % 2 == middle_outer_index)
         debug("middle_outer_index@(left, bottom)", middle_outer_index,
-              field_counts["middle-east"][1][(0, len(field) - 1)], field_counts["middle-east"][1][(0, len(field) - 1)] % 2 == middle_outer_index)
+              field_counts["middle-east"][1][(0, len(field) - 1)],
+              field_counts["middle-east"][1][(0, len(field) - 1)] % 2 == middle_outer_index)
         debug("below middle_outer_index@(0,0)", next_corner_index,
-              field_counts["south-east"][1][(0, 0)], field_counts["south-east"][1][(0, 0)] % 2 == next_corner_index)
+              field_counts["south-east"][1][(0, 0)],
+              field_counts["south-east"][1][(0, 0)] % 2 == next_corner_index)
         debug("corner_index/next_corner_index",
               corner_index, next_corner_index)
         debug("full_radius", full_radius, full_radius_mod)
@@ -198,32 +219,71 @@ def run() -> int:
             field_counts["south-east"][1].values()))
         debug("plants", sum(input.count('.') for input in inputs))
 
-        north_count = len(
-            [v for v, step in field_counts["middle-north"][1].items() if step <= full_radius_mod and step % 2 == middle_outer_index])
-        south_count = len(
-            [v for v, step in field_counts["middle-south"][1].items() if step <= full_radius_mod and step % 2 == middle_outer_index])
-        east_count = len(
-            [v for v, step in field_counts["middle-east"][1].items() if step <= full_radius_mod and step % 2 == middle_outer_index])
-        west_count = len(
-            [v for v, step in field_counts["middle-west"][1].items() if step <= full_radius_mod and step % 2 == middle_outer_index])
+        # Point 4
+        north_count = len([
+            v
+            for v, step in field_counts["middle-north"][1].items()
+            if step <= full_radius_mod and step % 2 == middle_outer_index
+        ])
+        south_count = len([
+            v
+            for v, step in field_counts["middle-south"][1].items()
+            if step <= full_radius_mod and step % 2 == middle_outer_index
+        ])
+        east_count = len([
+            v
+            for v, step in field_counts["middle-east"][1].items()
+            if step <= full_radius_mod and step % 2 == middle_outer_index
+        ])
+        west_count = len([
+            v
+            for v, step in field_counts["middle-west"][1].items()
+            if step <= full_radius_mod and step % 2 == middle_outer_index
+        ])
 
-        north_east_count = len(
-            [v for v, step in field_counts["north-east"][1].items() if step <= corner_radius and step % 2 == corner_index])
-        north_west_count = len(
-            [v for v, step in field_counts["north-west"][1].items() if step <= corner_radius and step % 2 == corner_index])
-        south_east_count = len(
-            [v for v, step in field_counts["south-east"][1].items() if step <= corner_radius and step % 2 == corner_index])
-        south_west_count = len(
-            [v for v, step in field_counts["south-west"][1].items() if step <= corner_radius and step % 2 == corner_index])
+        # Point 5
+        north_east_count = len([
+            v
+            for v, step in field_counts["north-east"][1].items()
+            if step <= corner_radius and step % 2 == corner_index
+        ])
+        north_west_count = len([
+            v
+            for v, step in field_counts["north-west"][1].items()
+            if step <= corner_radius and step % 2 == corner_index
+        ])
+        south_east_count = len([
+            v
+            for v, step in field_counts["south-east"][1].items()
+            if step <= corner_radius and step % 2 == corner_index
+        ])
+        south_west_count = len([
+            v
+            for v, step in field_counts["south-west"][1].items()
+            if step <= corner_radius and step % 2 == corner_index
+        ])
 
-        next_north_east_count = len(
-            [v for v, step in field_counts["north-east"][1].items() if step <= next_corner_radius and step % 2 == next_corner_index])
-        next_north_west_count = len(
-            [v for v, step in field_counts["north-west"][1].items() if step <= next_corner_radius and step % 2 == next_corner_index])
-        next_south_east_count = len(
-            [v for v, step in field_counts["south-east"][1].items() if step <= next_corner_radius and step % 2 == next_corner_index])
-        next_south_west_count = len(
-            [v for v, step in field_counts["south-west"][1].items() if step <= next_corner_radius and step % 2 == next_corner_index])
+        # Point 6
+        next_north_east_count = len([
+            v
+            for v, step in field_counts["north-east"][1].items()
+            if step <= next_corner_radius and step % 2 == next_corner_index
+        ])
+        next_north_west_count = len([
+            v
+            for v, step in field_counts["north-west"][1].items()
+            if step <= next_corner_radius and step % 2 == next_corner_index
+        ])
+        next_south_east_count = len([
+            v
+            for v, step in field_counts["south-east"][1].items()
+            if step <= next_corner_radius and step % 2 == next_corner_index
+        ])
+        next_south_west_count = len([
+            v
+            for v, step in field_counts["south-west"][1].items()
+            if step <= next_corner_radius and step % 2 == next_corner_index
+        ])
 
         result += north_count + east_count + west_count + south_count
 
@@ -241,20 +301,6 @@ def run() -> int:
         debug(next_north_east_count, next_north_west_count,
               next_south_east_count, next_south_west_count)
         debug("corner radius", corner_radius, next_corner_radius)
-
-        # 632251688988502 is too low
-        # 632257939653947 is too low
-        # 633251688996204 is too high
-        # 632257949159150
-        # 632257930142912
-        # 632257949159150
-        # 632257949361449
-        # 632256778859435
-        # 632257135306240
-        # 632257153513195
-        # 632257138745328
-        # 632257138745283
-        # 632257162212112
 
     return result
 
