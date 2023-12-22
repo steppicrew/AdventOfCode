@@ -1,5 +1,6 @@
 # https://adventofcode.com/2023/day/01
 import re
+from itertools import islice
 from pathlib import Path
 
 REF = 0
@@ -104,7 +105,7 @@ def run() -> int:
         _occupied = set(occupied)
         remove_brick(_occupied, brick)
         fallen = 0
-        for _brick in fallen_bricks[i+1:]:
+        for _brick in islice(fallen_bricks, i+1, None):
             if _brick[0][2] == brick[0][2]:
                 continue
             remove_brick(_occupied, _brick)
