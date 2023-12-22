@@ -17,7 +17,7 @@ def print_off(*args):  # pylint: disable=unused-argument
     pass
 
 
-debug = print
+debug = print_off
 
 
 def run() -> int:
@@ -63,54 +63,56 @@ def run() -> int:
                 return True
         return False
 
-    def occupy(occupied: set[Coord], brick: Brick, z: int | None = None):
+    def add_brick(occupied: set[Coord], brick: Brick):
         x = brick[0][0]
         y = brick[0][1]
-        if z is None:
-            z = brick[0][2]
+        z = brick[0][2]
         for c in brick[1]:
             occupied.add((x + c[0], y + c[1], z + c[2]))
 
-    def unoccupy(occupied: set[Coord], brick: Brick):
+    def remove_brick(occupied: set[Coord], brick: Brick):
         x = brick[0][0]
         y = brick[0][1]
         z = brick[0][2]
         for c in brick[1]:
             occupied.remove((x + c[0], y + c[1], z + c[2]))
 
-    def drop_brick(occupied: set[Coord], brick: Brick) -> int:
-        # z = max(c[2] for c in occupied) if occupied else 0
-        z = brick[0][2] - 1
-        # debug("starting", z + 1, brick[2], len(brick[1]))
-        while z > 0 and not space_is_used(occupied, brick, z):
+    def drop_brick(occupied: set[Coord], brick: Brick) -> Brick:
+        z = brick[0][2]
+
+        # debug("starting", z, brick[2], len(brick[1]))
+        while z > 1 and not space_is_used(occupied, brick, z-1):
             z -= 1
-        z += 1
         # debug("ending", z, brick[2])
-        return z
+        return (
+            (brick[0][0], brick[0][1], z),
+            brick[1], brick[2]
+        )
 
     for brick in bricks:
-        z = drop_brick(occupied, brick)
-        fallen_bricks.append(
-            ((brick[0][0], brick[0][1], z), brick[1], brick[2]))
-        occupy(occupied, brick, z)
+        dropped_brick = drop_brick(occupied, brick)
+        fallen_bricks.append(dropped_brick)
+
+        add_brick(occupied, dropped_brick)
         # debug(occupied)
 
     # for brick in fallen_bricks:
     #     debug(brick)
     # exit()
 
-    for brick in fallen_bricks:
+    for i, brick in enumerate(fallen_bricks):
         _occupied = set(occupied)
-        unoccupy(_occupied, brick)
+        remove_brick(_occupied, brick)
         fallen = 0
-        for _brick in fallen_bricks:
-            if _brick == brick or _brick[0][2] < brick[0][2]:
+        for _brick in fallen_bricks[i+1:]:
+            if _brick[0][2] == brick[0][2]:
                 continue
-            unoccupy(_occupied, _brick)
-            new_z = drop_brick(_occupied, _brick)
-            occupy(_occupied, _brick, new_z)
-            if new_z != _brick[0][2]:
+            remove_brick(_occupied, _brick)
+            dropped_brick = drop_brick(_occupied, _brick)
+            add_brick(_occupied, dropped_brick)
+            if dropped_brick != _brick:
                 fallen += 1
+
         if fallen > 0:
             debug("disintegrate", brick[2], fallen)
             result += fallen
