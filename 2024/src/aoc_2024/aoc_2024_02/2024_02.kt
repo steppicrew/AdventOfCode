@@ -1,10 +1,10 @@
-package aoc_2024.aoc_2018_02
+package aoc_2024.aoc_2024_02
 
 import aoc_2024.tools.InputOutput
 
-const val year = 2018
+const val year = 2024
 const val day = 2
-const val ref = 0
+const val ref = 1
 
 fun run1() {
     val io = InputOutput(year, day, 1, ref)
