@@ -1,80 +1,62 @@
 package aoc_2024.aoc_2024_02
 
-import aoc_2024.tools.InputOutput
+import aoc_2024.tools.simpleIO
 
-const val year = 2024
-const val day = 2
-const val ref = 1
+const val YEAR = 2024
+const val DAY = 2
+const val REF = 0
 
-fun run1() {
-    val io = InputOutput(year, day, 1, ref)
-    val lines = io.read()
+fun run1(lines: Collection<String>, log: (String) -> Unit): Int {
 
-    var count2 = 0
-    var count3 = 0
+    fun isSafe(parts: Iterable<Int>): Boolean {
+        return parts.zipWithNext { a, b -> b > a && b <= a + 3 }.all { it }
+    }
+
+    var result = 0
     for (line in lines) {
-        val set = HashMap<String, Int>()
-        for (letter in line.split("").filter { it.isNotEmpty() }) {
-            set[letter] = (set[letter] ?: 0) + 1
-        }
-        for (v in set.values) {
-            if (v == 2) {
-                count2++
-                break
-            }
-        }
-        for (v in set.values) {
-            if (v == 3) {
-                count3++
-                break
-            }
+        val parts = line.split("\\s+".toRegex()).map { it.toInt() }
+        if (isSafe(parts) || isSafe(parts.reversed())) {
+            result += 1
         }
     }
-    val result = count2 * count3
-    println(result)
-    io.write(result)
+
+    return result
 }
 
-fun run2() {
-    val io = InputOutput(year, day, 2, ref)
-    val lines = io.read()
+fun run2(lines: Collection<String>, log: (String) -> Unit): Int {
 
-    val letters = lines.map { it.split("") }
-
-    val best_matches = HashMap<Int, String>()
-
-    for (letters1 in letters) {
-        var max_match = 0
-        var max_letters = ""
-        for (letters2 in letters) {
-            if (letters1 == letters2) continue
-
-            var count = 0
-            var common_result = ""
-            for ((letter1, letter2) in letters1.zip(letters2)) {
-                if (letter1 == letter2) {
-                    count++
-                    common_result += letter1
-                }
-            }
-            if (count > max_match) {
-                max_match = count
-                max_letters = common_result
-            }
-        }
-        best_matches[max_match] = max_letters
-
+    fun glitchCount(parts: Iterable<Int>): Int {
+        return parts.zipWithNext { a, b -> b > a && b <= a + 3 }.count { !it }
     }
 
-    val max_match: Int = best_matches.keys.max()
-    val result = best_matches[max_match] ?: ""
+    fun <T> List<T>.iteratorMissingOne(): Sequence<List<T>> = sequence {
+        for (i in indices) {
+            yield(this@iteratorMissingOne.filterIndexed { index, _ -> index != i })
+        }
+    }
 
+    fun isSafe(parts: List<Int>): Boolean {
+        val first = glitchCount(parts)
+        if (first == 0) return true
+        if (first > 2) return false
+        for (p in parts.iteratorMissingOne()) {
+            if (glitchCount(p) == 0) return true
+        }
+        return false
+    }
 
-    println(result)
-    io.write(result)
+    var result = 0
+    for (line in lines) {
+        val parts = line.split("\\s+".toRegex()).map { it.toInt() }
+        if (isSafe(parts) || isSafe(parts.reversed())) {
+            result += 1
+        }
+    }
+
+    return result
 }
 
 fun main() {
-    run1()
-    run2()
+    simpleIO(YEAR, DAY, 1, REF, ::run1)
+    simpleIO(YEAR, DAY, 2, REF, ::run2)
 }

@@ -1,15 +1,13 @@
 package aoc_2024.aoc_2024_01
 
-import aoc_2024.tools.InputOutput
+import aoc_2024.tools.simpleIO
 import kotlin.math.abs
 
-const val year = 2024
-const val day = 1
-const val ref = 0
+const val YEAR = 2024
+const val DAY = 1
+const val REF = 0
 
-fun run1() {
-    val io = InputOutput(year, day, 1, ref)
-    val lines = io.read()
+fun run1(lines: Collection<String>, log:(String)->Unit): Int {
     var result = 0
     val left:MutableList<Int> = mutableListOf()
     val right:MutableList<Int> = mutableListOf()
@@ -23,13 +21,10 @@ fun run1() {
     for (a in left.zip(right)) {
         result+= abs(a.first-a.second)
     }
-    println(result)
-    io.write(result)
+    return result
 }
 
-fun run2() {
-    val io = InputOutput(year, day, 2, ref)
-    val lines = io.read()
+fun run2(lines: Collection<String>, log:(String)->Unit): Int {
     var result = 0
 
     val left:MutableList<Int> = mutableListOf()
@@ -45,11 +40,10 @@ fun run2() {
         result+= right.getOrDefault(n, 0)*n
     }
 
-    println(result)
-    io.write(result)
+    return result
 }
 
 fun main() {
-    run1()
-    run2()
+    simpleIO(YEAR, DAY, 1, REF, ::run1)
+    simpleIO(YEAR, DAY, 2, REF, ::run2)
 }

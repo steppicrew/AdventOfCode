@@ -1,12 +1,10 @@
 package aoc_2024.tools
 
 import java.io.File
+import kotlin.system.measureTimeMillis
 
-class InputOutput(private val year: Int, private val day: Int, private val part: Int, private val ref: Int) {
-
-    private var startTime: Long = 0
-
-    private fun getPath(forResult: Boolean): String {
+fun <T>simpleIO(year: Int, day: Int, part: Int, ref: Int, run: (Collection<String>, (String)->Unit) -> T) {
+    fun getPath(forResult: Boolean): String {
         val day1 = day.toString().padStart(2, '0')
         return (
                 "src/aoc_${year}/aoc_${year}_${day1}/${year}_${day1}"
@@ -15,34 +13,31 @@ class InputOutput(private val year: Int, private val day: Int, private val part:
                 )
     }
 
-
-    private val logLines = mutableListOf<String>()
+    val logLines = mutableListOf<String>()
 
     fun log(line: String) {
         logLines.add("$line\n")
         println(line)
     }
 
-    fun writeLog() {
-        val path = getPath(true)
-        File("$path.log").writeText(logLines.joinToString(""))
-    }
-
-    fun read(): List<String> {
+    val lines = run {
         val path = getPath(false)
         // println("Reading $path")
-        startTime = System.currentTimeMillis()
-        return File("$path.txt").readLines().filter { !it.startsWith(';') }
+        File("$path.txt").readLines().filter { !it.startsWith(';') }
     }
 
-    fun write(result: Int) {
-        write(result.toString())
-    }
+    val result:T
+    val time = measureTimeMillis { result = run(lines, ::log) }
 
-    fun write(result: String) {
+    run {
+        println("RESULT: $result")
         val path = getPath(true)
-        val elapsedTime = String.format("%.1f", (System.currentTimeMillis() - startTime) / 1000.0)
-        println("Writing $path, time: ${elapsedTime}s")
-        File("$path.txt").writeText(result)
+        println("Writing $path, time: ${time}ms")
+        File("$path.txt").writeText(result.toString())
+    }
+
+    if (logLines.size > 0) {
+        val path = getPath(true)
+        File("$path.log").writeText(logLines.joinToString(""))
     }
 }

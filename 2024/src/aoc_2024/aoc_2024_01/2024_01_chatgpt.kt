@@ -1,16 +1,13 @@
 package aoc_2024.aoc_2024_01a
 
-import aoc_2024.tools.InputOutput
+import aoc_2024.tools.simpleIO
 import kotlin.math.abs
 
-const val year = 2024
-const val day = 1
-const val ref = 0
+const val YEAR = 2024
+const val DAY = 1
+const val REF = 0
 
-fun run1() {
-    val io = InputOutput(year, day, 1, ref)
-    val lines = io.read()
-
+fun run1(lines: Collection<String>, log:(String)->Unit): Int {
     // Parse input and split into left and right lists
     val (left, right) = lines.map { line ->
         line.split("\\s+".toRegex()).let { parts -> parts[0].toInt() to parts[1].toInt() }
@@ -20,14 +17,10 @@ fun run1() {
     val result = left.sorted().zip(right.sorted())
         .sumOf { (l, r) -> abs(l - r) }
 
-    println(result)
-    io.write(result)
+    return result
 }
 
-fun run2() {
-    val io = InputOutput(year, day, 2, ref)
-    val lines = io.read()
-
+fun run2(lines: Collection<String>, log:(String)->Unit): Int {
     // Parse input and build left list and right frequency map
     val (left, rightFrequency) = lines.map { line ->
         line.split("\\s+".toRegex()).let { parts -> parts[0].toInt() to parts[1].toInt() }
@@ -38,11 +31,10 @@ fun run2() {
     // Compute the result
     val result = left.sumOf { n -> rightFrequency.getOrDefault(n, 0) * n }
 
-    println(result)
-    io.write(result)
+    return result
 }
 
 fun main() {
-    run1()
-    run2()
+    simpleIO(YEAR, DAY, 1, REF, ::run1)
+    simpleIO(YEAR, DAY, 2, REF, ::run2)
 }
