@@ -6,7 +6,7 @@ const val YEAR = 2024
 const val DAY = 2
 const val REF = 0
 
-fun run1(lines: Collection<String>, log: (String) -> Unit): Int {
+fun run1(lines: Collection<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
 
     fun isSafe(parts: Iterable<Int>): Boolean {
         return parts.zipWithNext { a, b -> b > a && b <= a + 3 }.all { it }
@@ -23,7 +23,7 @@ fun run1(lines: Collection<String>, log: (String) -> Unit): Int {
     return result
 }
 
-fun run2(lines: Collection<String>, log: (String) -> Unit): Int {
+fun run2(lines: Collection<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
 
     fun glitchCount(parts: Iterable<Int>): Int {
         return parts.zipWithNext { a, b -> b > a && b <= a + 3 }.count { !it }

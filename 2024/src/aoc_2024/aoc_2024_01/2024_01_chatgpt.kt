@@ -7,7 +7,7 @@ const val YEAR = 2024
 const val DAY = 1
 const val REF = 0
 
-fun run1(lines: Collection<String>, log:(String)->Unit): Int {
+fun run1(lines: Collection<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     // Parse input and split into left and right lists
     val (left, right) = lines.map { line ->
         line.split("\\s+".toRegex()).let { parts -> parts[0].toInt() to parts[1].toInt() }
@@ -20,7 +20,7 @@ fun run1(lines: Collection<String>, log:(String)->Unit): Int {
     return result
 }
 
-fun run2(lines: Collection<String>, log:(String)->Unit): Int {
+fun run2(lines: Collection<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     // Parse input and build left list and right frequency map
     val (left, rightFrequency) = lines.map { line ->
         line.split("\\s+".toRegex()).let { parts -> parts[0].toInt() to parts[1].toInt() }

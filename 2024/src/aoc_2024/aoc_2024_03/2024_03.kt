@@ -6,13 +6,13 @@ const val YEAR = 2024
 const val DAY = 3
 const val REF = 1
 
-fun run1(lines: Collection<String>, log:(String)->Unit): Int {
+fun run1(lines: Collection<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     val result = lines.count()
 
     return result
 }
 
-fun run2(lines: Collection<String>, log:(String)->Unit): Int {
+fun run2(lines: Collection<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     val result = lines.count()
 
     return result
