@@ -1,7 +1,9 @@
 package aoc_2024.tools
 
 import java.io.File
-import kotlin.system.measureTimeMillis
+import java.text.NumberFormat
+import java.util.*
+import kotlin.time.measureTimedValue
 
 // const val black = "\u001B[30m"
 const val red = "\u001B[31m"
@@ -30,17 +32,25 @@ const val CORRECT = "${green}${bold}✔${reset}"
 const val FAILED = "${red}${bold}✗${reset}"
 const val NEW_RESULT = "${yellow}${bold}?${reset}"
 
-fun <T> printResult(result: T): String {
-    return "${bold}${result}${reset}"
-}
+typealias ExpectedResult<T> = Pair<T?, T?>
+typealias ExpectedRefResult<T> = Pair<Int, ExpectedResult<T>>
+typealias ExpectedRefResults<T> = List<ExpectedRefResult<T>>
+
+typealias RunType<T> = (List<String>, (String) -> Unit) -> T
+
+val formatter = NumberFormat.getInstance(Locale.GERMAN)!!
 
 fun <T> simpleIO(
     year: Int, day: Int,
-    run: Pair<(List<String>, (String) -> Unit) -> T, (List<String>, (String) -> Unit) -> T>,
-    expectedResults: List<Pair<Int, Pair<T?, T?>>>
+    run: Pair<RunType<T>, RunType<T>>,
+    expectedResults: ExpectedRefResults<T>
 ) {
-    fun refRun(ref: Int, expectedResult: Pair<T?, T?>): List<Boolean?> {
-        fun singleRun(part: Int, run: (List<String>, (String) -> Unit) -> T, expectedResult: T?): Boolean? {
+    fun printResult(result: T): String {
+        return "${bold}${result}${reset}"
+    }
+
+    fun refRun(ref: Int, expectedResult: ExpectedResult<T>): List<Boolean?> {
+        fun partRun(part: Int, run: RunType<T>, expectedResult: T?): Boolean? {
             fun getPath(forResult: Boolean, extension: String): String {
                 val day1 = day.toString().padStart(2, '0')
                 return (
@@ -52,42 +62,42 @@ fun <T> simpleIO(
             }
 
             val logLines = mutableListOf<String>()
-
             fun log(line: String) {
                 logLines.add("$line\n")
                 println(line)
             }
 
-            val lines = File(getPath(false, "txt")).readLines().filter { !it.startsWith(';') }
+            val lines = File(getPath(false, "txt"))
+                .readLines()
+                .filter { !it.startsWith(';') }
 
-            val result: T
-            val time = measureTimeMillis { result = run(lines, ::log) }
+            val (result, duration) = measureTimedValue { run(lines, ::log) }
+            val time = "${formatter.format(duration.inWholeMilliseconds / 1000.0)}s"
 
             if (logLines.size > 0) {
                 File(getPath(true, "log"))
-                    .writeText(logLines.joinToString("\n"))
+                    .writeText(logLines.joinToString(""))
             }
 
-            val refStr = if (ref > 0) "ref${ref}" else "main"
-            print("${refStr}/${part}: ")
+            print("${if (ref > 0) "ref${ref}" else "main"}/${part}: ")
             if (expectedResult == null) {
-                println("$NEW_RESULT (${printResult(result)}) in ${time}ms")
+                println("$NEW_RESULT (${printResult(result)}) in $time")
                 File(getPath(true, "txt")).writeText(result.toString())
                 return null
             }
             if (expectedResult == result) {
-                println("$CORRECT (${printResult(result)}) in ${time}ms")
+                println("$CORRECT (${printResult(result)}) in $time")
                 return true
             }
-            println("$FAILED in ${time}ms")
+            println("$FAILED in $time")
             println("\tEXPECTED: ${printResult(expectedResult)}")
             println("\tGOT     : ${printResult(result)}")
             return false
         }
 
         return listOf(
-            singleRun(1, run.first, expectedResult.first),
-            singleRun(2, run.second, expectedResult.second)
+            partRun(1, run.first, expectedResult.first),
+            partRun(2, run.second, expectedResult.second)
         )
     }
 

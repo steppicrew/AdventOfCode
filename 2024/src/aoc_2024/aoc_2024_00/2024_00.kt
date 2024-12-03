@@ -7,7 +7,7 @@ const val DAY = 0
 
 val EXPECTED_RESULTS = listOf(
     1 to (0 to 0),
-    0 to (null to null)
+    0 to (0 to 0)
 )
 
 
