@@ -8,37 +8,29 @@ const val DAY = 1
 const val REF = 0
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
-    var result = 0
-    val left: MutableList<Int> = mutableListOf()
-    val right: MutableList<Int> = mutableListOf()
-    for (line in lines) {
-        val parts = line.split("\\s+".toRegex())
-        left.add(parts[0].toInt())
-        right.add(parts[1].toInt())
-    }
-    left.sort()
-    right.sort()
-    for (a in left.zip(right)) {
-        result += abs(a.first - a.second)
-    }
+    val reSpace = """\s+""".toRegex()
+
+    val result = lines
+        .map { line ->
+            line.split(reSpace)
+                .let { it[0].toInt() to it[1].toInt() }
+        }.unzip()
+        .let { it.first.sorted().zip(it.second.sorted()) }
+        .sumOf { abs(it.first - it.second) }
+
     return result
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
-    var result = 0
+    val reSpace = """\s+""".toRegex()
 
-    val left: MutableList<Int> = mutableListOf()
-    val right: MutableMap<Int, Int> = mutableMapOf()
-    for (line in lines) {
-        val parts = line.split("\\s+".toRegex())
-        left.add(parts[0].toInt())
-        val r = parts[1].toInt()
-        right[r] = right.getOrDefault(r, 0) + 1
-    }
-
-    for (n in left) {
-        result += right.getOrDefault(n, 0) * n
-    }
+    val result = lines
+        .map { line ->
+            line.split(reSpace)
+                .let { it[0].toInt() to it[1].toInt() }
+        }.unzip()
+        .let { (left, right) -> left to right.groupingBy { it }.eachCount() }
+        .let { (left, rightCount) -> left.sumOf { it * rightCount.getOrDefault(it, 0) } }
 
     return result
 }

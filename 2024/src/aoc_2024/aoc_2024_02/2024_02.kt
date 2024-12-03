@@ -7,50 +7,39 @@ const val DAY = 2
 const val REF = 0
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+    val reSpace = """\s+""".toRegex()
 
     fun isSafe(parts: Iterable<Int>): Boolean {
         return parts.zipWithNext { a, b -> b > a && b <= a + 3 }.all { it }
     }
 
-    var result = 0
-    for (line in lines) {
-        val parts = line.split("\\s+".toRegex()).map { it.toInt() }
-        if (isSafe(parts) || isSafe(parts.reversed())) {
-            result += 1
-        }
+    val result = lines.count { line ->
+        line.split(reSpace).map(String::toInt).let { isSafe(it) || isSafe(it.reversed()) }
     }
 
     return result
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+    val reSpace = """\s+""".toRegex()
 
-    fun glitchCount(parts: Iterable<Int>): Int {
+    fun countGlitches(parts: List<Int>): Int {
         return parts.zipWithNext { a, b -> b > a && b <= a + 3 }.count { !it }
     }
 
-    fun <T> List<T>.iteratorMissingOne(): Sequence<List<T>> = sequence {
-        for (i in indices) {
-            yield(this@iteratorMissingOne.filterIndexed { index, _ -> index != i })
-        }
+    fun removeOne(parts: List<Int>): Sequence<List<Int>> {
+        return parts.indices.asSequence().map { parts.filterIndexed { index, _ -> it != index } }
     }
 
     fun isSafe(parts: List<Int>): Boolean {
-        val first = glitchCount(parts)
-        if (first == 0) return true
-        if (first > 2) return false
-        for (p in parts.iteratorMissingOne()) {
-            if (glitchCount(p) == 0) return true
-        }
-        return false
+        val glitches = countGlitches(parts)
+        if (glitches == 0) return true
+        if (glitches > 2) return false
+        return removeOne(parts).any { countGlitches(it) == 0 }
     }
 
-    var result = 0
-    for (line in lines) {
-        val parts = line.split("\\s+".toRegex()).map { it.toInt() }
-        if (isSafe(parts) || isSafe(parts.reversed())) {
-            result += 1
-        }
+    val result = lines.count { line ->
+        line.split(reSpace).map(String::toInt).let { isSafe(it) || isSafe(it.reversed()) }
     }
 
     return result
