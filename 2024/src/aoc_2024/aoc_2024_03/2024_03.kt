@@ -9,14 +9,12 @@ const val REF = 0
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     val re = """mul\((\d+),(\d+)\)""".toRegex()
 
-    val result = lines.joinToString("")
+    return lines.joinToString("")
         .let { re.findAll(it) }
         .sumOf { match ->
             val (factor1, factor2) = match.destructured
             factor1.toInt() * factor2.toInt()
         }
-
-    return result
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
@@ -24,7 +22,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     val reDoNot = """don't\(\)""".toRegex()
     val reMul = """mul\((\d+),(\d+)\)""".toRegex()
 
-    val result = lines.joinToString("")
+    return lines.joinToString("")
         .split(reDo)
         .sumOf { doPart ->
             doPart.split(reDoNot, limit = 2).first()
@@ -34,8 +32,6 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
                     factor1.toInt() * factor2.toInt()
                 }
         }
-
-    return result
 }
 
 fun main() {

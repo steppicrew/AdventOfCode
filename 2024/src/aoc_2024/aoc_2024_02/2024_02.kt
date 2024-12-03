@@ -13,11 +13,9 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         return parts.zipWithNext { a, b -> b > a && b <= a + 3 }.all { it }
     }
 
-    val result = lines.count { line ->
+    return lines.count { line ->
         line.split(reSpace).map(String::toInt).let { isSafe(it) || isSafe(it.reversed()) }
     }
-
-    return result
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
@@ -38,11 +36,9 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         return removeOne(parts).any { countGlitches(it) == 0 }
     }
 
-    val result = lines.count { line ->
+    return lines.count { line ->
         line.split(reSpace).map(String::toInt).let { isSafe(it) || isSafe(it.reversed()) }
     }
-
-    return result
 }
 
 fun main() {
