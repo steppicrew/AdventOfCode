@@ -5,7 +5,12 @@ import kotlin.math.abs
 
 const val YEAR = 2024
 const val DAY = 1
-const val REF = 0
+
+val EXPECTED_RESULTS = listOf(
+    1 to (11 to 31),
+    0 to (1889772 to 23228917)
+)
+
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     val reSpace = """\s+""".toRegex()
@@ -32,6 +37,5 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 }
 
 fun main() {
-    simpleIO(YEAR, DAY, 1, REF, ::run1)
-    simpleIO(YEAR, DAY, 2, REF, ::run2)
+    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS)
 }

@@ -4,7 +4,11 @@ import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
 const val DAY = 2
-const val REF = 0
+
+val EXPECTED_RESULTS = listOf(
+    1 to (0 to 0),
+    0 to (null to null)
+)
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
 
@@ -43,6 +47,5 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 }
 
 fun main() {
-    simpleIO(YEAR, DAY, 1, REF, ::run1)
-    simpleIO(YEAR, DAY, 2, REF, ::run2)
+    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS)
 }

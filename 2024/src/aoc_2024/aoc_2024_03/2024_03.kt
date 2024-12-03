@@ -4,7 +4,12 @@ import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
 const val DAY = 3
-const val REF = 0
+
+val EXPECTED_RESULTS = listOf(
+    1 to (161 to 161),
+    2 to (161 to 48),
+    0 to (160672468 to 84893551)
+)
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     val re = """mul\((\d+),(\d+)\)""".toRegex()
@@ -35,6 +40,5 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 }
 
 fun main() {
-    simpleIO(YEAR, DAY, 1, REF, ::run1)
-    simpleIO(YEAR, DAY, 2, REF, ::run2)
+    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS)
 }
