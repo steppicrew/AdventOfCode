@@ -26,8 +26,9 @@ const val bold = "\u001B[1m"
 // const val underline = "\u001B[4m"
 // const val reversed = "\u001B[7m"
 
-const val CORRECT = "${green}${bold}CORRECT${reset}"
-const val FAILED = "${red}${bold}FAILED${reset}"
+const val CORRECT = "${green}${bold}✔${reset}"
+const val FAILED = "${red}${bold}✗${reset}"
+const val NEW_RESULT = "${yellow}${bold}?${reset}"
 
 fun <T> printResult(result: T): String {
     return "${bold}${result}${reset}"
@@ -38,8 +39,8 @@ fun <T> simpleIO(
     run: Pair<(List<String>, (String) -> Unit) -> T, (List<String>, (String) -> Unit) -> T>,
     expectedResults: List<Pair<Int, Pair<T?, T?>>>
 ) {
-    fun refRun(ref: Int, expectedResult: Pair<T?, T?>): Int {
-        fun singleRun(part: Int, run: (List<String>, (String) -> Unit) -> T, expectedResult: T?): Boolean {
+    fun refRun(ref: Int, expectedResult: Pair<T?, T?>): List<Boolean?> {
+        fun singleRun(part: Int, run: (List<String>, (String) -> Unit) -> T, expectedResult: T?): Boolean? {
             fun getPath(forResult: Boolean, extension: String): String {
                 val day1 = day.toString().padStart(2, '0')
                 return (
@@ -70,34 +71,37 @@ fun <T> simpleIO(
             val refStr = if (ref > 0) "ref${ref}" else "main"
             print("${refStr}/${part}: ")
             if (expectedResult == null) {
-                println("NEW RESULT (${printResult(result)}) in ${time}ms")
+                println("$NEW_RESULT (${printResult(result)}) in ${time}ms")
                 File(getPath(true, "txt")).writeText(result.toString())
-            } else {
-                if (expectedResult == result) {
-                    println("$CORRECT (${printResult(result)}) in ${time}ms")
-                } else {
-                    println("$FAILED in ${time}ms")
-                    println("EXPECTED: ${printResult(expectedResult)}")
-                    println("GOT     : ${printResult(result)}")
-                    return false
-                }
+                return null
             }
-            return true
+            if (expectedResult == result) {
+                println("$CORRECT (${printResult(result)}) in ${time}ms")
+                return true
+            }
+            println("$FAILED in ${time}ms")
+            println("\tEXPECTED: ${printResult(expectedResult)}")
+            println("\tGOT     : ${printResult(result)}")
+            return false
         }
 
         return listOf(
             singleRun(1, run.first, expectedResult.first),
             singleRun(2, run.second, expectedResult.second)
-        ).count { it }
+        )
     }
 
-    val successCount = expectedResults.sumOf { expected ->
+    val results = expectedResults.flatMap { expected ->
         refRun(expected.first, expected.second)
     }
 
+    val successCount = results.count { it == true }
+
+    val failedCount = results.count { it == false }
+
     val expectedCount = 2 * expectedResults.size
 
-    val color = if (successCount == expectedCount) green else if (successCount > 0) yellow else red
+    val color = if (successCount == expectedCount) green else if (failedCount > 0) red else yellow
 
     println("${color}PASSED: ${bold}${successCount}/${expectedCount}${reset}")
 }
