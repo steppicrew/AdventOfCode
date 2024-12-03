@@ -26,6 +26,12 @@ const val bold = "\u001B[1m"
 // const val underline = "\u001B[4m"
 // const val reversed = "\u001B[7m"
 
+const val CORRECT = "${green}${bold}CORRECT${reset}"
+const val FAILED = "${red}${bold}FAILED${reset}"
+
+fun <T> printResult(result: T): String {
+    return "${bold}${result}${reset}"
+}
 
 fun <T> simpleIO(
     year: Int, day: Int,
@@ -64,18 +70,15 @@ fun <T> simpleIO(
             val refStr = if (ref > 0) "ref${ref}" else "main"
             print("${refStr}/${part}: ")
             if (expectedResult == null) {
-                println("NEW RESULT (${bold}${result}${reset}) in ${time}ms")
-                getPath(true, "txt").let { path ->
-                    // println("Writing $path")
-                    File(path).writeText(result.toString())
-                }
+                println("NEW RESULT (${printResult(result)}) in ${time}ms")
+                File(getPath(true, "txt")).writeText(result.toString())
             } else {
                 if (expectedResult == result) {
-                    println("${green}${bold}CORRECT${reset} (${bold}${result}${reset}) in ${time}ms")
+                    println("$CORRECT (${printResult(result)}) in ${time}ms")
                 } else {
-                    println("${red}${bold}FAILED${reset} in ${time}ms")
-                    println("EXPECTED: ${bold}$expectedResult${reset}")
-                    println("GOT     : ${bold}$result${reset}")
+                    println("$FAILED in ${time}ms")
+                    println("EXPECTED: ${printResult(expectedResult)}")
+                    println("GOT     : ${printResult(result)}")
                     return false
                 }
             }

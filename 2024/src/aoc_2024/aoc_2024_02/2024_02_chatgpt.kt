@@ -6,8 +6,8 @@ const val YEAR = 2024
 const val DAY = 2
 
 val EXPECTED_RESULTS = listOf(
-    1 to (0 to 0),
-    0 to (null to null)
+    1 to (2 to 4),
+    0 to (502 to 544)
 )
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
