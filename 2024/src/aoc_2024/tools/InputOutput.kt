@@ -3,7 +3,7 @@ package aoc_2024.tools
 import java.io.File
 import kotlin.system.measureTimeMillis
 
-fun <T>simpleIO(year: Int, day: Int, part: Int, ref: Int, run: (Collection<String>, (String)->Unit) -> T) {
+fun <T> simpleIO(year: Int, day: Int, part: Int, ref: Int, run: (List<String>, (String) -> Unit) -> T) {
     fun getPath(forResult: Boolean): String {
         val day1 = day.toString().padStart(2, '0')
         return (
@@ -26,7 +26,7 @@ fun <T>simpleIO(year: Int, day: Int, part: Int, ref: Int, run: (Collection<Strin
         File("$path.txt").readLines().filter { !it.startsWith(';') }
     }
 
-    val result:T
+    val result: T
     val time = measureTimeMillis { result = run(lines, ::log) }
 
     run {

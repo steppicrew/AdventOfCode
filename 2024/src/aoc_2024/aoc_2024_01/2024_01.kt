@@ -7,7 +7,7 @@ const val YEAR = 2024
 const val DAY = 1
 const val REF = 0
 
-fun run1(lines: Collection<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     var result = 0
     val left: MutableList<Int> = mutableListOf()
     val right: MutableList<Int> = mutableListOf()
@@ -24,7 +24,7 @@ fun run1(lines: Collection<String>, @Suppress("UNUSED_PARAMETER") log: (String) 
     return result
 }
 
-fun run2(lines: Collection<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     var result = 0
 
     val left: MutableList<Int> = mutableListOf()
