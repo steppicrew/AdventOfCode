@@ -1,11 +1,12 @@
-package aoc_2015.aoc_2015_00
+package aoc_2024.aoc_2024_06
 
-import aoc_2015.tools.simpleIO
+import aoc_2024.tools.simpleIO
 
-const val YEAR = 2015
-const val DAY = 0
+const val YEAR = 2024
+const val DAY = 6
 
 val EXPECTED_RESULTS = listOf(
+    1 to (null to null),
     0 to (null to null)
 )
 
