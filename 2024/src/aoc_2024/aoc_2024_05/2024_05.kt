@@ -33,6 +33,9 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 
     return orders
         .zip(orders.map { order ->
+            // Build correct order
+            //  - filter for rule keys contained in current order
+            //  - sort by keys not contained in any following key's values
             val orderSet = order.toSet()
             allRules
                 .filterKeys { orderSet.contains(it) }
@@ -45,8 +48,10 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
                     }
                 }
                 .map { it.key }
-                .plus(orderSet.minus(allRules.keys))
+            // We do not need values not contained in left hand rules
+            // .plus(orderSet.minus(allRules.keys))
         })
+        // Filter for all matching orders
         .filter { (a, b) -> a.zip(b).all { it.first == it.second } }
         .sumOf { it.first[(it.first.size - 1) / 2] }
 }
@@ -74,6 +79,9 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 
     return orders
         .zip(orders.map { order ->
+            // Build correct order
+            //  - filter for rule keys contained in current order
+            //  - sort by keys not contained in any following key's values
             val orderSet = order.toSet()
             allRules
                 .filterKeys { orderSet.contains(it) }
@@ -86,10 +94,13 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
                     }
                 }
                 .map { it.key }
-                .plus(orderSet.minus(allRules.keys))
+            // We do not need values not contained in left hand rules
+            // .plus(orderSet.minus(allRules.keys))
         })
+        // Filter for all mismatching orders
         .filter { (a, b) -> a.zip(b).any { it.first != it.second } }
-        .sumOf { it.second[(it.second.size - 1) / 2] }
+        // Find the middle value by *first's* length (first may be longer than second)
+        .sumOf { it.second[(it.first.size - 1) / 2] }
 }
 
 fun main() {
