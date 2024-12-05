@@ -14,13 +14,6 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     val reRule = """(\d+)\|(\d+)""".toRegex()
     val reOrder = """\d+(?:,\d+)*""".toRegex()
 
-    val orders = lines.filter { line ->
-        reOrder.matches(line)
-    }
-        .map { line ->
-            line.split(",").map(String::toInt)
-        }
-
     val allRules = lines.mapNotNull { line ->
         reRule.matchEntire(line)
     }
@@ -31,63 +24,37 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .groupBy({ it.first }, { it.second })
         .mapValues { (_, valueList) -> valueList.toSet() }
 
-    fun getRules(order: List<Int>): Map<Int, Set<Int>> {
-        val validNumbers = order.toSet()
-        return allRules.filterKeys { validNumbers.contains(it) }.mapValues { validNumbers.intersect(it.value) }
+    val orders = lines.filter { line ->
+        reOrder.matches(line)
     }
-
-    fun getOrder(order: List<Int>): List<Int> {
-        val rules = getRules(order).toMutableMap()
-        val pageOrder = mutableListOf<Int>()
-        var allLarger = setOf<Int>()
-        while (rules.isNotEmpty()) {
-            allLarger = rules.values.reduce { acc, set -> acc + set }
-            val notInLargerList = rules.keys.filter { !allLarger.contains(it) }
-            if (notInLargerList.isEmpty()) {
-                println("Error")
-                println(pageOrder)
-                println(allLarger)
-                println(rules)
-            }
-            val notInLarger = rules.keys.first { !allLarger.contains(it) }
-            pageOrder.add(notInLarger)
-            rules.remove(notInLarger)
+        .map { line ->
+            line.split(",").map(String::toInt)
         }
-        pageOrder.addAll(allLarger)
-        return pageOrder
-    }
 
-    fun filterOrders(order: List<Int>): Boolean {
-        var remaining = getOrder(order)
-        for (n in order) {
-            val i = remaining.indexOf(n)
-            if (i < 0) {
-                return false
-            }
-            remaining = remaining.subList(i, remaining.size)
-        }
-        return true
-    }
-
-    val validOrders = orders.filter(::filterOrders)
-    val result = validOrders.map { order ->
-        order[(order.size - 1) / 2]
-    }
-
-    return result.sum()
+    return orders
+        .zip(orders.map { order ->
+            val orderSet = order.toSet()
+            allRules
+                .filterKeys { orderSet.contains(it) }
+                .asIterable()
+                .sortedWith { a, b ->
+                    when {
+                        a.value.contains(b.key) -> -1
+                        b.value.contains(a.key) -> 1
+                        else -> 0
+                    }
+                }
+                .map { it.key }
+                .plus(orderSet.minus(allRules.keys))
+        })
+        .filter { (a, b) -> a.zip(b).all { it.first == it.second } }
+        .sumOf { it.first[(it.first.size - 1) / 2] }
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
     val reRule = """(\d+)\|(\d+)""".toRegex()
     val reOrder = """\d+(?:,\d+)*""".toRegex()
 
-    val orders = lines.filter { line ->
-        reOrder.matches(line)
-    }
-        .map { line ->
-            line.split(",").map(String::toInt)
-        }
-
     val allRules = lines.mapNotNull { line ->
         reRule.matchEntire(line)
     }
@@ -98,50 +65,31 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .groupBy({ it.first }, { it.second })
         .mapValues { (_, valueList) -> valueList.toSet() }
 
-    fun getRules(order: List<Int>): Map<Int, Set<Int>> {
-        val validNumbers = order.toSet()
-        return allRules.filterKeys { validNumbers.contains(it) }.mapValues { validNumbers.intersect(it.value) }
+    val orders = lines.filter { line ->
+        reOrder.matches(line)
     }
-
-    fun getOrder(order: List<Int>): List<Int> {
-        val rules = getRules(order).toMutableMap()
-        val pageOrder = mutableListOf<Int>()
-        var allLarger = setOf<Int>()
-        while (rules.isNotEmpty()) {
-            allLarger = rules.values.reduce { acc, set -> acc + set }
-            val notInLargerList = rules.keys.filter { !allLarger.contains(it) }
-            if (notInLargerList.isEmpty()) {
-                println("Error")
-                println(pageOrder)
-                println(allLarger)
-                println(rules)
-            }
-            val notInLarger = rules.keys.first { !allLarger.contains(it) }
-            pageOrder.add(notInLarger)
-            rules.remove(notInLarger)
+        .map { line ->
+            line.split(",").map(String::toInt)
         }
-        pageOrder.addAll(allLarger)
-        return pageOrder
-    }
 
-    fun filterOrders(order: List<Int>): Boolean {
-        var remaining = getOrder(order)
-        for (n in order) {
-            val i = remaining.indexOf(n)
-            if (i < 0) {
-                return true
-            }
-            remaining = remaining.subList(i, remaining.size)
-        }
-        return false
-    }
-
-    val validOrders = orders.filter(::filterOrders)
-    val result = validOrders.map { getOrder(it) }.map { order ->
-        order[(order.size - 1) / 2]
-    }
-
-    return result.sum()
+    return orders
+        .zip(orders.map { order ->
+            val orderSet = order.toSet()
+            allRules
+                .filterKeys { orderSet.contains(it) }
+                .asIterable()
+                .sortedWith { a, b ->
+                    when {
+                        a.value.contains(b.key) -> -1
+                        b.value.contains(a.key) -> 1
+                        else -> 0
+                    }
+                }
+                .map { it.key }
+                .plus(orderSet.minus(allRules.keys))
+        })
+        .filter { (a, b) -> a.zip(b).any { it.first != it.second } }
+        .sumOf { it.second[(it.second.size - 1) / 2] }
 }
 
 fun main() {
