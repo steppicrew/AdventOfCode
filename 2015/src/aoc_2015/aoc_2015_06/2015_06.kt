@@ -40,8 +40,8 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
                 "toggle" -> ::toggle
                 else -> throw RuntimeException("This should not happen")
             }
-            (fromX.toInt()..toX.toInt()).forEach { x ->
-                (fromY.toInt()..toY.toInt()).forEach { y -> fn(x to y) }
+            (fromX.toInt()..toX.toInt()).asSequence().forEach { x ->
+                (fromY.toInt()..toY.toInt()).asSequence().forEach { y -> fn(x to y) }
             }
         }
     return map.size
@@ -75,8 +75,8 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
                 "toggle" -> ::toggle
                 else -> throw RuntimeException("This should not happen")
             }
-            (fromX.toInt()..toX.toInt()).forEach { x ->
-                (fromY.toInt()..toY.toInt()).forEach { y -> fn(x to y) }
+            (fromX.toInt()..toX.toInt()).asSequence().forEach { x ->
+                (fromY.toInt()..toY.toInt()).asSequence().forEach { y -> fn(x to y) }
             }
         }
     return map.values.sum()
