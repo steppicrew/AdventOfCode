@@ -17,18 +17,19 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             (col to row) to char
         }
     }.toMap()
-    var pos = map.entries.filter { it.value == '^' }[0].key
-    var dir = 0 to -1
+    var position = map.entries.first { it.value == '^' }.key
+    var direction = 0 to -1
 
-    val visited = mutableSetOf(pos)
-    while (map.containsKey(pos)) {
-        visited.add(pos)
-        val nextPos = pos.first + dir.first to pos.second + dir.second
-        if (map.getOrDefault(nextPos, ' ') == '#') {
-            dir = (-dir.second) to dir.first
+    val visited = mutableSetOf(position)
+    while (map.containsKey(position)) {
+        visited.add(position)
+        val nextPosition = position.first + direction.first to position.second + direction.second
+        if (map.get(nextPosition) == '#') {
+            // Rotate direction 90 degrees clockwise
+            direction = (-direction.second) to direction.first
             continue
         }
-        pos = nextPos
+        position = nextPosition
     }
     return visited.size
 }
@@ -39,38 +40,38 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             (col to row) to char
         }
     }.toMap()
-    val startPos = map.entries.filter { it.value == '^' }[0].key
+    val startPosition = map.entries.first { it.value == '^' }.key
 
-    fun loop(entry: Map.Entry<Pair<Int, Int>, Char>): Pair<Int, Int>? {
-        if (entry.value != '.') {
-            return null
-        }
-        val newMap = map.toMutableMap()
-        newMap[entry.key] = '#'
+    // Clockwise direction rotation: up, right, down, left
+    val directions = listOf(0 to -1, 1 to 0, 0 to 1, -1 to 0)
 
-        var pos = startPos
-        var dir = 0 to -1
+    fun hasCycle(obstacle: Map.Entry<Pair<Int, Int>, Char>): Boolean {
 
-        val visited = mutableSetOf(pos to dir)
+        var position = startPosition
+        var directionIndex = 0
 
-        while (newMap.containsKey(pos)) {
-            val nextPos = pos.first + dir.first to pos.second + dir.second
-            if (newMap.getOrDefault(nextPos, ' ') == '#') {
-                dir = (-dir.second) to dir.first
-                continue
+        val visited = mutableSetOf(position to directionIndex)
+
+        while (map.containsKey(position)) {
+            val nextPosition =
+                position.first + directions[directionIndex].first to
+                        position.second + directions[directionIndex].second
+            if (map[nextPosition] == '#' || nextPosition == obstacle.key) {
+                // Rotate direction clockwise
+                directionIndex = (directionIndex + 1) % directions.size
+            } else {
+                position = nextPosition
+                if (!visited.add(position to directionIndex)) {
+                    return true // Cycle detected
+                }
             }
-            pos = nextPos
-            if (visited.contains(pos to dir)) {
-                return entry.key
-            }
-            visited.add(pos to dir)
         }
-        return null
+        return false
     }
 
-    val obsitcles = map.entries.mapNotNull(::loop)
-
-    return obsitcles.size
+    return map.asSequence()
+        .filter { it.value == '.' && it.key != startPosition }
+        .count(::hasCycle)
 }
 
 fun main() {
