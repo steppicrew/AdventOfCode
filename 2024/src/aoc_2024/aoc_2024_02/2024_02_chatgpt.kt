@@ -1,16 +1,19 @@
 package aoc_2024.aoc_2024_02_chatgpt
 
+import aoc_2024.tools.ExpectedRefResults
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
 const val DAY = 2
 
-val EXPECTED_RESULTS = listOf(
+typealias ResultType = Int
+
+val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     1 to (2 to 4),
     0 to (502 to 544)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
 
     fun isSafe(parts: List<Int>): Boolean =
         parts.zipWithNext { a, b -> b > a && b <= a + 3 }.all { it }
@@ -23,7 +26,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return result
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
 
     fun glitchCount(parts: List<Int>): Int =
         parts.zipWithNext { a, b -> b > a && b <= a + 3 }.count { !it }

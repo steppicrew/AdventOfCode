@@ -1,18 +1,21 @@
 package aoc_2024.aoc_2024_01
 
+import aoc_2024.tools.ExpectedRefResults
 import aoc_2024.tools.simpleIO
 import kotlin.math.abs
 
 const val YEAR = 2024
 const val DAY = 1
 
-val EXPECTED_RESULTS = listOf(
+typealias ResultType = Int
+
+val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     1 to (11 to 31),
     0 to (1889772 to 23228917)
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val reSpace = """\s+""".toRegex()
 
     return lines
@@ -24,7 +27,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .sumOf { abs(it.first - it.second) }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val reSpace = """\s+""".toRegex()
 
     return lines

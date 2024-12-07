@@ -1,16 +1,19 @@
 package aoc_2024.aoc_2024_05
 
+import aoc_2024.tools.ExpectedRefResults
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
 const val DAY = 5
 
-val EXPECTED_RESULTS = listOf(
+typealias ResultType = Int
+
+val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     1 to (143 to 123),
     0 to (6498 to 5017)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val reRule = """(\d+)\|(\d+)""".toRegex()
     val reOrder = """\d+(?:,\d+)*""".toRegex()
 
@@ -56,7 +59,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .sumOf { it.first[(it.first.size - 1) / 2] }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val reRule = """(\d+)\|(\d+)""".toRegex()
     val reOrder = """\d+(?:,\d+)*""".toRegex()
 

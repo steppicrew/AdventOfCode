@@ -1,10 +1,10 @@
-package aoc_2024.aoc_2024_00
+package aoc_2024.aoc_2024_08
 
 import aoc_2024.tools.ExpectedRefResults
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
-const val DAY = 0
+const val DAY = 8
 
 typealias ResultType = Int
 
