@@ -23,16 +23,16 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             result.toULong() to operators.split(" ").map(String::toULong)
         }
 
-    fun getResults(operators: MutableList<ULong>): Set<ULong> {
-        val operator = operators.removeLast()
-        if (operators.isEmpty()) return setOf(operator)
-        return getResults(operators.subList(0, operators.size)).flatMap {
-            listOf(it + operator, it * operator)
+    fun getResults(operators: List<ULong>): Set<ULong> {
+        val last = operators.last()
+        if (operators.size == 1) return setOf(last)
+        return getResults(operators.dropLast(1)).flatMap {
+            listOf(it + last, it * last)
         }.toSet()
     }
 
     return equations.filter { (result, operators) ->
-        getResults(operators.toMutableList()).any { result == it }
+        getResults(operators).contains(result)
     }.sumOf { it.first }
 }
 
@@ -45,16 +45,16 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             result.toULong() to operators.split(" ").map(String::toULong)
         }
 
-    fun getResults(operators: MutableList<ULong>): Set<ULong> {
-        val operator = operators.removeLast()
-        if (operators.isEmpty()) return setOf(operator)
-        return getResults(operators.subList(0, operators.size)).flatMap {
-            listOf(it + operator, it * operator, (it.toString() + operator.toString()).toULong())
+    fun getResults(operators: List<ULong>): Set<ULong> {
+        val last = operators.last()
+        if (operators.size == 1) return setOf(last)
+        return getResults(operators.dropLast(1)).flatMap {
+            listOf(it + last, it * last, "${it}${last}".toULong())
         }.toSet()
     }
 
     return equations.filter { (result, operators) ->
-        getResults(operators.toMutableList()).any { result == it }
+        getResults(operators).contains(result)
     }.sumOf { it.first }
 }
 
