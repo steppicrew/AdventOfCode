@@ -20,7 +20,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .flatMap {
             val (location1, location2, distance) = it.destructured
             listOf(location1 to (location2 to distance.toInt()), location2 to (location1 to distance.toInt()))
-        }.groupBy { it.first }.mapValues { it.value.map { it.second } }
+        }.groupBy({ it.first }, { it.second })
 
     fun getDistances(nextStop: String, visited: Set<String>): Int {
         val nextStops = distances[nextStop] ?: throw RuntimeException("This should not happen")
@@ -42,7 +42,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .flatMap {
             val (location1, location2, distance) = it.destructured
             listOf(location1 to (location2 to distance.toInt()), location2 to (location1 to distance.toInt()))
-        }.groupBy { it.first }.mapValues { it.value.map { it.second } }
+        }.groupBy({ it.first }, { it.second })
 
     fun getDistances(nextStop: String, visited: Set<String>): Int {
         val nextStops = distances[nextStop] ?: throw RuntimeException("This should not happen")
