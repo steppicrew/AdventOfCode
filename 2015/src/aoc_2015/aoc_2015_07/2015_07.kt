@@ -13,17 +13,13 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val reCommands = mapOf(
-        """(\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort { return inputs.first },
-        """(\w+) AND (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort { return inputs.first and inputs.second },
-        """(\w+) OR (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort { return inputs.first or inputs.second },
-        """(\w+) LSHIFT (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort {
-            return (inputs.first.toInt() shl inputs.second.toInt()).toUShort()
-        },
-        """(\w+) RSHIFT (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort {
-            return (inputs.first.toInt() shr inputs.second.toInt()).toUShort()
-        },
-        """NOT (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort { return inputs.first.inv() },
+    val reCommands = mapOf<Regex, (Pair<UShort, UShort>) -> UShort>(
+        """(\w+) -> (\w+)""".toRegex() to { it.first },
+        """(\w+) AND (\w+) -> (\w+)""".toRegex() to { it.first and it.second },
+        """(\w+) OR (\w+) -> (\w+)""".toRegex() to { it.first or it.second },
+        """(\w+) LSHIFT (\w+) -> (\w+)""".toRegex() to { (it.first.toInt() shl it.second.toInt()).toUShort() },
+        """(\w+) RSHIFT (\w+) -> (\w+)""".toRegex() to { (it.first.toInt() shr it.second.toInt()).toUShort() },
+        """NOT (\w+) -> (\w+)""".toRegex() to { it.first.inv() },
     )
 
     val reNumber = """\d+""".toRegex()
@@ -67,17 +63,13 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val reCommands = mapOf(
-        """(\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort { return inputs.first },
-        """(\w+) AND (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort { return inputs.first and inputs.second },
-        """(\w+) OR (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort { return inputs.first or inputs.second },
-        """(\w+) LSHIFT (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort {
-            return (inputs.first.toInt() shl inputs.second.toInt()).toUShort()
-        },
-        """(\w+) RSHIFT (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort {
-            return (inputs.first.toInt() shr inputs.second.toInt()).toUShort()
-        },
-        """NOT (\w+) -> (\w+)""".toRegex() to fun(inputs: Pair<UShort, UShort>): UShort { return inputs.first.inv() },
+    val reCommands = mapOf<Regex, (Pair<UShort, UShort>) -> UShort>(
+        """(\w+) -> (\w+)""".toRegex() to { it.first },
+        """(\w+) AND (\w+) -> (\w+)""".toRegex() to { it.first and it.second },
+        """(\w+) OR (\w+) -> (\w+)""".toRegex() to { it.first or it.second },
+        """(\w+) LSHIFT (\w+) -> (\w+)""".toRegex() to { (it.first.toInt() shl it.second.toInt()).toUShort() },
+        """(\w+) RSHIFT (\w+) -> (\w+)""".toRegex() to { (it.first.toInt() shr it.second.toInt()).toUShort() },
+        """NOT (\w+) -> (\w+)""".toRegex() to { it.first.inv() },
     )
 
     val reNumber = """\d+""".toRegex()
