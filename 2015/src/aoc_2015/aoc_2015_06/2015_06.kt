@@ -1,17 +1,19 @@
 package aoc_2015.aoc_2015_06
 
+import aoc_2015.tools.ExpectedRefResults
 import aoc_2015.tools.simpleIO
 import kotlin.math.max
 
 const val YEAR = 2015
 const val DAY = 6
 
-val EXPECTED_RESULTS = listOf(
+typealias ResultType = Int
+
+val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (377891 to 14110788)
 )
 
-
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val map = mutableSetOf<Pair<Int, Int>>()
 
     val reLine = """(turn on|turn off|toggle) (\d+),(\d+) through (\d+),(\d+)""".toRegex()
@@ -47,7 +49,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return map.size
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val map = mutableMapOf<Pair<Int, Int>, Int>()
 
     val reLine = """(turn on|turn off|toggle) (\d+),(\d+) through (\d+),(\d+)""".toRegex()

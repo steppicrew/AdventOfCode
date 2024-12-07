@@ -1,17 +1,20 @@
 package aoc_2015.aoc_2015_01
 
+import aoc_2015.tools.ExpectedRefResults
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
 const val DAY = 1
 
-val EXPECTED_RESULTS = listOf(
+typealias ResultType = Int
+
+val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     1 to (-1 to 5),
     0 to (280 to 1797)
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     return lines.sumOf { line ->
         line.split("").count { it == "(" }
     } - lines.sumOf { line ->
@@ -19,7 +22,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     var floor = 0
     var index = 1
     for (line in lines) {

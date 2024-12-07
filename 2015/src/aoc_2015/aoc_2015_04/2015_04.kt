@@ -1,12 +1,15 @@
 package aoc_2015.aoc_2015_04
 
+import aoc_2015.tools.ExpectedRefResults
 import aoc_2015.tools.simpleIO
 import java.security.MessageDigest
 
 const val YEAR = 2015
 const val DAY = 4
 
-val EXPECTED_RESULTS = listOf(
+typealias ResultType = Int
+
+val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (282749 to 9962624)
 )
 
@@ -16,7 +19,7 @@ fun md5Hex(input: String): String {
     return digest.joinToString("") { "%02x".format(it) } // Convert to hexadecimal format
 }
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     for (i in generateSequence(1) { it + 1 }) {
         val md5 = md5Hex(lines[0] + i.toString())
         if (md5.startsWith("00000")) return i
@@ -24,7 +27,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return 0
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     for (i in generateSequence(1) { it + 1 }) {
         val md5 = md5Hex(lines[0] + i.toString())
         if (md5.startsWith("000000")) return i

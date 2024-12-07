@@ -1,17 +1,19 @@
 package aoc_2015.aoc_2015_02
 
+import aoc_2015.tools.ExpectedRefResults
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
 const val DAY = 2
 
-val EXPECTED_RESULTS = listOf(
+typealias ResultType = Int
+
+val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     1 to (58 to 34),
     0 to (1598415 to 3812909)
 )
 
-
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     fun getArea(x: Int, y: Int, z: Int): Int {
         return 2 * x * y + 2 * x * z + 2 * y * z + listOf(x, y, z).sorted().let { it[0] * it[1] }
     }
@@ -24,7 +26,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): Int {
+fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     fun getRibbon(x: Int, y: Int, z: Int): Int {
         return x * y * z + listOf(x, y, z).sorted().let { 2 * (it[0] + it[1]) }
     }
