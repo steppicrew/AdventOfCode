@@ -13,7 +13,6 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (5131 to 1784)
 )
 
-
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val map = lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, char ->

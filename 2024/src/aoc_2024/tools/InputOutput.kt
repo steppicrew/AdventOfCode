@@ -52,13 +52,13 @@ fun <T> simpleIO(
     fun refRun(ref: Int, expectedResult: ExpectedResult<T>): List<Boolean?> {
         fun partRun(part: Int, run: RunType<T>, expectedResult: T?): Boolean? {
             fun getPath(forResult: Boolean, extension: String): String {
-                val day1 = day.toString().padStart(2, '0')
-                return (
-                        "src/aoc_${year}/aoc_${year}_${day1}/${year}_${day1}"
-                                + (if (ref > 0) "_ref$ref" else "")
-                                + (if (forResult) "_$part.result" else "")
-                                + ".$extension"
-                        )
+                val paddedDay = day.toString().padStart(2, '0')
+                return listOf(
+                    "src/aoc_${year}/aoc_${year}_${paddedDay}/${year}_${paddedDay}",
+                    (if (ref > 0) "_ref$ref" else ""),
+                    (if (forResult) "_$part.result" else ""),
+                    ".$extension"
+                ).joinToString("")
             }
 
             val logLines = mutableListOf<String>()
@@ -80,19 +80,26 @@ fun <T> simpleIO(
             }
 
             print("${if (ref > 0) "ref${ref}" else "main"}/${part}: ")
-            if (expectedResult == null) {
-                println("$NEW_RESULT (${printResult(result)}) in $time")
-                File(getPath(true, "txt")).writeText(result.toString())
-                return null
+
+            return when (expectedResult) {
+                result -> {
+                    println("$CORRECT (${printResult(result)}) in $time")
+                    true
+                }
+
+                null -> {
+                    println("$NEW_RESULT (${printResult(result)}) in $time")
+                    File(getPath(true, "txt")).writeText(result.toString())
+                    null
+                }
+
+                else -> {
+                    println("$FAILED in $time")
+                    println("\tEXPECTED: ${printResult(expectedResult)}")
+                    println("\tGOT     : ${printResult(result)}")
+                    false
+                }
             }
-            if (expectedResult == result) {
-                println("$CORRECT (${printResult(result)}) in $time")
-                return true
-            }
-            println("$FAILED in $time")
-            println("\tEXPECTED: ${printResult(expectedResult)}")
-            println("\tGOT     : ${printResult(result)}")
-            return false
         }
 
         return listOf(
@@ -106,12 +113,13 @@ fun <T> simpleIO(
     }
 
     val successCount = results.count { it == true }
-
     val failedCount = results.count { it == false }
-
     val expectedCount = 2 * expectedResults.size
-
-    val color = if (successCount == expectedCount) green else if (failedCount > 0) red else yellow
+    val color = when {
+        successCount == expectedCount -> green
+        failedCount > 0 -> red
+        else -> yellow
+    }
 
     println("${color}PASSED: ${bold}${successCount}/${expectedCount}${reset}")
 }

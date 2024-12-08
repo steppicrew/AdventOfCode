@@ -9,12 +9,11 @@ const val DAY = 7
 typealias ResultType = ULong
 
 // ref to (run1 to run2)
-// values may by of any type, null is for 'not known' and write result into file
+// values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     1 to (3749UL to 11387UL),
     0 to (882304362421UL to 145149066755184UL),
 )
-
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val rePart = """(\d+): ([\d ]+)""".toRegex()

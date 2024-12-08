@@ -9,7 +9,7 @@ const val DAY = 0
 typealias ResultType = Int
 
 // ref to (run1 to run2)
-// values may by of any type, null is for 'not known' and write result into file
+// values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     1 to (null to null),
     0 to (null to null),
