@@ -31,7 +31,8 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 
     val newFiles = files.reversed().flatMap { file ->
         val fileIndex = file.first
-        var (fileStart, fileSize) = file.second
+        val fileStart = file.second.first
+        var fileSize = file.second.second
         val chunks = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
         while (fileSize > 0 && gaps.first().first < fileStart) {
             val (gapStart, gapSize) = gaps.removeFirst()
@@ -51,10 +52,10 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
         chunks
     }
-    return newFiles.fold(0L) { checksum, file ->
+    return newFiles.sumOf { file ->
         val (index, fileStat) = file
         val (start, size) = fileStat
-        checksum + (start until (start + size)).sumOf { it.toLong() * index }
+        (start until (start + size)).sumOf { it.toLong() * index }
     }
 }
 
@@ -70,21 +71,24 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         pos + size
     }
     val newFiles = files.reversed().map { file ->
+        val fileIndex = file.first
+        val (fileStart, fileSize) = file.second
+
         val matchingGapIndex = gaps.indexOfFirst {
-            it.first < file.second.first && it.second >= file.second.second
+            it.first < fileStart && it.second >= fileSize
         }
         if (matchingGapIndex >= 0) {
             val gap = gaps[matchingGapIndex]
-            gaps[matchingGapIndex] = (gap.first + file.second.second) to (gap.second - file.second.second)
-            file.first to (gap.first to file.second.second)
+            gaps[matchingGapIndex] = (gap.first + fileSize) to (gap.second - fileSize)
+            fileIndex to (gap.first to fileSize)
         } else {
             file
         }
     }
-    return newFiles.fold(0L) { checksum, file ->
+    return newFiles.sumOf { file ->
         val (index, fileStat) = file
         val (start, size) = fileStat
-        checksum + (start until (start + size)).sumOf { it.toLong() * index }
+        (start until (start + size)).sumOf { it.toLong() * index }
     }
 }
 
