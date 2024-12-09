@@ -18,40 +18,44 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val blocks = ArrayDeque(lines.first().map { it.toString().toInt() })
+    val files = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
+    val gaps = ArrayDeque<Pair<Int, Int>>()
+    lines.first().map { it.toString().toInt() }.foldIndexed(0) { index, pos, size ->
+        if (index % 2 == 0) {
+            files.addLast(index / 2 to (pos to size))
+        } else {
+            gaps.addLast(pos to size)
+        }
+        pos + size
+    }
 
-    var pos = 0
-    var checksum = 0L
-    var fileIndex = 0
-
-    while (blocks.isNotEmpty()) {
-        val frontFileSize = blocks.removeFirst()
-
-        checksum += (pos..<(pos + frontFileSize)).sumOf { it.toLong() * fileIndex }
-        fileIndex++
-        pos += frontFileSize
-
-        if (blocks.isEmpty()) break
-
-        var gap = blocks.removeFirst()
-        while (gap > 0 && blocks.isNotEmpty()) {
-            val lastFileIndex = fileIndex + blocks.size / 2
-            val lastFileSize = blocks.removeLast()
-
-            val usedBlocks = minOf(gap, lastFileSize)
-            checksum += (pos until (pos + usedBlocks)).sumOf { it.toLong() * lastFileIndex }
-            pos += usedBlocks
-            gap -= lastFileSize
-
-            if (gap < 0) {
-                // Add remaining file
-                blocks.addLast(lastFileSize - usedBlocks)
-            } else if (blocks.isNotEmpty()) {
-                blocks.removeLast()
+    val newFiles = files.reversed().flatMap { file ->
+        val fileIndex = file.first
+        var (fileStart, fileSize) = file.second
+        val chunks = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
+        while (fileSize > 0 && gaps.first().first < fileStart) {
+            val (gapStart, gapSize) = gaps.removeFirst()
+            if (gapSize >= fileSize) {
+                chunks.add(fileIndex to (gapStart to fileSize))
+                if (gapSize > fileSize) {
+                    gaps.addFirst((gapStart + fileSize) to (gapSize - fileSize))
+                }
+                fileSize = 0
+            } else {
+                chunks.add(fileIndex to (gapStart to gapSize))
+                fileSize -= gapSize
             }
         }
+        if (fileSize > 0) {
+            chunks.addLast(fileIndex to (fileStart to fileSize))
+        }
+        chunks
     }
-    return checksum
+    return newFiles.fold(0L) { checksum, file ->
+        val (index, fileStat) = file
+        val (start, size) = fileStat
+        checksum + (start until (start + size)).sumOf { it.toLong() * index }
+    }
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
