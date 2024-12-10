@@ -19,7 +19,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val map = lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, char ->
-            (col to row) to char.toString().toInt()
+            (col to row) to char.digitToInt()
         }
     }.toMap()
 
@@ -35,8 +35,8 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         if (height == 9) {
             return setOf(position)
         }
-        return directions
-            .map { (position.first + it.first) to (position.second + it.second) }
+        return directions.asSequence()
+            .map { (dx, dy) -> (position.first + dx) to (position.second + dy) }
             .filter { map[it] == height + 1 }
             .flatMap { countHeads((it)) }.toSet()
     }
@@ -47,7 +47,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val map = lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, char ->
-            (col to row) to char.toString().toInt()
+            (col to row) to char.digitToInt()
         }
     }.toMap()
 
@@ -63,10 +63,10 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         if (height == 9) {
             return 1
         }
-        return directions
-            .map { (position.first + it.first) to (position.second + it.second) }
+        return directions.asSequence()
+            .map { (dx, dy) -> (position.first + dx) to (position.second + dy) }
             .filter { map[it] == height + 1 }
-            .sumOf { countHeads((it)) }
+            .sumOf { countHeads(it) }
     }
 
     return map.filterValues { it == 0 }.keys.sumOf { countHeads(it) }

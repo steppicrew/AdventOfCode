@@ -20,7 +20,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val files = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
     val gaps = ArrayDeque<Pair<Int, Int>>()
-    lines.first().map { it.toString().toInt() }.foldIndexed(0) { index, pos, size ->
+    lines.first().map { it.digitToInt() }.foldIndexed(0) { index, pos, size ->
         if (index % 2 == 0) {
             files.addLast(index / 2 to (pos to size))
         } else {
@@ -62,7 +62,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     val files = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
     val gaps = ArrayDeque<Pair<Int, Int>>()
-    lines.first().map { it.toString().toInt() }.foldIndexed(0) { index, pos, size ->
+    lines.first().map { it.digitToInt() }.foldIndexed(0) { index, pos, size ->
         if (index % 2 == 0) {
             files.addLast(index / 2 to (pos to size))
         } else {
