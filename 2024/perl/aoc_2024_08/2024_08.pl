@@ -100,6 +100,7 @@ my $run2 = sub {
         my $dx  = shift;
         my $dy  = shift;
         my $min = $dx < $dy ? $dx : $dy;
+        return ( $dy == 0 ? 1 : 0, $dx == 0 ? 1 : 0 ) if $min == 0;
         for my $i ( reverse( 2 .. $min ) ) {
             return ( $dx / $i, $dy / $i ) if $dx % $i == 0 && $dy % $i == 0;
         }
