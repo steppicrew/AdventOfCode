@@ -29,12 +29,10 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
     }.toMap()
 
-    val visited = mutableSetOf<Pos>()
-
-    val directions = listOf(1 to 0, 0 to 1, -1 to 0, 0 to -1)
+    val directions = sequenceOf(1 to 0, 0 to 1, -1 to 0, 0 to -1)
 
     fun getNeighbours(pos: Pos): Sequence<Pos> {
-        return directions.asSequence().map {
+        return directions.map {
             pos.first + it.first to pos.second + it.second
         }
     }
@@ -45,12 +43,11 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         val todo = ArrayDeque<Pos>(listOf(startPos))
         while (todo.size > 0) {
             val pos = todo.removeFirst()
-            if (!visited.add(pos)) continue
-            val neighbors = getNeighbours(pos).filter {
-                !visited.contains(it) && map[it] == c
+            val neighbours = getNeighbours(pos).filter {
+                map[it] == c && !area.contains(it)
             }
-            todo.addAll(neighbors)
-            area.addAll(neighbors)
+            todo.addAll(neighbours)
+            area.addAll(neighbours)
         }
         return area
     }
@@ -58,17 +55,20 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     fun getPerimeter(area: Set<Pos>): Int {
         val seen = mutableSetOf<Pos>()
         return area.sumOf { pos ->
-            val oldNeighborsCount = getNeighbours(pos).filter { seen.contains(it) }.toList().size
+            val knownNeighboursCount = getNeighbours(pos).filter { seen.contains(it) }.count()
             seen.add(pos)
-            2 * (2 - oldNeighborsCount)
+            4 - 2 * knownNeighboursCount
         }
     }
 
+    val visited = mutableSetOf<Pos>()
     return map.keys.sumOf { pos ->
         if (visited.contains(pos)) {
             0
         } else {
-            floodFill(pos).let { it.size * getPerimeter(it) }
+            floodFill(pos)
+                .also { visited.addAll(it) }
+                .let { it.size * getPerimeter(it) }
         }
     }
 }
@@ -80,16 +80,16 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
     }.toMap()
 
-    val visited = mutableSetOf<Pos>()
-
     // clockwise
-    val directions = listOf(1 to 0, 0 to 1, -1 to 0, 0 to -1)
+    val directions = sequenceOf(1 to 0, 0 to 1, -1 to 0, 0 to -1)
 
-    // clockwise, following directions
-    val diagonals = listOf(1 to 1, -1 to 1, -1 to -1, 1 to -1)
+    // clockwise, following direction with same index
+    val diagonals = (directions + directions.first()).zipWithNext { d1, d2 ->
+        d1.first + d2.first to d1.second + d2.second
+    }.toList()
 
-    fun getAllNeighbours(pos: Pos): Sequence<Pos> {
-        return directions.asSequence().map {
+    fun getNeighbours(pos: Pos): Sequence<Pos> {
+        return directions.map {
             pos.first + it.first to pos.second + it.second
         }
     }
@@ -100,12 +100,11 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         val todo = ArrayDeque<Pos>(listOf(startPos))
         while (todo.size > 0) {
             val pos = todo.removeFirst()
-            if (!visited.add(pos)) continue
-            val neighbors = getAllNeighbours(pos).filter {
-                !visited.contains(it) && map[it] == c
+            val neighbours = getNeighbours(pos).filter {
+                map[it] == c && !area.contains(it)
             }
-            todo.addAll(neighbors)
-            area.addAll(neighbors)
+            todo.addAll(neighbours)
+            area.addAll(neighbours)
         }
         return area
     }
@@ -116,32 +115,38 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
     }
 
+    // Counting corners is the same as counting sides
     fun getCorners(area: Set<Pos>): Int {
         return area.sumOf { pos ->
-            val neighbourPairs = getAllNeighbours(pos)
+            val neighbourPairs = getNeighbours(pos)
                 .map { area.contains(it) }.toList()
                 .let { it + it.first() }
                 .zipWithNext()
             val diagonalNeighbours = getDiagonalNeighbours(pos).map { area.contains(it) }
 
-            val innerCorners = neighbourPairs.zip(diagonalNeighbours).count {
+            // Concave corners: two adjacent neighbours exist but not the diagonal in between
+            val concaveCorners = neighbourPairs.zip(diagonalNeighbours).count {
                 val (positions, diagonal) = it
                 positions.first && positions.second && !diagonal
             }
 
-            val outerCorners = neighbourPairs.count {
+            // Convex corners: two adjacent neighbours are missing
+            val convexCorners = neighbourPairs.count {
                 !it.first && !it.second
             }
 
-            innerCorners + outerCorners
+            concaveCorners + convexCorners
         }
     }
 
+    val visited = mutableSetOf<Pos>()
     return map.keys.sumOf { pos ->
         if (visited.contains(pos)) {
             0
         } else {
-            floodFill(pos).let { it.size * getCorners(it) }
+            floodFill(pos)
+                .also { visited.addAll(it) }
+                .let { it.size * getCorners(it) }
         }
     }
 }
