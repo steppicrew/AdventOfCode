@@ -28,7 +28,10 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     fun find(a: Pos, b: Pos, result: Pos): Long? {
         val factorA = (result.first * b.second - result.second * b.first) / (a.first * b.second - a.second * b.first)
         val factorB = (result.first - factorA * a.first) / b.first
-        return if (result.first == factorA * a.first + factorB * b.first && result.second == factorA * a.second + factorB * b.second) {
+        return if (
+            result.first == factorA * a.first + factorB * b.first &&
+            result.second == factorA * a.second + factorB * b.second
+        ) {
             factorA * aTokens + factorB * bTokens
         } else {
             null
@@ -42,14 +45,14 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         if (aMatch == null || bMatch == null || prizeMatch == null) {
             0
         } else {
-            val (buttonAX, buttonAY) = aMatch.destructured
-            val (buttonBX, buttonBY) = bMatch.destructured
-            val (prizeX, prizeY) = prizeMatch.destructured
+            val (buttonAX, buttonAY) = aMatch.destructured.toList().map(String::toLong)
+            val (buttonBX, buttonBY) = bMatch.destructured.toList().map(String::toLong)
+            val (prizeX, prizeY) = prizeMatch.destructured.toList().map(String::toLong)
 
             find(
-                buttonAX.toLong() to buttonAY.toLong(),
-                buttonBX.toLong() to buttonBY.toLong(),
-                prizeX.toLong() to prizeY.toLong()
+                buttonAX to buttonAY,
+                buttonBX to buttonBY,
+                prizeX to prizeY
             ) ?: 0
         }
     }
@@ -66,7 +69,10 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     fun find(a: Pos, b: Pos, result: Pos): Long? {
         val factorA = (result.first * b.second - result.second * b.first) / (a.first * b.second - a.second * b.first)
         val factorB = (result.first - factorA * a.first) / b.first
-        return if (result.first == factorA * a.first + factorB * b.first && result.second == factorA * a.second + factorB * b.second) {
+        return if (
+            result.first == factorA * a.first + factorB * b.first &&
+            result.second == factorA * a.second + factorB * b.second
+        ) {
             factorA * aTokens + factorB * bTokens
         } else {
             null
@@ -80,14 +86,14 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         if (aMatch == null || bMatch == null || prizeMatch == null) {
             0
         } else {
-            val (buttonAX, buttonAY) = aMatch.destructured
-            val (buttonBX, buttonBY) = bMatch.destructured
-            val (prizeX, prizeY) = prizeMatch.destructured
+            val (buttonAX, buttonAY) = aMatch.destructured.toList().map(String::toLong)
+            val (buttonBX, buttonBY) = bMatch.destructured.toList().map(String::toLong)
+            val (prizeX, prizeY) = prizeMatch.destructured.toList().map { it.toLong() + 10000000000000L }
 
             find(
-                buttonAX.toLong() to buttonAY.toLong(),
-                buttonBX.toLong() to buttonBY.toLong(),
-                (10000000000000L + prizeX.toInt()) to (10000000000000L + prizeY.toInt())
+                buttonAX to buttonAY,
+                buttonBX to buttonBY,
+                prizeX to prizeY
             ) ?: 0
         }
     }
