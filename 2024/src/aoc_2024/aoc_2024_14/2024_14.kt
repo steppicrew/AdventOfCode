@@ -44,8 +44,6 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             ((if (position.first < quadrantBorder.first) 0 else 1) to (if (position.second < quadrantBorder.second) 0 else 1)) to count
         }.groupBy({ it.first }, { it.second }).mapValues { it.value.sum() }
 
-    println("$quadrantBorder -> $quadrants")
-
     return quadrants.values.reduce { prod, count -> prod * count }
 }
 
