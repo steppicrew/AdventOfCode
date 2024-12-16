@@ -28,8 +28,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             number == "0" -> blink("1", nextI)
             number.length % 2 == 0 -> {
                 val l2 = number.length / 2
-                blink(number.substring(0..<l2), nextI) +
-                        blink(number.substring(l2..<number.length).toLong().toString(), nextI)
+                blink(number.substring(0, l2), nextI) + blink(number.substring(l2).toLong().toString(), nextI)
             }
 
             else -> blink((number.toLong() * 2024).toString(), nextI)
@@ -54,8 +53,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
                     number == "0" -> blink("1", nextI)
                     number.length % 2 == 0 -> {
                         val l2 = number.length / 2
-                        blink(number.substring(0..<l2), nextI) +
-                                blink(number.substring(l2..<number.length).toLong().toString(), nextI)
+                        blink(number.substring(0, l2), nextI) + blink(number.substring(l2).toLong().toString(), nextI)
                     }
 
                     else -> blink((number.toLong() * 2024).toString(), nextI)
