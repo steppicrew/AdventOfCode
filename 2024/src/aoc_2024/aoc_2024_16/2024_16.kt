@@ -2,6 +2,7 @@ package aoc_2024.aoc_2024_16
 
 import aoc_2024.tools.ExpectedRefResults
 import aoc_2024.tools.simpleIO
+import java.util.*
 
 const val YEAR = 2024
 const val DAY = 16
@@ -23,13 +24,16 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     var endPosition: Pos = 0 to 0
+    var startPos = 0 to 0
     val directions = listOf(-1 to 0, 0 to -1, 1 to 0, 0 to 1)
     val map = lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, c ->
             when (c) {
                 '#' -> return@mapIndexed null
-                'S' ->
+                'S' -> {
+                    startPos = (col to row)
                     return@mapIndexed directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
+                }
 
                 'E' -> {
                     endPosition = col to row
@@ -39,11 +43,14 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }.filterNotNull().flatten()
     }.toMap().toMutableMap()
 
-    while (true) {
-        val lowestEntry = map.minByOrNull { it.value } ?: throw RuntimeException("Empty map")
-        val (position, direction) = lowestEntry.key
+    val queue = PriorityQueue<PosDir> { pd1, pd2 -> map[pd1]!! - map[pd2]!! }
+    queue.add(startPos to (1 to 0))
+
+    while (queue.size > 0) {
+        val (position, direction) = queue.remove()
+        val value = map[position to direction]!!
         if (position == endPosition) {
-            return lowestEntry.value
+            return value
         }
         val oppositeDirection = -direction.first to -direction.second
         directions.filter { it != oppositeDirection }
@@ -55,24 +62,28 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             }
             .forEach {
                 val oldValue = map[it.first] ?: return@forEach
-                val newValue = lowestEntry.value + it.second
+                val newValue = value + it.second
                 if (newValue < oldValue) {
                     map[it.first] = newValue
+                    queue.add(it.first)
                 }
             }
-        map.remove(lowestEntry.key)
     }
+    throw RuntimeException("Empty map")
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     var endPosition: Pos = 0 to 0
+    var startPos = 0 to 0
     val directions = listOf(-1 to 0, 0 to -1, 1 to 0, 0 to 1)
     val map = lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, c ->
             when (c) {
                 '#' -> return@mapIndexed null
-                'S' ->
+                'S' -> {
+                    startPos = (col to row)
                     return@mapIndexed directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
+                }
 
                 'E' -> {
                     endPosition = col to row
@@ -84,9 +95,12 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 
     val bestPrevious = mutableMapOf<PosDir, Set<PosDir>>()
 
-    while (true) {
-        val lowestEntry = map.minByOrNull { it.value } ?: throw RuntimeException("Empty map")
-        val (position, direction) = lowestEntry.key
+    val queue = PriorityQueue<PosDir> { pd1, pd2 -> map[pd1]!! - map[pd2]!! }
+    queue.add(startPos to (1 to 0))
+
+    while (queue.size > 0) {
+        val (position, direction) = queue.remove()
+        val value = map[position to direction]!!
         if (position == endPosition) {
             break
         }
@@ -100,15 +114,16 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             }
             .forEach {
                 val oldValue = map[it.first] ?: return@forEach
-                val newValue = lowestEntry.value + it.second
+                val newValue = value + it.second
+                if (newValue > oldValue) return@forEach
                 if (newValue < oldValue) {
                     map[it.first] = newValue
-                    bestPrevious[it.first] = mutableSetOf(lowestEntry.key)
-                } else if (newValue == oldValue) {
-                    bestPrevious[it.first] = bestPrevious[it.first]!! + lowestEntry.key
+                    bestPrevious[it.first] = mutableSetOf(position to direction)
+                } else {
+                    bestPrevious[it.first] = bestPrevious[it.first]!! + (position to direction)
                 }
+                queue.add(it.first)
             }
-        map.remove(lowestEntry.key)
     }
 
     fun findWay(posDir: PosDir): Set<Pos> {
