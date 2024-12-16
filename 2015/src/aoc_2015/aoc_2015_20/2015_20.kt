@@ -24,14 +24,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             .let { it + it.map { number / it } }
     }
 
-    fun integers(start: Int): Sequence<Int> = sequence {
-        var i = start
-        while (true) {
-            yield(i++)
-        }
-    }
-
-    for (i in integers(1)) {
+    for (i in generateSequence(1) { it + 1 }) {
         val presents = getDividers(i).sum() * 10
         if (presents >= wantedPresents) return i
     }
@@ -51,14 +44,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             .toSet()
     }
 
-    fun integers(start: Int): Sequence<Int> = sequence {
-        var i = start
-        while (true) {
-            yield(i++)
-        }
-    }
-
-    for (i in integers(1)) {
+    for (i in generateSequence(1) { it + 1 }) {
         val presents = getDividers(i).sum() * 11
         if (presents >= wantedPresents) return i
     }
