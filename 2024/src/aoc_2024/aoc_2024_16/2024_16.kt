@@ -23,16 +23,17 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    var endPosition: Pos = 0 to 0
-    var startPos = 0 to 0
     val directions = listOf(-1 to 0, 0 to -1, 1 to 0, 0 to 1)
-    val map = lines.flatMapIndexed { row, line ->
-        line.mapIndexed { col, c ->
+    val costMap = mutableMapOf<PosDir, Int>()
+    val navigationQueue = PriorityQueue<PosDir> { pd1, pd2 -> costMap[pd1]!! - costMap[pd2]!! }
+    var endPosition: Pos = 0 to 0
+    costMap.putAll(lines.flatMapIndexed { row, line ->
+        line.flatMapIndexed inner@{ col, c ->
             when (c) {
-                '#' -> return@mapIndexed null
+                '#' -> return@inner listOf()
                 'S' -> {
-                    startPos = (col to row)
-                    return@mapIndexed directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
+                    navigationQueue.add((col to row) to (1 to 0))
+                    return@inner directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
                 }
 
                 'E' -> {
@@ -40,15 +41,12 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
                 }
             }
             directions.map { ((col to row) to it) to Int.MAX_VALUE }
-        }.filterNotNull().flatten()
-    }.toMap().toMutableMap()
+        }
+    })
 
-    val queue = PriorityQueue<PosDir> { pd1, pd2 -> map[pd1]!! - map[pd2]!! }
-    queue.add(startPos to (1 to 0))
-
-    while (queue.size > 0) {
-        val (position, direction) = queue.remove()
-        val value = map[position to direction]!!
+    while (navigationQueue.size > 0) {
+        val (position, direction) = navigationQueue.remove()
+        val value = costMap[position to direction]!!
         if (position == endPosition) {
             return value
         }
@@ -56,16 +54,17 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         directions.filter { it != oppositeDirection }
             .map {
                 if (it == direction) {
-                    return@map ((position.first + it.first to position.second + it.second) to it) to 1
+                    ((position.first + it.first to position.second + it.second) to it) to 1
+                } else {
+                    (position to it) to 1000
                 }
-                (position to it) to 1000
             }
             .forEach {
-                val oldValue = map[it.first] ?: return@forEach
+                val oldValue = costMap[it.first] ?: return@forEach
                 val newValue = value + it.second
                 if (newValue < oldValue) {
-                    map[it.first] = newValue
-                    queue.add(it.first)
+                    costMap[it.first] = newValue
+                    navigationQueue.add(it.first)
                 }
             }
     }
@@ -73,16 +72,17 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    var endPosition: Pos = 0 to 0
-    var startPos = 0 to 0
     val directions = listOf(-1 to 0, 0 to -1, 1 to 0, 0 to 1)
-    val map = lines.flatMapIndexed { row, line ->
-        line.mapIndexed { col, c ->
+    val costMap = mutableMapOf<PosDir, Int>()
+    val navigationQueue = PriorityQueue<PosDir> { pd1, pd2 -> costMap[pd1]!! - costMap[pd2]!! }
+    var endPosition: Pos = 0 to 0
+    costMap.putAll(lines.flatMapIndexed { row, line ->
+        line.flatMapIndexed inner@{ col, c ->
             when (c) {
-                '#' -> return@mapIndexed null
+                '#' -> return@inner listOf()
                 'S' -> {
-                    startPos = (col to row)
-                    return@mapIndexed directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
+                    navigationQueue.add((col to row) to (1 to 0))
+                    return@inner directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
                 }
 
                 'E' -> {
@@ -90,17 +90,14 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
                 }
             }
             directions.map { ((col to row) to it) to Int.MAX_VALUE }
-        }.filterNotNull().flatten()
-    }.toMap().toMutableMap()
+        }
+    })
 
     val bestPrevious = mutableMapOf<PosDir, Set<PosDir>>()
 
-    val queue = PriorityQueue<PosDir> { pd1, pd2 -> map[pd1]!! - map[pd2]!! }
-    queue.add(startPos to (1 to 0))
-
-    while (queue.size > 0) {
-        val (position, direction) = queue.remove()
-        val value = map[position to direction]!!
+    while (navigationQueue.size > 0) {
+        val (position, direction) = navigationQueue.remove()
+        val value = costMap[position to direction]!!
         if (position == endPosition) {
             break
         }
@@ -108,21 +105,22 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         directions.filter { it != oppositeDirection }
             .map {
                 if (it == direction) {
-                    return@map ((position.first + it.first to position.second + it.second) to it) to 1
+                    ((position.first + it.first to position.second + it.second) to it) to 1
+                } else {
+                    (position to it) to 1000
                 }
-                (position to it) to 1000
             }
             .forEach {
-                val oldValue = map[it.first] ?: return@forEach
+                val oldValue = costMap[it.first] ?: return@forEach
                 val newValue = value + it.second
                 if (newValue > oldValue) return@forEach
                 if (newValue < oldValue) {
-                    map[it.first] = newValue
+                    costMap[it.first] = newValue
                     bestPrevious[it.first] = mutableSetOf(position to direction)
                 } else {
                     bestPrevious[it.first] = bestPrevious[it.first]!! + (position to direction)
                 }
-                queue.add(it.first)
+                navigationQueue.add(it.first)
             }
     }
 
