@@ -11,8 +11,8 @@ typealias ResultType = Int
 // ref to (run1 to run2)
 // values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
-    // 2 to (null to null),
-    1 to (12 to null),
+    1 to (12 to 3),
+    2 to (1 to 0),
     0 to (231852216 to 8159),
 )
 
@@ -24,8 +24,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         (startPosX to startPosY) to (speedX to speedY)
     }
 
-    // val size = 11 to 7
-    val size = 101 to 103
+    val size = if (lines.size < 100) 11 to 7 else 101 to 103
 
     val time = 100
 
@@ -54,8 +53,7 @@ fun run2(lines: List<String>, log: (String) -> Unit): ResultType {
         (startPosX to startPosY) to (speedX to speedY)
     }
 
-    // val size = 11 to 7
-    val size = 101 to 103
+    val size = if (lines.size < 100) 11 to 7 else 101 to 103
 
     val neighbours = sequenceOf(
         1 to 0, 1 to 1, 0 to 1, -1 to 1, -1 to 0, -1 to -1, 0 to -1, 1 to -1
@@ -70,7 +68,7 @@ fun run2(lines: List<String>, log: (String) -> Unit): ResultType {
             .toSet()
 
         val connected = endPositions.filter { position ->
-            neighbours.any { endPositions.contains(it.first + position.first to it.second + position.second) }
+            neighbours.count { endPositions.contains(it.first + position.first to it.second + position.second) } > 1
         }
 
         if (connected.size > lines.size / 2) {
@@ -78,6 +76,7 @@ fun run2(lines: List<String>, log: (String) -> Unit): ResultType {
             (0..<size.second).asSequence().forEach { line ->
                 log((0..<size.first).joinToString("") { if (endPositions.contains(it to line)) "#" else " " })
             }
+            return time
         }
     }
 
