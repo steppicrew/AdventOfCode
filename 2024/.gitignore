@@ -1,3 +1,4 @@
 out/
 src/*/*/*.txt
+src/*/*/*.log
 perl/*/*.txt
