@@ -27,37 +27,34 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     val map = lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, c ->
             when (c) {
-                '.' -> directions.map { ((col to row) to it) to Int.MAX_VALUE }
-                'S' -> {
-                    directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
-                }
+                '#' -> return@mapIndexed null
+                'S' ->
+                    return@mapIndexed directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
 
                 'E' -> {
                     endPosition = col to row
-                    directions.map { ((col to row) to it) to Int.MAX_VALUE }
                 }
-
-                else -> null
             }
+            directions.map { ((col to row) to it) to Int.MAX_VALUE }
         }.filterNotNull().flatten()
     }.toMap().toMutableMap()
 
     while (true) {
-        val lowestEntry = map.minByOrNull { it.value } ?: return 0
+        val lowestEntry = map.minByOrNull { it.value } ?: throw RuntimeException("Empty map")
         val (position, direction) = lowestEntry.key
         if (position == endPosition) {
             return lowestEntry.value
         }
-        directions.filter { it != -it.first to -it.second }
+        val oppositeDirection = -direction.first to -direction.second
+        directions.filter { it != oppositeDirection }
             .map {
                 if (it == direction) {
-                    ((position.first + it.first to position.second + it.second) to it) to 1
-                } else {
-                    (position to it) to 1000
+                    return@map ((position.first + it.first to position.second + it.second) to it) to 1
                 }
-            }.filter { map.contains(it.first) }
+                (position to it) to 1000
+            }
             .forEach {
-                val oldValue = map[it.first]!!
+                val oldValue = map[it.first] ?: return@forEach
                 val newValue = lowestEntry.value + it.second
                 if (newValue < oldValue) {
                     map[it.first] = newValue
@@ -73,46 +70,42 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     val map = lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, c ->
             when (c) {
-                '.' -> directions.map { ((col to row) to it) to Int.MAX_VALUE }
+                '#' -> return@mapIndexed null
                 'S' ->
-                    directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
+                    return@mapIndexed directions.map { ((col to row) to it) to if (it == 1 to 0) 0 else Int.MAX_VALUE }
 
                 'E' -> {
                     endPosition = col to row
-                    directions.map { ((col to row) to it) to Int.MAX_VALUE }
                 }
-
-                else -> null
             }
+            directions.map { ((col to row) to it) to Int.MAX_VALUE }
         }.filterNotNull().flatten()
     }.toMap().toMutableMap()
 
-    val bestPrevious =
-        mutableMapOf<PosDir, MutableSet<PosDir>>()
+    val bestPrevious = mutableMapOf<PosDir, Set<PosDir>>()
 
     while (true) {
-        val lowestEntry = map.minByOrNull { it.value } ?: return 0
+        val lowestEntry = map.minByOrNull { it.value } ?: throw RuntimeException("Empty map")
         val (position, direction) = lowestEntry.key
         if (position == endPosition) {
             break
         }
-        directions.filter { it != -it.first to -it.second }
+        val oppositeDirection = -direction.first to -direction.second
+        directions.filter { it != oppositeDirection }
             .map {
                 if (it == direction) {
-                    ((position.first + it.first to position.second + it.second) to it) to 1
-                } else {
-                    (position to it) to 1000
+                    return@map ((position.first + it.first to position.second + it.second) to it) to 1
                 }
+                (position to it) to 1000
             }
-            .filter { map.contains(it.first) }
             .forEach {
-                val oldValue = map[it.first]!!
+                val oldValue = map[it.first] ?: return@forEach
                 val newValue = lowestEntry.value + it.second
                 if (newValue < oldValue) {
                     map[it.first] = newValue
                     bestPrevious[it.first] = mutableSetOf(lowestEntry.key)
                 } else if (newValue == oldValue) {
-                    bestPrevious[it.first]!!.add(lowestEntry.key)
+                    bestPrevious[it.first] = bestPrevious[it.first]!! + lowestEntry.key
                 }
             }
         map.remove(lowestEntry.key)
