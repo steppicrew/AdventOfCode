@@ -8,6 +8,10 @@ const val DAY = 16
 
 typealias ResultType = Int
 
+typealias Pos = Pair<Int, Int>
+typealias Dir = Pair<Int, Int>
+typealias PosDir = Pair<Pos, Dir>
+
 // ref to (run1 to run2)
 // values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
@@ -18,7 +22,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    var endPosition: Pair<Int, Int> = 0 to 0
+    var endPosition: Pos = 0 to 0
     val directions = listOf(-1 to 0, 0 to -1, 1 to 0, 0 to 1)
     val map = lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, c ->
@@ -64,7 +68,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    var endPosition: Pair<Int, Int> = 0 to 0
+    var endPosition: Pos = 0 to 0
     val directions = listOf(-1 to 0, 0 to -1, 1 to 0, 0 to 1)
     val map = lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, c ->
@@ -84,7 +88,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     }.toMap().toMutableMap()
 
     val bestPrevious =
-        mutableMapOf<Pair<Pair<Int, Int>, Pair<Int, Int>>, MutableSet<Pair<Pair<Int, Int>, Pair<Int, Int>>>>()
+        mutableMapOf<PosDir, MutableSet<PosDir>>()
 
     while (true) {
         val lowestEntry = map.minByOrNull { it.value } ?: return 0
@@ -99,7 +103,8 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
                 } else {
                     (position to it) to 1000
                 }
-            }.filter { map.contains(it.first) }
+            }
+            .filter { map.contains(it.first) }
             .forEach {
                 val oldValue = map[it.first]!!
                 val newValue = lowestEntry.value + it.second
@@ -113,9 +118,9 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         map.remove(lowestEntry.key)
     }
 
-    fun findWay(pos: Pair<Pair<Int, Int>, Pair<Int, Int>>): Set<Pair<Int, Int>> {
-        val previous = bestPrevious[pos] ?: return setOf()
-        return previous.fold(setOf()) { acc, position -> acc + pos.first + findWay(position) }
+    fun findWay(posDir: PosDir): Set<Pos> {
+        val previous = bestPrevious[posDir] ?: return setOf()
+        return previous.fold(setOf()) { acc, position -> acc + posDir.first + findWay(position) }
     }
 
     return directions.sumOf { findWay(endPosition to it).size }
