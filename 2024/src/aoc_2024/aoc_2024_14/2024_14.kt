@@ -53,13 +53,15 @@ fun run2(lines: List<String>, log: (String) -> Unit): ResultType {
         (startPosX to startPosY) to (speedX to speedY)
     }
 
+    if (lines.size < 2) return 0
+
     val size = if (lines.size < 100) 11 to 7 else 101 to 103
 
     val neighbours = sequenceOf(
         1 to 0, 1 to 1, 0 to 1, -1 to 1, -1 to 0, -1 to -1, 0 to -1, 1 to -1
     )
 
-    (1..100000).asSequence().forEach { time ->
+    generateSequence(1) { it + 1 }.forEach { time ->
         val endPositions = robots
             .map { (startPos, speed) ->
                 (startPos.first + speed.first * time) % size.first to (startPos.second + speed.second * time) % size.second
@@ -84,5 +86,5 @@ fun run2(lines: List<String>, log: (String) -> Unit): ResultType {
 }
 
 fun main() {
-    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS)
+    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS, quiet = true)
 }

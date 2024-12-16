@@ -43,7 +43,8 @@ val formatter = NumberFormat.getInstance(Locale.GERMAN)!!
 fun <T> simpleIO(
     year: Int, day: Int,
     run: Pair<RunType<T>, RunType<T>>,
-    expectedResults: ExpectedRefResults<T>
+    expectedResults: ExpectedRefResults<T>,
+    quiet: Boolean = false
 ) {
     fun printResult(result: T): String {
         return "${bold}${result}${reset}"
@@ -64,7 +65,7 @@ fun <T> simpleIO(
             val logLines = mutableListOf<String>()
             fun log(line: String) {
                 logLines.add("$line\n")
-                println(line)
+                if (!quiet) println(line)
             }
 
             val lines = File(getPath(false, "txt"))
