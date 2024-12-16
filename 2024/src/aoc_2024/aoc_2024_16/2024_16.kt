@@ -52,22 +52,20 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             return cost
         }
         val oppositeDirection = -direction.first to -direction.second
-        directions.filter { it != oppositeDirection }
-            .map {
-                if (it == direction) {
-                    ((position.first + it.first to position.second + it.second) to it) to 1
-                } else {
-                    (position to it) to 1000
-                }
+        directions.forEach {
+            if (it == oppositeDirection) return@forEach
+            val (newPositionDirection, newCost) = if (it == direction) {
+                ((position.first + it.first to position.second + it.second) to it) to 1
+            } else {
+                (position to it) to 1000
             }
-            .forEach {
-                val oldBestCost = costMap[it.first] ?: return@forEach
-                val newBestCost = cost + it.second
-                if (newBestCost < oldBestCost) {
-                    costMap[it.first] = newBestCost
-                    navigationQueue.add(it.first)
-                }
+            val oldBestCost = costMap[newPositionDirection] ?: return@forEach
+            val newBestCost = cost + newCost
+            if (newBestCost < oldBestCost) {
+                costMap[newPositionDirection] = newBestCost
+                navigationQueue.add(newPositionDirection)
             }
+        }
     }
     throw RuntimeException("Empty queue")
 }
@@ -104,26 +102,24 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             break
         }
         val oppositeDirection = -direction.first to -direction.second
-        directions.filter { it != oppositeDirection }
-            .map {
-                if (it == direction) {
-                    ((position.first + it.first to position.second + it.second) to it) to 1
-                } else {
-                    (position to it) to 1000
-                }
+        directions.forEach {
+            if (it == oppositeDirection) return@forEach
+            val (newPositionDirection, newCost) = if (it == direction) {
+                ((position.first + it.first to position.second + it.second) to it) to 1
+            } else {
+                (position to it) to 1000
             }
-            .forEach {
-                val oldBestCost = costMap[it.first] ?: return@forEach
-                val newBestCost = cost + it.second
-                if (newBestCost > oldBestCost) return@forEach
-                if (newBestCost < oldBestCost) {
-                    costMap[it.first] = newBestCost
-                    bestPrevious[it.first] = setOf(positionDirection)
-                } else {
-                    bestPrevious[it.first] = bestPrevious[it.first]!! + positionDirection
-                }
-                navigationQueue.add(it.first)
+            val oldBestCost = costMap[newPositionDirection] ?: return@forEach
+            val newBestCost = cost + newCost
+            if (newBestCost > oldBestCost) return@forEach
+            if (newBestCost < oldBestCost) {
+                costMap[newPositionDirection] = newBestCost
+                bestPrevious[newPositionDirection] = setOf(positionDirection)
+            } else {
+                bestPrevious[newPositionDirection] = bestPrevious[newPositionDirection]!! + positionDirection
             }
+            navigationQueue.add(newPositionDirection)
+        }
     }
 
     fun findWays(positionDirection: PositionDirection): Set<Position> {
