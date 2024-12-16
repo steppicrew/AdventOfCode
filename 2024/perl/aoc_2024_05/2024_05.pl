@@ -56,7 +56,7 @@ my $run1 = sub {
 
         my $equal = 1;
         for my $i ( 0 .. $#pageOrder ) {
-            $equal = 0 if $pageOrder[$i] != $order->[$i];
+            $equal = 0 unless $pageOrder[$i] == $order->[$i];
         }
         $sum += $order->[ ( $#$order + 1 ) / 2 ] if $equal;
     }
@@ -98,7 +98,7 @@ my $run2 = sub {
 
         my $equal = 1;
         for my $i ( 0 .. $#pageOrder ) {
-            $equal = 0 if $pageOrder[$i] != $order->[$i];
+            $equal = 0 unless $pageOrder[$i] == $order->[$i];
         }
         $sum += $pageOrder[ ( $#$order + 1 ) / 2 ] unless $equal;
     }
