@@ -18,6 +18,24 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to ("3,7,1,7,2,1,0,6,3" to "37221334433268"),
 )
 
+/**
+ * Ref4:
+ *  adv 3   a = a >> 3
+ *  out a   out a % 8
+ *  jnz 0                       => We need at most 6 bit values for regA
+ *
+ * Main:
+ *  bst 4   b = a % 8           0<=b<=7
+ *  bxl 2   b = b xor 2         0<=b<=7
+ *  cdv 5   c = a / 2^b         c = a >> b
+ *  bxl 3   b = b xor 3         0<=b<=7
+ *  bxc 3   b = b xor c
+ *  out 5   out b % 8
+ *  adv 3   a = a / 8           => We need at most 10 bit values for regA
+ *  jnz 0
+ *
+ */
+
 
 fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     var a = 0
@@ -98,28 +116,66 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
            We take the minimum of all results
      */
 
-    var program = listOf<UInt>()
+    var initB = 0UL
+    var initC = 0UL
+    var program = listOf<Int>()
 
     lines.forEach { line ->
+        val matchB = """Register B: (\d+)""".toRegex().matchEntire(line)
+        if (matchB != null) {
+            initB = matchB.groupValues[1].toULong()
+        }
+        val matchC = """Register C: (\d+)""".toRegex().matchEntire(line)
+        if (matchC != null) {
+            initC = matchC.groupValues[1].toULong()
+        }
         val matchProgram = """Program: (\d(?:,\d)+)""".toRegex().matchEntire(line)
         if (matchProgram != null) {
-            program = matchProgram.groupValues[1].split(",").map(String::toUInt)
+            program = matchProgram.groupValues[1].split(",").map(String::toInt)
         }
     }
 
-    // Short version of main's program
-    fun fillCacheMain(a: ULong): ULong {
-        val b = a.and(7UL).xor(2UL) // bst 4; bxl 2 => (a % 8) xor 2
-        val c = a.shr(b.toInt()) // cdv 5 => c = a >> b
-        return b.xor(3UL).xor(c).and(7UL) // bxl 3; bxc 3; out b%8 => ((b xor 3) xor c) % 8
-    }
+    // same as above but return result on "out"
+    fun run(initA: ULong): ULong {
+        var pc = 0
+        var a = initA
+        var b = initB
+        var c = initC
 
-    // Short version of ref 4's program
-    fun fillCacheRef4(a: ULong): ULong {
-        return a.shr(3).and(7UL) // adv 3; out 4 => a = a/8; out a%8
-    }
+        fun combo(code: UInt): ULong {
+            return when (code) {
+                in 0U..3U -> code.toULong()
+                4U -> a
+                5U -> b
+                6U -> c
+                else -> throw RuntimeException("Reserved")
+            }
+        }
 
-    val fillCache = if (program.size == 6) ::fillCacheRef4 else ::fillCacheMain
+        val opcodes = listOf<(UInt) -> ULong?>(
+            { a /= 1UL.shl(combo(it).toInt()); null }, // adv
+            { b = b xor it.toULong(); null }, // bxl
+            { b = combo(it).and(7UL); null }, // bst
+            {
+                if (a != 0UL) {
+                    pc = it.toInt() - 2
+                }
+                null
+            }, // jnz
+            { b = b xor c; null }, // bxc
+            { combo(it).and(7UL) }, // out
+            { b = a / 1UL.shl(combo(it).toInt()); null }, //bdv
+            { c = a / 1UL.shl(combo(it).toInt()); null }, //cdv
+        )
+
+        while (true) {
+            val opcode = program[pc]
+            val operand = program[pc + 1]
+            val result = opcodes[opcode](operand.toUInt())
+            if (result != null) return result
+            pc += 2
+        }
+    }
 
     val bit = if (program.size == 6) 6 else 10
     val bitMask = 1UL.shl(bit) - 1UL
@@ -129,11 +185,11 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     // result to list of aIn
     val resultMap = (0UL..bitMask).asSequence()
         .map {
-            fillCache(it) to it
+            run(it) to it
         }
         .groupBy({ it.first }, { it.second })
 
-    fun findMatch(a: ULong, program: List<UInt>): ULong? {
+    fun findMatch(a: ULong, program: List<Int>): ULong? {
         if (program.isEmpty()) return a
         val result = program.last().toULong()
         val remainingProgram = program.dropLast(1)
