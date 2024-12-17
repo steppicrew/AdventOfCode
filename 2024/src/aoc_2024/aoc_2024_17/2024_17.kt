@@ -83,6 +83,21 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+    /*
+     Result depends only on register a
+     Ref4: Result is calculated from bit 3 through 5 only
+     Main: Result is calculated from the lowest 3 bit of a and three of bits 0 through 9
+     Next result is calculated from last (register A >> 3) until register A == 0
+
+     Idea: We build a cache, where we use all possible values for register A (6 bit for ref4, 10 bit for main)
+            and map each possible result to a list of all register A inputs
+           We start with the last expected result (last program triplet) and register A == 0 and search for every
+            register A input with (register A input >> 3)&bitMask == (register A output)&bitMask
+            bitMask is number of bits from above - 3
+           We search recursive until we get the fist program triplet
+           We take the minimum of all results
+     */
+
     var program = listOf<UInt>()
 
     lines.forEach { line ->
@@ -92,13 +107,14 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
     }
 
+    // Short version of main's program
     fun fillCacheMain(a: ULong): ULong {
         val b = a.and(7UL).xor(2UL) // bst 4; bxl 2 => (a % 8) xor 2
         val c = a.shr(b.toInt()) // cdv 5 => c = a >> b
         return b.xor(3UL).xor(c).and(7UL) // bxl 3; bxc 3; out b%8 => ((b xor 3) xor c) % 8
     }
 
-
+    // Short version of ref 4's program
     fun fillCacheRef4(a: ULong): ULong {
         return a.shr(3).and(7UL) // adv 3; out 4 => a = a/8; out a%8
     }
@@ -110,41 +126,28 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     val bitMaskA = bitMask.shr(3)
     // println("Bitmask: ${bitMask.toString(8)}($bitMask)")
 
-    // result to (aIn to aOut)
+    // result to list of aIn
     val resultMap = (0UL..bitMask).asSequence()
         .map {
             fillCache(it) to it
         }
         .groupBy({ it.first }, { it.second })
 
-    fun findMatch(a: ULong, program: List<UInt>): Set<ULong>? {
-        if (program.isEmpty()) return setOf(a)
+    fun findMatch(a: ULong, program: List<UInt>): ULong? {
+        if (program.isEmpty()) return a
         val result = program.last().toULong()
         val remainingProgram = program.dropLast(1)
-        val candidates = resultMap[result]!!
-            .filter { aIn ->
-                aIn.shr(3).xor(a).and(bitMaskA) == 0UL
-            }
-        if (false) candidates
-            .forEach { aIn ->
-                println(
-                    "Candidate($program): ${a.toString(8)}: ${aIn.toString(8)}(${
-                        aIn.and(bitMask).toString(8)
-                    }) -> ${(aIn / 8UL).toString(8)}"
-                )
 
+        return resultMap[result]!!
+            .filter { aIn ->
+                aIn.shr(3).and(bitMaskA) == a.and(bitMaskA)
             }
-        val results = candidates.mapNotNull { aIn ->
-            findMatch(a.shl(3).or(aIn), remainingProgram) ?: return@mapNotNull null
-        }.flatten().toSet()
-        
-        if (results.isEmpty()) {
-            return null
-        }
-        return results
+            .mapNotNull { aIn ->
+                findMatch(a.shl(3).or(aIn), remainingProgram) ?: return@mapNotNull null
+            }.minOrNull()
     }
 
-    return findMatch(0U, program)!!.min().toString()
+    return findMatch(0UL, program)!!.toString()
 }
 
 fun main() {
