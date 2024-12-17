@@ -64,9 +64,9 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
     }
 
-    fun combo(code: Int): Int {
-        return when (code) {
-            in 0..3 -> code
+    val combo: (code: Int) -> Int = {
+        when (it) {
+            in 0..3 -> it
             4 -> a
             5 -> b
             6 -> c
@@ -142,9 +142,9 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         var b = initB
         var c = initC
 
-        fun combo(code: UInt): ULong {
-            return when (code) {
-                in 0U..3U -> code.toULong()
+        val combo: (code: UInt) -> ULong = {
+            when (it) {
+                in 0U..3U -> it.toULong()
                 4U -> a
                 5U -> b
                 6U -> c
