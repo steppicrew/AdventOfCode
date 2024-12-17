@@ -84,15 +84,15 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
     /*
-     Result depends only on register a
+     Result depends only on register A (regA)
      Ref4: Result is calculated from bit 3 through 5 only
      Main: Result is calculated from the lowest 3 bit of a and three of bits 0 through 9
-     Next result is calculated from last (register A >> 3) until register A == 0
+     Next result is calculated from last (regA >> 3) until regA == 0
 
-     Idea: We build a cache, where we use all possible values for register A (6 bit for ref4, 10 bit for main)
-            and map each possible result to a list of all register A inputs
-           We start with the last expected result (last program triplet) and register A == 0 and search for every
-            register A input with (register A input >> 3)&bitMask == (register A output)&bitMask
+     Idea: We build a cache, where we use all possible values for regA (6 bit for ref4, 10 bit for main)
+            and map each possible result to a list of all regA inputs
+           We start with the last expected result (last program triplet) and regA == 0 and search for every
+            regA input with (regA input >> 3)&bitMask == (regA output)&bitMask
             bitMask is number of bits from above - 3
            We search recursive until we get the fist program triplet
            We take the minimum of all results
