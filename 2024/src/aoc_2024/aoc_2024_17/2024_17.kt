@@ -14,7 +14,8 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     // 1 to ("4,6,3,5,6,3,5,2,1,0" to null),
     // 2 to ("0,1,2" to null),
     // 3 to ("4,2,5,6,7,7,7,7,3,1,0" to null),
-    0 to ("3,7,1,7,2,1,0,6,3" to null),
+    4 to ("5,7,3,0" to "117440"),
+    0 to ("3,7,1,7,2,1,0,6,3" to "37221334433268"),
 )
 
 
@@ -82,86 +83,68 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 }
 
 fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    var initB = 0L
-    var initC = 0L
-    var program = listOf<Int>()
+    var program = listOf<UInt>()
 
     lines.forEach { line ->
-        val matchB = """Register B: (\d+)""".toRegex().matchEntire(line)
-        if (matchB != null) {
-            initB = matchB.groupValues[1].toLong()
-        }
-        val matchC = """Register C: (\d+)""".toRegex().matchEntire(line)
-        if (matchC != null) {
-            initC = matchC.groupValues[1].toLong()
-        }
         val matchProgram = """Program: (\d(?:,\d)+)""".toRegex().matchEntire(line)
         if (matchProgram != null) {
-            program = matchProgram.groupValues[1].split(",").map(String::toInt)
+            program = matchProgram.groupValues[1].split(",").map(String::toUInt)
         }
     }
 
-    fun run(initA: Long): Boolean {
-        var a = initA
-        var b = initB
-        var c = initC
-        val output = mutableListOf<Int>()
-        var pc = 0
+    fun fillCacheMain(a: ULong): ULong {
+        val b = a.and(7UL).xor(2UL) // bst 4; bxl 2 => (a % 8) xor 2
+        val c = a.shr(b.toInt()) // cdv 5 => c = a >> b
+        return b.xor(3UL).xor(c).and(7UL) // bxl 3; bxc 3; out b%8 => ((b xor 3) xor c) % 8
+    }
 
-        fun combo(code: Int): Long {
-            return when (code) {
-                in 0..3 -> code.toLong()
-                4 -> a
-                5 -> b
-                6 -> c
-                else -> throw RuntimeException("Reserved")
+
+    fun fillCacheRef4(a: ULong): ULong {
+        return a.shr(3).and(7UL) // adv 3; out 4 => a = a/8; out a%8
+    }
+
+    val fillCache = if (program.size == 6) ::fillCacheRef4 else ::fillCacheMain
+
+    val bit = if (program.size == 6) 6 else 10
+    val bitMask = 1UL.shl(bit) - 1UL
+    val bitMaskA = bitMask.shr(3)
+    // println("Bitmask: ${bitMask.toString(8)}($bitMask)")
+
+    // result to (aIn to aOut)
+    val resultMap = (0UL..bitMask).asSequence()
+        .map {
+            fillCache(it) to it
+        }
+        .groupBy({ it.first }, { it.second })
+
+    fun findMatch(a: ULong, program: List<UInt>): Set<ULong>? {
+        if (program.isEmpty()) return setOf(a)
+        val result = program.last().toULong()
+        val remainingProgram = program.dropLast(1)
+        val candidates = resultMap[result]!!
+            .filter { aIn ->
+                aIn.shr(3).xor(a).and(bitMaskA) == 0UL
             }
+        if (false) candidates
+            .forEach { aIn ->
+                println(
+                    "Candidate($program): ${a.toString(8)}: ${aIn.toString(8)}(${
+                        aIn.and(bitMask).toString(8)
+                    }) -> ${(aIn / 8UL).toString(8)}"
+                )
+
+            }
+        val results = candidates.mapNotNull { aIn ->
+            findMatch(a.shl(3).or(aIn), remainingProgram) ?: return@mapNotNull null
+        }.flatten().toSet()
+        
+        if (results.isEmpty()) {
+            return null
         }
-
-        val opcodes = listOf<(Int) -> Boolean>(
-            { a /= 1.shl(combo(it).toInt()); true }, // adv
-            { b = b xor it.toLong(); true }, // bxl
-            { b = combo(it) % 8; true }, // bst
-            {
-                if (a != 0L) {
-                    pc = it - 2
-                    true
-                } else {
-                    true
-                }
-            }, // jnz
-            { b = b xor c; true }, // bxc
-            {
-                val outValue = (combo(it) % 8).toInt()
-                if (outValue != program[output.size]) {
-                    false
-                } else {
-                    output.add(outValue)
-                    true
-                }
-            }, // out
-            { b = a / 1.shl(combo(it).toInt()); true }, //bdv
-            { c = a / 1.shl(combo(it).toInt()); true }, //cdv
-        )
-
-        while (pc < program.size) {
-            val opcode = program[pc]
-            val operand = program[pc + 1]
-            if (!opcodes[opcode](operand)) break
-            pc += 2
-        }
-
-        return program == output
+        return results
     }
 
-    generateSequence(1L) { it + 1 }.forEach {
-        if (it % 1_000_000 == 0L) {
-            println(it)
-        }
-        if (run(it)) return it.toString()
-    }
-
-    return "empty"
+    return findMatch(0U, program)!!.min().toString()
 }
 
 fun main() {
