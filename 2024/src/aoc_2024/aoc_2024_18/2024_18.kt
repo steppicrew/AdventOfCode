@@ -113,7 +113,7 @@ fun run2(input: InputData): ResultType {
 
     var step = if (bytes.size < 100) 16 else 4096
     var count = startCount + step
-    while (step > 0) {
+    while (step > 1) {
         step /= 2
         if (navigate(count)) {
             count += step
@@ -121,8 +121,9 @@ fun run2(input: InputData): ResultType {
             count -= step
         }
     }
-    if (!navigate(count)) count--
-    return "${bytes[count].first},${bytes[count].second}"
+
+    val firstBlocker = if (navigate(count)) bytes[count] else bytes[count - 1]
+    return "${firstBlocker.first},${firstBlocker.second}"
 }
 
 fun main() {

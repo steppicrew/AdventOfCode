@@ -22,8 +22,8 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 /**
  * Ref4:
  *  adv 3   a = a >> 3
- *  out a   out a % 8
- *  jnz 0                       => We need at most 6 bit values for regA
+ *  out 4   out a % 8
+ *  jnz 0                       => We need 6 bit values for regA
  *
  * Main:
  *  bst 4   b = a % 8           0<=b<=7
@@ -180,7 +180,7 @@ fun run2(input: InputData): ResultType {
         }
     }
 
-    val bit = if (program.size == 6) 6 else 10
+    val bit = if (input.ref > 0) 6 else 10
     val bitMask = 1UL.shl(bit) - 1UL
     val bitMaskA = bitMask.shr(3)
     // println("Bitmask: ${bitMask.toString(8)}($bitMask)")
