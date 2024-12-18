@@ -38,17 +38,20 @@ typealias ExpectedRefResults<T> = List<ExpectedRefResult<T>>
 
 val formatter = NumberFormat.getInstance(Locale.GERMAN)!!
 
-class InputData(val lines: List<String>, val ref: Int, private val quiet: Boolean) {
-    private val logLines = mutableListOf<String>()
+class InputData(val lines: List<String>, val ref: Int, private val logfileName: String, private val quiet: Boolean) {
+    private var file: File? = null
 
     fun log(line: String) {
-        logLines.add("$line\n")
+        val logfile = file ?: File(logfileName)
+        if (logfile == file) {
+            logfile.appendText("$line\n")
+        } else {
+            file = logfile
+            logfile.writeText("$line\n")
+        }
         if (!quiet) println(line)
     }
 
-    fun getLogOutput(): String {
-        return logLines.joinToString("")
-    }
 }
 
 typealias RunType<T> = (InputData) -> T
@@ -79,17 +82,10 @@ fun <T> simpleIO(
                 .readLines()
                 .filter { !it.startsWith(';') }
 
-            val inputData = InputData(lines, ref, quiet)
+            val inputData = InputData(lines, ref, getPath(true, "log"), quiet)
 
             val (result, duration) = measureTimedValue { run(inputData) }
             val time = "${formatter.format(duration.inWholeMilliseconds / 1000.0)}s"
-
-            inputData.getLogOutput().let {
-                if (it.isNotEmpty()) {
-                    File(getPath(true, "log"))
-                        .writeText(it)
-                }
-            }
 
             print("${if (ref > 0) "ref${ref}" else "main"}/${part}: ")
 
