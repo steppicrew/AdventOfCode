@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_09
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -17,10 +18,10 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val files = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
     val gaps = ArrayDeque<Pair<Int, Int>>()
-    lines.first().map { it.digitToInt() }.foldIndexed(0) { index, pos, size ->
+    input.lines.first().map { it.digitToInt() }.foldIndexed(0) { index, pos, size ->
         if (index % 2 == 0) {
             files.addLast(index / 2 to (pos to size))
         } else {
@@ -59,10 +60,10 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val files = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
     val gaps = ArrayDeque<Pair<Int, Int>>()
-    lines.first().map { it.digitToInt() }.foldIndexed(0) { index, pos, size ->
+    input.lines.first().map { it.digitToInt() }.foldIndexed(0) { index, pos, size ->
         if (index % 2 == 0) {
             files.addLast(index / 2 to (pos to size))
         } else {

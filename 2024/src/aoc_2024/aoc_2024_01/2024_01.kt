@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_01
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 import kotlin.math.abs
 
@@ -15,10 +16,10 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reSpace = """\s+""".toRegex()
 
-    return lines
+    return input.lines
         .map { line ->
             line.split(reSpace)
                 .let { it[0].toInt() to it[1].toInt() }
@@ -27,10 +28,10 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .sumOf { abs(it.first - it.second) }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reSpace = """\s+""".toRegex()
 
-    return lines
+    return input.lines
         .map { line ->
             line.split(reSpace)
                 .let { it[0].toInt() to it[1].toInt() }

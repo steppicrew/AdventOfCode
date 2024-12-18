@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_04
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -13,8 +14,8 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (2644 to 1952)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val field = lines.flatMapIndexed { row, line ->
+fun run1(input: InputData): ResultType {
+    val field = input.lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, char ->
             (row to col) to char
         }
@@ -44,8 +45,8 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return field.keys.sumOf { testPos(it) }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val field = lines.flatMapIndexed { row, line ->
+fun run2(input: InputData): ResultType {
+    val field = input.lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, char ->
             (row to col) to char
         }

@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_20
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -16,12 +17,12 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    return lines.count()
+fun run1(input: InputData): ResultType {
+    return input.lines.count()
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    return lines.count()
+fun run2(input: InputData): ResultType {
+    return input.lines.count()
 }
 
 fun main() {

@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_07
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -15,9 +16,9 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (882304362421UL to 145149066755184UL),
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val rePart = """(\d+): ([\d ]+)""".toRegex()
-    val equations = lines
+    val equations = input.lines
         .mapNotNull { rePart.matchEntire(it) }
         .map { match ->
             val (result, operators) = match.destructured
@@ -37,9 +38,9 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     }.sumOf { it.first }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val rePart = """(\d+): ([\d ]+)""".toRegex()
-    val equations = lines
+    val equations = input.lines
         .mapNotNull { rePart.matchEntire(it) }
         .map { match ->
             val (result, operators) = match.destructured

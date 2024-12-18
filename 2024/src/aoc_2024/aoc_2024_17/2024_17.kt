@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_17
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -11,9 +12,9 @@ typealias ResultType = String
 // ref to (run1 to run2)
 // values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
-    // 1 to ("4,6,3,5,6,3,5,2,1,0" to null),
-    // 2 to ("0,1,2" to null),
-    // 3 to ("4,2,5,6,7,7,7,7,3,1,0" to null),
+    1 to ("4,6,3,5,6,3,5,2,1,0" to ""),
+    2 to ("0,1,2" to ""),
+    3 to ("4,2,5,6,7,7,7,7,3,1,0" to ""),
     4 to ("5,7,3,0" to "117440"),
     0 to ("3,7,1,7,2,1,0,6,3" to "37221334433268"),
 )
@@ -37,7 +38,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
  */
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     var a = 0
     var b = 0
     var c = 0
@@ -45,7 +46,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     var program = listOf<Int>()
     val output = mutableListOf<Int>()
 
-    lines.forEach { line ->
+    input.lines.forEach { line ->
         val matchA = """Register A: (\d+)""".toRegex().matchEntire(line)
         if (matchA != null) {
             a = matchA.groupValues[1].toInt()
@@ -100,7 +101,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return output.joinToString(",")
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     /*
      Result depends only on register A (regA)
      Ref4: Result is calculated from bit 3 through 5 only
@@ -116,11 +117,13 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
            We take the minimum of all results
      */
 
+    if (input.ref in 1..3) return ""
+
     var initB = 0UL
     var initC = 0UL
     var program = listOf<Int>()
 
-    lines.forEach { line ->
+    input.lines.forEach { line ->
         val matchB = """Register B: (\d+)""".toRegex().matchEntire(line)
         if (matchB != null) {
             initB = matchB.groupValues[1].toULong()

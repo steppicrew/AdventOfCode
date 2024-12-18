@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_02_chatgpt
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -13,12 +14,12 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (502 to 544)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
 
     fun isSafe(parts: List<Int>): Boolean =
         parts.zipWithNext { a, b -> b > a && b <= a + 3 }.all { it }
 
-    val result = lines.count { line ->
+    val result = input.lines.count { line ->
         val parts = line.split("\\s+".toRegex()).map(String::toInt)
         isSafe(parts) || isSafe(parts.reversed())
     }
@@ -26,7 +27,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return result
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
 
     fun glitchCount(parts: List<Int>): Int =
         parts.zipWithNext { a, b -> b > a && b <= a + 3 }.count { !it }
@@ -41,7 +42,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         return parts.variantsWithoutOne().any { glitchCount(it) == 0 }
     }
 
-    val result = lines.count { line ->
+    val result = input.lines.count { line ->
         val parts = line.split("\\s+".toRegex()).map(String::toInt)
         isSafe(parts) || isSafe(parts.reversed())
     }

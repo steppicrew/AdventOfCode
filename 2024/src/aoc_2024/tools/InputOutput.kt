@@ -36,9 +36,22 @@ typealias ExpectedResult<T> = Pair<T?, T?>
 typealias ExpectedRefResult<T> = Pair<Int, ExpectedResult<T>>
 typealias ExpectedRefResults<T> = List<ExpectedRefResult<T>>
 
-typealias RunType<T> = (List<String>, (String) -> Unit) -> T
-
 val formatter = NumberFormat.getInstance(Locale.GERMAN)!!
+
+class InputData(val lines: List<String>, val ref: Int, private val quiet: Boolean) {
+    private val logLines = mutableListOf<String>()
+
+    fun log(line: String) {
+        logLines.add("$line\n")
+        if (!quiet) println(line)
+    }
+
+    fun getLogOutput(): String {
+        return logLines.joinToString("")
+    }
+}
+
+typealias RunType<T> = (InputData) -> T
 
 fun <T> simpleIO(
     year: Int, day: Int,
@@ -62,22 +75,20 @@ fun <T> simpleIO(
                 ).joinToString("")
             }
 
-            val logLines = mutableListOf<String>()
-            fun log(line: String) {
-                logLines.add("$line\n")
-                if (!quiet) println(line)
-            }
-
             val lines = File(getPath(false, "txt"))
                 .readLines()
                 .filter { !it.startsWith(';') }
 
-            val (result, duration) = measureTimedValue { run(lines, ::log) }
+            val inputData = InputData(lines, ref, quiet)
+
+            val (result, duration) = measureTimedValue { run(inputData) }
             val time = "${formatter.format(duration.inWholeMilliseconds / 1000.0)}s"
 
-            if (logLines.size > 0) {
-                File(getPath(true, "log"))
-                    .writeText(logLines.joinToString(""))
+            inputData.getLogOutput().let {
+                if (it.isNotEmpty()) {
+                    File(getPath(true, "log"))
+                        .writeText(it)
+                }
             }
 
             print("${if (ref > 0) "ref${ref}" else "main"}/${part}: ")

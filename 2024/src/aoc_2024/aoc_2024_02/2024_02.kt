@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_02
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -13,19 +14,19 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (502 to 544)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reSpace = """\s+""".toRegex()
 
     fun isSafe(parts: Iterable<Int>): Boolean {
         return parts.zipWithNext { a, b -> b > a && b <= a + 3 }.all { it }
     }
 
-    return lines.count { line ->
+    return input.lines.count { line ->
         line.split(reSpace).map(String::toInt).let { isSafe(it) || isSafe(it.reversed()) }
     }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reSpace = """\s+""".toRegex()
 
     fun countGlitches(parts: List<Int>): Int {
@@ -43,7 +44,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         return removeOne(parts).any { countGlitches(it) == 0 }
     }
 
-    return lines.count { line ->
+    return input.lines.count { line ->
         line.split(reSpace).map(String::toInt).let { isSafe(it) || isSafe(it.reversed()) }
     }
 }

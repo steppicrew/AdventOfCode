@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_15
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -18,12 +19,12 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reMap = """[#.O@]+""".toRegex()
     val reMove = """[<^>v]+""".toRegex()
     val boxes = mutableSetOf<Pair<Int, Int>>()
     var robotPosition = 0 to 0
-    val walls = lines.filter { reMap.matches(it) }
+    val walls = input.lines.filter { reMap.matches(it) }
         .flatMapIndexed { row, line ->
             line.mapIndexedNotNull { col, c ->
                 when (c) {
@@ -44,7 +45,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             }
         }.toSet()
 
-    val moves = lines.filter { reMove.matches(it) }
+    val moves = input.lines.filter { reMove.matches(it) }
         .joinToString("")
         .map {
             when (it) {
@@ -76,12 +77,12 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return boxes.sumOf { it.first + 100 * it.second }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reMap = """[#.O@]+""".toRegex()
     val reMove = """[<^>v]+""".toRegex()
     val boxes = mutableSetOf<Pair<Int, Int>>()
     var robotPosition = 0 to 0
-    val walls = lines.filter { reMap.matches(it) }
+    val walls = input.lines.filter { reMap.matches(it) }
         .flatMapIndexed { row, line ->
             line.flatMapIndexed { col, c ->
                 when (c) {
@@ -102,7 +103,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
             }
         }.toSet()
 
-    val moves = lines.filter { reMove.matches(it) }
+    val moves = input.lines.filter { reMove.matches(it) }
         .joinToString("")
         .map {
             when (it) {

@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_11
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -16,8 +17,8 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val numbers = lines.first().split(" ")
+fun run1(input: InputData): ResultType {
+    val numbers = input.lines.first().split(" ")
 
     fun blink(number: String, i: Int): Long {
         if (i == 0) {
@@ -38,8 +39,8 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return numbers.sumOf { blink(it, 25) }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val numbers = lines.first().split(" ")
+fun run2(input: InputData): ResultType {
+    val numbers = input.lines.first().split(" ")
 
 
     val cache = mutableMapOf<Pair<String, Int>, Long>()

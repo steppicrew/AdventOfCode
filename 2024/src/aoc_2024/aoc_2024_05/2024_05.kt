@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_05
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -13,11 +14,11 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (6498 to 5017)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reRule = """(\d+)\|(\d+)""".toRegex()
     val reOrder = """\d+(?:,\d+)*""".toRegex()
 
-    val allRules = lines.mapNotNull { line ->
+    val allRules = input.lines.mapNotNull { line ->
         reRule.matchEntire(line)
     }
         .map { match ->
@@ -27,7 +28,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .groupBy({ it.first }, { it.second })
         .mapValues { (_, valueList) -> valueList.toSet() }
 
-    val orders = lines.filter { line ->
+    val orders = input.lines.filter { line ->
         reOrder.matches(line)
     }
         .map { line ->
@@ -59,11 +60,11 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .sumOf { it.first[(it.first.size - 1) / 2] }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reRule = """(\d+)\|(\d+)""".toRegex()
     val reOrder = """\d+(?:,\d+)*""".toRegex()
 
-    val allRules = lines.mapNotNull { line ->
+    val allRules = input.lines.mapNotNull { line ->
         reRule.matchEntire(line)
     }
         .map { match ->
@@ -73,7 +74,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         .groupBy({ it.first }, { it.second })
         .mapValues { (_, valueList) -> valueList.toSet() }
 
-    val orders = lines.filter { line ->
+    val orders = input.lines.filter { line ->
         reOrder.matches(line)
     }
         .map { line ->

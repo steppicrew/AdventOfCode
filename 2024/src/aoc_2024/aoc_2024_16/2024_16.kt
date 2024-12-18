@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_16
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 import java.util.*
 
@@ -22,12 +23,12 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val directions = listOf(-1 to 0, 0 to -1, 1 to 0, 0 to 1)
     val costMap = mutableMapOf<PositionDirection, Int>()
     val navigationQueue = PriorityQueue<PositionDirection> { pd1, pd2 -> costMap[pd1]!! - costMap[pd2]!! }
     var endPosition: Position = 0 to 0
-    costMap.putAll(lines.flatMapIndexed { row, line ->
+    costMap.putAll(input.lines.flatMapIndexed { row, line ->
         line.flatMapIndexed inner@{ col, c ->
             when (c) {
                 '#' -> return@inner listOf()
@@ -70,12 +71,12 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     throw RuntimeException("Empty queue")
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val directions = listOf(-1 to 0, 0 to -1, 1 to 0, 0 to 1)
     val costMap = mutableMapOf<PositionDirection, Int>()
     val navigationQueue = PriorityQueue<PositionDirection> { pd1, pd2 -> costMap[pd1]!! - costMap[pd2]!! }
     var endPosition: Position = 0 to 0
-    costMap.putAll(lines.flatMapIndexed { row, line ->
+    costMap.putAll(input.lines.flatMapIndexed { row, line ->
         line.flatMapIndexed inner@{ col, c ->
             when (c) {
                 '#' -> return@inner listOf()

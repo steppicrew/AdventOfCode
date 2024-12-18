@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_18
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 import java.util.*
 
@@ -17,14 +18,14 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val bytes = lines.map { line ->
+fun run1(input: InputData): ResultType {
+    val bytes = input.lines.map { line ->
         val (x, y) = line.split(",").map(String::toInt)
         x to y
     }
 
-    val (maxX, maxY) = if (bytes.size < 100) 6 to 6 else 70 to 70
-    val count = if (bytes.size < 100) 12 else 1024
+    val (maxX, maxY) = if (input.ref > 0) 6 to 6 else 70 to 70
+    val count = if (input.ref > 0) 12 else 1024
 
     val blocked = bytes.take(count).toSet()
 
@@ -61,8 +62,8 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return "0"
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val bytes = lines.map { line ->
+fun run2(input: InputData): ResultType {
+    val bytes = input.lines.map { line ->
         val (x, y) = line.split(",").map(String::toInt)
         x to y
     }

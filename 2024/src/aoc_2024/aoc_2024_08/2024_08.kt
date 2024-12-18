@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_08
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 import kotlin.math.min
 
@@ -17,11 +18,11 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val maxX = lines[0].length
-    val maxY = lines.size
+fun run1(input: InputData): ResultType {
+    val maxX = input.lines[0].length
+    val maxY = input.lines.size
 
-    val antennas = lines
+    val antennas = input.lines
         .flatMapIndexed { row, line ->
             line.mapIndexedNotNull { col, char ->
                 if (char == '.') {
@@ -55,11 +56,11 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return antinodes.size
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val maxX = lines[0].length
-    val maxY = lines.size
+fun run2(input: InputData): ResultType {
+    val maxX = input.lines[0].length
+    val maxY = input.lines.size
 
-    val antennas = lines
+    val antennas = input.lines
         .flatMapIndexed { row, line ->
             line.mapIndexedNotNull { col, char ->
                 if (char == '.') {

@@ -1,6 +1,7 @@
 package aoc_2024.aoc_2024_13
 
 import aoc_2024.tools.ExpectedRefResults
+import aoc_2024.tools.InputData
 import aoc_2024.tools.simpleIO
 
 const val YEAR = 2024
@@ -17,7 +18,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 
 typealias Pos = Pair<Long, Long>
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val tokensA = 3
     val tokensB = 1
 
@@ -38,7 +39,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
     }
 
-    return lines.chunked(4).sumOf { chunk ->
+    return input.lines.chunked(4).sumOf { chunk ->
         val aMatch = reButtonA.matchEntire(chunk.first())
         val bMatch = reButtonB.matchEntire(chunk[1])
         val prizeMatch = rePrizePosition.matchEntire(chunk[2])
@@ -58,7 +59,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val tokensA = 3
     val tokensB = 1
 
@@ -79,7 +80,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
     }
 
-    return lines.chunked(4).sumOf { chunk ->
+    return input.lines.chunked(4).sumOf { chunk ->
         val aMatch = reButtonA.matchEntire(chunk.first())
         val bMatch = reButtonB.matchEntire(chunk[1])
         val prizeMatch = rePrizePosition.matchEntire(chunk[2])
