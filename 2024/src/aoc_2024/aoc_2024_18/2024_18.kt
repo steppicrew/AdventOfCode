@@ -38,10 +38,10 @@ fun run1(input: InputData): ResultType {
             }
         }
     }.toMap().toMutableMap()
-    map[0 to 0] = 0
 
     val directions = listOf(1 to 0, 0 to 1, -1 to 0, 0 to -1)
     val queue = PriorityQueue<Pair<Int, Int>> { p1, p2 -> map[p1]!! - map[p2]!! }
+    map[0 to 0] = 0
     queue.add(0 to 0)
     while (queue.isNotEmpty()) {
         val nextPos = queue.remove()
@@ -53,8 +53,9 @@ fun run1(input: InputData): ResultType {
             .map { nextPos.first + it.first to nextPos.second + it.second }
             .filter { map.containsKey(it) }
             .forEach {
-                if (map[it]!! > cost + 1) {
-                    map[it] = cost + 1
+                val newCost = cost + 1
+                if (map[it]!! > newCost) {
+                    map[it] = newCost
                     queue.add(it)
                 }
             }
@@ -68,8 +69,8 @@ fun run2(input: InputData): ResultType {
         x to y
     }
 
-    val (maxX, maxY) = if (bytes.size < 100) 6 to 6 else 70 to 70
-    val startCount = if (bytes.size < 100) 12 else 1024
+    val (maxX, maxY) = if (input.ref > 0) 6 to 6 else 70 to 70
+    val startCount = if (input.ref > 0) 12 else 1024
 
     val directions = listOf(1 to 0, 0 to 1, -1 to 0, 0 to -1)
 
@@ -85,10 +86,11 @@ fun run2(input: InputData): ResultType {
                 }
             }
         }.toMap().toMutableMap()
-        map[0 to 0] = 0
 
         val queue = PriorityQueue<Pair<Int, Int>> { p1, p2 -> map[p1]!! - map[p2]!! }
+        map[0 to 0] = 0
         queue.add(0 to 0)
+
         while (queue.isNotEmpty()) {
             val nextPos = queue.remove()
             val cost = map[nextPos]!!
@@ -99,8 +101,9 @@ fun run2(input: InputData): ResultType {
                 .map { nextPos.first + it.first to nextPos.second + it.second }
                 .filter { map.containsKey(it) }
                 .forEach {
-                    if (map[it]!! > cost + 1) {
-                        map[it] = cost + 1
+                    val newCost = cost + 1
+                    if (map[it]!! > newCost) {
+                        map[it] = newCost
                         queue.add(it)
                     }
                 }
