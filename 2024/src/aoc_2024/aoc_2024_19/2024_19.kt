@@ -13,7 +13,7 @@ typealias ResultType = Long
 // values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     1 to (6L to 16L),
-    0 to (340L to 717561822679428),
+    0 to (340L to 717561822679428L),
 )
 
 
