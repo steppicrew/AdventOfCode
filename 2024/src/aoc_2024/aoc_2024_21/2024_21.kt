@@ -218,36 +218,34 @@ fun run2(input: InputData): ResultType {
         }
     }
 
-    val buttonCache = mutableMapOf<Pair<Int, Pair<Char, Char>>, Long>()
-    fun pressButton2(robot: Int, button: Char): Long {
+    val directionButtonCache = mutableMapOf<Pair<Int, Pair<Char, Char>>, Long>()
+    fun pressDirectionButton(robot: Int, button: Char): Long {
         if (robot == robots) return 1L
         val position = robotArms[robot]
         robotArms[robot] = button
-        return buttonCache.getOrPut(robot to (position to button)) {
+        return directionButtonCache.getOrPut(robot to (position to button)) {
             val movements = moves[position to button] ?: throw RuntimeException("Wrong move: $position to $button")
             movements.sumOf { m ->
-                pressButton2(robot + 1, m)
+                pressDirectionButton(robot + 1, m)
             }
         }
     }
 
-    fun pressButton(button: Char): Long {
+    fun pressCodeButton(button: Char): Long {
         val position = robotArms[0]
-        val movements =
-            navigate(position, button).map { it + "A" }
+        val movements = navigate(position, button).map { it + "A" }
         robotArms[0] = button
 
         return movements.minOf { movement ->
             movement.sumOf { letter ->
-                pressButton2(1, letter)
+                pressDirectionButton(1, letter)
             }
         }
     }
 
     return input.lines.sumOf { line ->
-        val movements = line.map { pressButton(it) }
-        val m2 = movements.sum()
-        line.dropWhile { it == '0' }.dropLast(1).toInt() * m2
+        val movements = line.map { pressCodeButton(it) }.sum()
+        line.dropWhile { it == '0' }.dropLast(1).toInt() * movements
     }
 }
 
