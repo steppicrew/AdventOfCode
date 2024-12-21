@@ -127,22 +127,39 @@ fun run2(input: InputData): ResultType {
 
     val robotArms = (0 until robots).map { 'A' }.toMutableList()
 
+    /**
+     * I don't know why only this combination works. (except for a and C)
+     * Tested combinations ad results:
+     * abCdef: 491655470688846
+     * aBCdef: 363481568617378
+     * aBCDef: 348675369134078
+     * aBCDEf: 348675369134078
+     * aBCdEf: 306335137543664
+     *
+     */
     val moves = mapOf(
         ('A' to 'A') to "A",
-        ('A' to '<') to "v<<A", // "<v<A" // 1
-        // ('A' to '<') to "<v<A",        // 2
-        // ('A' to 'v') to "v<A", // "<vA" // 3
-        ('A' to 'v') to "<vA",            // 4
+
+        ('A' to '<') to "v<<A",             // a!
+        // ('A' to '<') to "<v<A",          // A!
+
+        // ('A' to 'v') to "v<A",           // b?
+        ('A' to 'v') to "<vA",              // B?
+
         ('A' to '^') to "<A",
         ('A' to '>') to "vA",
-        // ('<' to 'A') to ">^>A", // ">>^A" // 5
-        ('<' to 'A') to ">>^A",           // 6
+
+        // ('<' to 'A') to ">^>A",          // c!
+        ('<' to 'A') to ">>^A",             // C!
+
         ('<' to '<') to "A",
         ('<' to 'v') to ">A",
         ('<' to '^') to ">^A",
         ('<' to '>') to ">>A",
-        ('v' to 'A') to "^>A", // ">^A"   // 7
-        // ('v' to 'A') to ">^A",            // 8
+
+        ('v' to 'A') to "^>A",               // d?
+        // ('v' to 'A') to ">^A",            // D?
+
         ('v' to '<') to "<A",
         ('v' to 'v') to "A",
         ('v' to '^') to "^A",
@@ -151,13 +168,17 @@ fun run2(input: InputData): ResultType {
         ('^' to '<') to "v<A",
         ('^' to 'v') to "vA",
         ('^' to '^') to "A",
-        // ('^' to '>') to ">vA", // "v>A"     // 9
-        ('^' to '>') to "v>A",              // 10
+
+        // ('^' to '>') to ">vA",           // e?
+        ('^' to '>') to "v>A",              // E?
+
         ('>' to 'A') to "^A",
         ('>' to '<') to "<<A",
         ('>' to 'v') to "<A",
-        ('>' to '^') to "<^A", // "^<A"     // 11
-        //('>' to '^') to "^<A",              // 12
+
+        ('>' to '^') to "<^A",              // f?
+        //('>' to '^') to "^<A",            // F?
+
         ('>' to '>') to "A",
     )
 
