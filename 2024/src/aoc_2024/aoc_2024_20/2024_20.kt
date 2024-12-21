@@ -15,7 +15,6 @@ typealias ResultType = Int
 // values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     1 to (44 to 285),
-    // 2 to (6 to null),
     0 to (1378 to 975379),
 )
 
@@ -161,16 +160,13 @@ fun run2(input: InputData): ResultType {
     }
 
     val (globalTimesToEnd, wayToEnd) = getGlobalTimes(endPosition)
-    val (globalTimesFromStart, _) = getGlobalTimes(startPosition)
 
-    val time0 = globalTimesToEnd[startPosition]!!
     val maxWallTime = 20
     val minSaving = when (input.ref) {
         1 -> 50
         2 -> 1
         else -> 100
     }
-    val maxTime = time0 - minSaving
 
     fun getNeighbours(position: Pair<Int, Int>): List<Pair<Int, Int>> {
         return directions.map { it.first + position.first to it.second + position.second }
@@ -180,10 +176,10 @@ fun run2(input: InputData): ResultType {
      * Starts from the current position to all possible end points
      * Yields every position on path with low enough time til the end
      */
-    fun getWallTunnels(wallStart: Pair<Int, Int>, maxTimeLeft: Int): Sequence<Pair<Pair<Int, Int>, Int>> = sequence {
+    fun cheat(wallStart: Pair<Int, Int>, maxTimeLeft: Int): Sequence<Pair<Pair<Int, Int>, Int>> = sequence {
         val times = mutableMapOf<Pair<Int, Int>, Int>()
         val queue = PriorityQueue<Pair<Int, Int>> { p1, p2 -> times[p1]!! - times[p2]!! }
-        times[wallStart] = 1
+        times[wallStart] = 0
         queue.add(wallStart)
 
         while (queue.isNotEmpty()) {
@@ -210,15 +206,13 @@ fun run2(input: InputData): ResultType {
     var position: Pair<Int, Int>? = startPosition
     val cheats = mutableMapOf<Pair<Pair<Int, Int>, Pair<Int, Int>>, Int>()
     while (position != null) {
-        val timeFromStart = globalTimesFromStart[position]!!
-        if (timeFromStart > maxTime) break
-        getNeighbours(position).filter { walls.contains(it) || map.contains(it) }.forEach { wall ->
-            getWallTunnels(wall, maxTime - timeFromStart).forEach { (endPosition, timeLeft) ->
-                val key = position!! to endPosition
-                val timeSaving = time0 - (timeFromStart + timeLeft)
-                if (timeSaving > (cheats[key] ?: 0)) {
-                    cheats[key] = timeSaving
-                }
+        val timeToEnd = globalTimesToEnd[position]!!
+        if (timeToEnd <= minSaving) break
+        cheat(position, timeToEnd - minSaving).forEach { (endPosition, timeLeft) ->
+            val key = position!! to endPosition
+            val timeSaving = timeToEnd - timeLeft
+            if (timeSaving > (cheats[key] ?: 0)) {
+                cheats[key] = timeSaving
             }
         }
         position = wayToEnd[position]
