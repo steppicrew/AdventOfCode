@@ -22,7 +22,7 @@ val prune = 16777216L
 fun run1(input: InputData): ResultType {
     val rounds = 2000
 
-    fun generate(seed: Long): Sequence<Long> = generateSequence(seed) { random ->
+    fun generateRandom(seed: Long): Sequence<Long> = generateSequence(seed) { random ->
         (random.shl(6).xor(random) % prune)
             .let { secret ->
                 secret.shr(5).xor(secret) % prune
@@ -32,14 +32,14 @@ fun run1(input: InputData): ResultType {
     }
 
     return input.lines.sumOf { line ->
-        generate(line.toLong()).elementAt(rounds)
+        generateRandom(line.toLong()).elementAt(rounds)
     }
 }
 
 fun run2(input: InputData): ResultType {
     val rounds = 2000
 
-    fun generate(seed: Long): Sequence<Long> = generateSequence(seed) { random ->
+    fun generateRandom(seed: Long): Sequence<Long> = generateSequence(seed) { random ->
         (random.shl(6).xor(random) % prune)
             .let { secret ->
                 secret.shr(5).xor(secret) % prune
@@ -49,7 +49,7 @@ fun run2(input: InputData): ResultType {
     }
 
     val prices = input.lines.map { line ->
-        generate(line.toLong()).take(rounds).map { (it % 10).toInt() }
+        generateRandom(line.toLong()).take(rounds).map { (it % 10).toInt() }
     }
 
     val changes = prices.map {
@@ -67,7 +67,8 @@ fun run2(input: InputData): ResultType {
         }
 
     return sequenceMaps
-        .fold(setOf<String>()) { acc, map -> acc + map.keys }
+        .flatMap { it.keys.toSet() }
+        .toSet()
         .maxOf { sequence ->
             sequenceMaps.sumOf { it[sequence] ?: 0 }
         }.toLong()
