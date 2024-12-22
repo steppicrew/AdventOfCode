@@ -127,7 +127,9 @@ fun run2(input: InputData): ResultType {
 
     /**
      * I don't know why only this combination works. (except for a and C)
-     * Tested combinations ad results:
+     * Is it: Always use the most expensive move (from A) first? Why?
+     * Exception: You can make two consecutive moves. (By double press A)
+     * Tested combinations and results:
      * abCdef: 491655470688846
      * aBCdef: 363481568617378
      * aBCDef: 348675369134078
