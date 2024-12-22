@@ -39,22 +39,22 @@ fun run1(input: InputData): ResultType {
 fun run2(input: InputData): ResultType {
     val rounds = 2000
 
-    fun generateRandom(seed: Long): Sequence<Long> = generateSequence(seed) { random ->
-        (random.shl(6).xor(random) % prune)
-            .let { secret ->
-                secret.shr(5).xor(secret) % prune
-            }.let { secret ->
-                secret.shl(11).xor(secret) % prune
-            }
+    fun generateRandom(seed: Long): Sequence<Int> = sequence {
+        var random = seed
+        while (true) {
+            yield((random % 10).toInt())
+            random = (random.shl(6).xor(random) % prune)
+                .let { secret ->
+                    secret.shr(5).xor(secret) % prune
+                }.let { secret ->
+                    secret.shl(11).xor(secret) % prune
+                }
+        }
     }
 
-    val prices = input.lines.map { line ->
-        generateRandom(line.toLong()).take(rounds).map { (it % 10).toInt() }
-    }
+    val prices = input.lines.map { line -> generateRandom(line.toLong()).take(rounds) }
 
-    val changes = prices.map {
-        it.zipWithNext { r1, r2 -> r2 - r1 }
-    }
+    val changes = prices.map { it.zipWithNext { a, b -> b - a } }
 
     val sequenceMaps = changes.zip(prices)
         .map { (change, priceList) ->
