@@ -17,7 +17,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (13764677935L to 1619L),
 )
 
-val prune = 16777216L
+const val prune = 16777216L
 
 fun run1(input: InputData): ResultType {
     val rounds = 2000
@@ -56,18 +56,19 @@ fun run2(input: InputData): ResultType {
         it.zipWithNext { r1, r2 -> r2 - r1 }
     }
 
-    val sequenceMaps = changes.zip(prices.map { it.toList() })
-        .map { (change, price) ->
+    val sequenceMaps = changes.zip(prices)
+        .map { (change, priceList) ->
             val sequenceMap = mutableMapOf<String, Int>()
-            change.windowed(4).forEachIndexed { index, window ->
-                val key = window.joinToString()
-                sequenceMap.putIfAbsent(key, price[index + 4])
-            }
+            change.windowed(4)
+                .zip(priceList.drop(4))
+                .forEach { (window, price) ->
+                    sequenceMap.putIfAbsent(window.joinToString(), price)
+                }
             sequenceMap.toMap()
         }
 
     return sequenceMaps
-        .flatMap { it.keys.toSet() }
+        .flatMap { it.keys }
         .toSet()
         .maxOf { sequence ->
             sequenceMaps.sumOf { it[sequence] ?: 0 }
