@@ -116,9 +116,7 @@ fun run1(input: InputData): ResultType {
     }
 
     return input.lines.sumOf { line ->
-        val movements = line.map { pressButton(it) }
-        val m2 = movements.joinToString("")
-        line.dropWhile { it == '0' }.dropLast(1).toInt() * m2.length
+        line.dropLast(1).toInt() * line.map { pressButton(it) }.joinToString("").length
     }.toLong()
 }
 
@@ -244,8 +242,7 @@ fun run2(input: InputData): ResultType {
     }
 
     return input.lines.sumOf { line ->
-        val movements = line.map { pressCodeButton(it) }.sum()
-        line.dropWhile { it == '0' }.dropLast(1).toInt() * movements
+        line.dropLast(1).toInt() * line.map { pressCodeButton(it) }.sum()
     }
 }
 
