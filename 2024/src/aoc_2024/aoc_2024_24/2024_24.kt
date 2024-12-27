@@ -206,7 +206,7 @@ fun run2(input: InputData): ResultType {
                                                         previousSwaps + swap
                                                     ) == zTarget)
                                 }.map { previousSwaps + it }
-                            }.filter { it.size <= swapCount }.toSet()
+                            }.filterNot { it.size > swapCount }.toSet()
                             input.log("possible swaps: ${possibleSwaps!!.size} (Bits: $shiftBits)")
                         }
                     }
