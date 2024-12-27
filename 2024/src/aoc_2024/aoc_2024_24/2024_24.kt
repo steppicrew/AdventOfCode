@@ -12,8 +12,8 @@ typealias ResultType = String
 // ref to (run1 to run2)
 // values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
-    // 1 to ("4" to null),
-    // 2 to ("2024" to null),
+    1 to ("4" to ""),
+    2 to ("2024" to ""),
     3 to ("9" to "z00,z01,z02,z05"),
     0 to ("51410244478064" to "gst,khg,nhn,tvb,vdc,z12,z21,z33"),
 )
@@ -94,12 +94,12 @@ fun run2(input: InputData): ResultType {
         .flatMap { listOf(it.second, it.third) }
         .filter { it.startsWith("x") }
         .toSet().size
-    val zBitMask = 1UL.shl(originalGates.keys.filter { it.startsWith("z") }.count()) - 1UL
+    val zBitMask = 1UL.shl(originalGates.keys.count { it.startsWith("z") }) - 1UL
 
     val verifyOperation: (ULong, ULong) -> ULong = when (input.ref) {
         0 -> { x, y -> (x + y).and(zBitMask) }
         3 -> { x, y -> (x.and(y)).and(zBitMask) }
-        else -> throw RuntimeException("Unknown operation")
+        else -> return ""
     }
 
 
@@ -121,7 +121,7 @@ fun run2(input: InputData): ResultType {
         }.toMap()
     }
 
-    fun getGetDependencies(gates: Map<String, Gate>): (String, Int) -> Set<String> {
+    fun getGetDependencies(gates: Map<String, Gate>): (String) -> Set<String> {
         val cache = mutableMapOf<String, Set<String>>()
         fun getDependencies(wire: String, round: Int): Set<String> {
             if (round > 100) throw RuntimeException("Circular dependency")
@@ -132,7 +132,7 @@ fun run2(input: InputData): ResultType {
                 inputs + inputs.flatMap { getDependencies(it, round + 1) }
             }
         }
-        return ::getDependencies
+        return { getDependencies(it, 0) }
     }
 
     val getOriginalDependencies = getGetDependencies(originalGates)
@@ -148,7 +148,7 @@ fun run2(input: InputData): ResultType {
             fun getValue(name: String): Boolean {
                 return values.getOrPut(name) {
                     val (operation, wire1, wire2) = gates[name]!!
-                    if (name in getDependencies(wire1, 0) || name in getDependencies(wire2, 0)) {
+                    if (name in getDependencies(wire1) || name in getDependencies(wire2)) {
                         throw RuntimeException("Circular dependency")
                     }
                     operations[operation]!!(getValue(wire1), getValue(wire2))
@@ -175,9 +175,7 @@ fun run2(input: InputData): ResultType {
                     val wrongOutputGates = z.xor(zTarget).toString(2).reversed().mapIndexed { index, bit ->
                         index to intToBool(bit.toString().toInt())
                     }.filter { it.second }.map { it.first }
-                    // println("${x.toString(2)} + ${y.toString(2)} = ${z.toString(2)} (${zTarget.toString(2)})")
-                    // println(z.xor(zTarget).toString(2))
-                    val depends = wrongOutputGates.map { "z" + pad(it) }.map { getOriginalDependencies(it, 0) + it }
+                    val depends = wrongOutputGates.map { "z" + pad(it) }.map { getOriginalDependencies(it) + it }
                     val swaps = depends.flatMapIndexed { index, dependencies1 ->
                         depends.drop(index + 1).flatMap { dependencies2 ->
                             dependencies1.flatMap { dependency1 ->
@@ -217,6 +215,7 @@ fun run2(input: InputData): ResultType {
         }
     }
 
+    // filter for swapCount and check for swap list to satisfy all operations again
     possibleSwaps = possibleSwaps!!
         .filter { it.size == swapCount }
         .filter { possibleSwap ->
@@ -240,5 +239,5 @@ fun run2(input: InputData): ResultType {
 }
 
 fun main() {
-    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS, true)
+    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS, quiet = false)
 }
