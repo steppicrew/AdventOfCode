@@ -94,7 +94,7 @@ fun run2(input: InputData): ResultType {
         .flatMap { listOf(it.second, it.third) }
         .filter { it.startsWith("x") }
         .toSet().size
-    val zBitMask = 1UL.shl(maxBits + 1) - 1UL
+    val zBitMask = 1UL.shl(originalGates.keys.filter { it.startsWith("z") }.count()) - 1UL
 
     val verifyOperation: (ULong, ULong) -> ULong = when (input.ref) {
         0 -> { x, y -> (x + y).and(zBitMask) }
@@ -189,40 +189,29 @@ fun run2(input: InputData): ResultType {
                             }
                         }
                     }
-                    if (swaps.isEmpty()) {
-                        /*
-                        possibleSwaps = possibleSwaps?.filter {
-                            solve(
-                                x,
-                                y,
-                                it.toList()
-                            ) == zTarget
-                        }?.toSet()
-                        println("possible swaps (emptySet): ${possibleSwaps!!.size} (Bits: $shiftBits)")
-                         */
-                    } else if (possibleSwaps == null) {
-                        possibleSwaps = swaps.map { setOf(it) }.toSet()
-                    } else {
-                        possibleSwaps = possibleSwaps!!.flatMap { previousSwaps ->
-                            swaps.filter { swap ->
-                                swap in previousSwaps ||
-                                        (previousSwaps
-                                            .all {
-                                                setOf(it.first, it.second)
-                                                    .intersect(setOf(swap.first, swap.second))
-                                                    .isEmpty()
-                                            } &&
-                                                solve(
-                                                    x,
-                                                    y,
-                                                    previousSwaps + swap
-                                                ) == zTarget)
-                            }.map { previousSwaps + it }
-                        }.toSet()
-                        println("possible swaps: ${possibleSwaps!!.size} (Bits: $shiftBits)")
+                    if (swaps.isNotEmpty()) {
+                        if (possibleSwaps == null) {
+                            possibleSwaps = swaps.map { setOf(it) }.toSet()
+                        } else {
+                            possibleSwaps = possibleSwaps!!.flatMap { previousSwaps ->
+                                swaps.filter { swap ->
+                                    swap in previousSwaps ||
+                                            (previousSwaps
+                                                .all {
+                                                    setOf(it.first, it.second)
+                                                        .intersect(setOf(swap.first, swap.second))
+                                                        .isEmpty()
+                                                } &&
+                                                    solve(
+                                                        x,
+                                                        y,
+                                                        previousSwaps + swap
+                                                    ) == zTarget)
+                                }.map { previousSwaps + it }
+                            }.filter { it.size <= swapCount }.toSet()
+                            input.log("possible swaps: ${possibleSwaps!!.size} (Bits: $shiftBits)")
+                        }
                     }
-                    possibleSwaps = possibleSwaps?.filter { it.size <= swapCount }?.toSet()
-                    // println(depends)
                 }
             }
         }
@@ -230,19 +219,17 @@ fun run2(input: InputData): ResultType {
 
     possibleSwaps = possibleSwaps!!
         .filter { it.size == swapCount }
-        .toSet()
-
-    possibleSwaps = possibleSwaps!!.filter { possibleSwap ->
-        (0 until maxBits - 1).all { shiftBits ->
-            (if (shiftBits == 0) listOf(0UL, 1UL) else listOf(1UL, 3UL).map { it.shl(shiftBits) }).all { x ->
-                (if (shiftBits == 0) listOf(0UL, 1UL) else listOf(1UL, 3UL).map { it.shl(shiftBits) }).all { y ->
-                    val zTarget = verifyOperation(x, y)
-                    val z = solve(x, y, possibleSwap)!!
-                    z == zTarget
+        .filter { possibleSwap ->
+            (0 until maxBits - 1).all { shiftBits ->
+                (if (shiftBits == 0) listOf(0UL, 1UL) else listOf(1UL, 3UL).map { it.shl(shiftBits) }).all { x ->
+                    (if (shiftBits == 0) listOf(0UL, 1UL) else listOf(1UL, 3UL).map { it.shl(shiftBits) }).all { y ->
+                        val zTarget = verifyOperation(x, y)
+                        val z = solve(x, y, possibleSwap)!!
+                        z == zTarget
+                    }
                 }
             }
-        }
-    }.toSet()
+        }.toSet()
 
 
     return possibleSwaps!!
@@ -253,5 +240,5 @@ fun run2(input: InputData): ResultType {
 }
 
 fun main() {
-    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS)
+    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS, true)
 }
