@@ -12,8 +12,8 @@ typealias ResultType = String
 // ref to (run1 to run2)
 // values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
-    1 to ("4" to ""),
-    2 to ("2024" to ""),
+    1 to ("4" to "no result"),
+    2 to ("2024" to "no result"),
     3 to ("9" to "z00,z01,z02,z05"),
     0 to ("51410244478064" to "gst,khg,nhn,tvb,vdc,z12,z21,z33"),
 )
@@ -69,12 +69,12 @@ fun run2(input: InputData): ResultType {
         "XOR" to { w1, w2 -> w1 != w2 },
     )
 
-    fun boolToInt(value: Boolean): Int {
-        return if (value) 1 else 0
+    fun boolToString(value: Boolean): String {
+        return if (value) "1" else "0"
     }
 
-    fun intToBool(value: Int): Boolean {
-        return value == 1
+    fun stringToBool(value: String): Boolean {
+        return value == "1"
     }
 
     fun pad(number: Int): String {
@@ -99,7 +99,7 @@ fun run2(input: InputData): ResultType {
     val verifyOperation: (ULong, ULong) -> ULong = when (input.ref) {
         0 -> { x, y -> (x + y).and(zBitMask) }
         3 -> { x, y -> (x.and(y)).and(zBitMask) }
-        else -> return ""
+        else -> return "no result"
     }
 
 
@@ -157,87 +157,94 @@ fun run2(input: InputData): ResultType {
 
             val zValues =
                 gates.keys.filter { it.startsWith("z") }.sortedDescending()
-                    .joinToString("") { boolToInt(getValue(it)).toString() }
+                    .joinToString("") { boolToString(getValue(it)) }
             return zValues.toULong(2)
         } catch (e: RuntimeException) {
             return null
         }
     }
 
-    var possibleSwaps: Set<Set<Pair<String, String>>>? = null
+    // Create a sequence of x and y values to test
+    // Each x and y are set to 00b 01b 11b at each possible bit offset
+    fun iterateXY(): Sequence<Triple<ULong, ULong, Int>> = sequence {
+        val list01 = sequenceOf(0UL, 1UL)
+        val list13 = sequenceOf(1UL, 3UL)
 
-    (0 until maxBits - 1).forEach { shiftBits ->
-        (if (shiftBits == 0) listOf(0UL, 1UL) else listOf(1UL, 3UL).map { it.shl(shiftBits) }).forEach { x ->
-            (if (shiftBits == 0) listOf(0UL, 1UL) else listOf(1UL, 3UL).map { it.shl(shiftBits) }).forEach { y ->
-                val zTarget = verifyOperation(x, y)
-                val z = solve(x, y, setOf())!!
-                if (z != zTarget) {
-                    val wrongOutputGates = z.xor(zTarget).toString(2).reversed().mapIndexed { index, bit ->
-                        index to intToBool(bit.toString().toInt())
-                    }.filter { it.second }.map { it.first }
-                    val depends = wrongOutputGates.map { "z" + pad(it) }.map { getOriginalDependencies(it) + it }
-                    val swaps = depends.flatMapIndexed { index, dependencies1 ->
-                        depends.drop(index + 1).flatMap { dependencies2 ->
-                            dependencies1.flatMap { dependency1 ->
-                                dependencies2.map { dependency2 ->
-                                    wires(dependency1, dependency2)
-                                }.filter {
-                                    solve(x, y, setOf(it)) == zTarget
-                                }
-                            }
-                        }
-                    }
-                    if (swaps.isNotEmpty()) {
-                        if (possibleSwaps == null) {
-                            possibleSwaps = swaps.map { setOf(it) }.toSet()
-                        } else {
-                            possibleSwaps = possibleSwaps!!.flatMap { previousSwaps ->
-                                swaps.filter { swap ->
-                                    swap in previousSwaps ||
-                                            (previousSwaps
-                                                .all {
-                                                    setOf(it.first, it.second)
-                                                        .intersect(setOf(swap.first, swap.second))
-                                                        .isEmpty()
-                                                } &&
-                                                    solve(
-                                                        x,
-                                                        y,
-                                                        previousSwaps + swap
-                                                    ) == zTarget)
-                                }.map { previousSwaps + it }
-                            }.filterNot { it.size > swapCount }.toSet()
-                            input.log("possible swaps: ${possibleSwaps!!.size} (Bits: $shiftBits)")
-                        }
-                    }
+        list01.forEach { x -> list01.forEach { y -> yield(Triple(x, y, 0)) } }
+
+        (1 until maxBits - 1).forEach { shiftBits ->
+            list13.map { it.shl(shiftBits) }.forEach { x ->
+                list13.map { it.shl(shiftBits) }.forEach { y ->
+                    yield(Triple(x, y, shiftBits))
                 }
             }
         }
     }
 
-    // filter for swapCount and check for swap list to satisfy all operations again
-    possibleSwaps = possibleSwaps!!
-        .filter { it.size == swapCount }
-        .filter { possibleSwap ->
-            (0 until maxBits - 1).all { shiftBits ->
-                (if (shiftBits == 0) listOf(0UL, 1UL) else listOf(1UL, 3UL).map { it.shl(shiftBits) }).all { x ->
-                    (if (shiftBits == 0) listOf(0UL, 1UL) else listOf(1UL, 3UL).map { it.shl(shiftBits) }).all { y ->
-                        val zTarget = verifyOperation(x, y)
-                        val z = solve(x, y, possibleSwap)!!
-                        z == zTarget
+    var swapCandidates: Set<Set<Pair<String, String>>>? = null
+
+    iterateXY().forEach { (x, y, shiftBits) ->
+        val zTarget = verifyOperation(x, y)
+        val z = solve(x, y, setOf())!!
+        if (z == zTarget) return@forEach
+
+        val wrongOutputGates = z.xor(zTarget).toString(2).reversed().mapIndexed { index, bit ->
+            index to stringToBool(bit.toString())
+        }.filter { it.second }.map { it.first }
+        val depends = wrongOutputGates.map { "z" + pad(it) }.map { getOriginalDependencies(it) + it }
+        val swaps = depends.flatMapIndexed { index, dependencies1 ->
+            depends.drop(index + 1).flatMap { dependencies2 ->
+                dependencies1.flatMap { dependency1 ->
+                    dependencies2.map { dependency2 ->
+                        wires(dependency1, dependency2)
+                    }.filter {
+                        solve(x, y, setOf(it)) == zTarget
                     }
                 }
             }
-        }.toSet()
+        }
 
+        // Swaps could be empty if we have more than two outputs to be swapped
+        // Skip those and hope to catch them anyway later
+        if (swaps.isEmpty()) return@forEach
 
-    return possibleSwaps!!
-        .firstOrNull { it.size == swapCount }!!
+        if (swapCandidates == null) {
+            swapCandidates = swaps.map { setOf(it) }.toSet()
+            return@forEach
+        }
+
+        swapCandidates = swapCandidates!!.flatMap { previousSwaps ->
+            val previouslySwappedWires = previousSwaps
+                .fold(setOf<String>()) { acc, swap -> acc + swap.first + swap.second }
+
+            // A swap must be already known or no wire should be part of any previous swap
+            swaps.filter { swap ->
+                swap in previousSwaps || (
+                        swap.first !in previouslySwappedWires &&
+                                swap.second !in previouslySwappedWires &&
+                                solve(x, y, previousSwaps + swap) == zTarget
+                        )
+            }.map { previousSwaps + it }
+        }.filterNot { it.size > swapCount }.toSet()
+        input.log("possible swaps: ${swapCandidates!!.size} (Bits: $shiftBits)")
+    }
+
+    return (swapCandidates ?: return "no result")
+        // find first matching swapCount that satisfies all tests
+        .first { possibleSwap ->
+            possibleSwap.size == swapCount &&
+                    iterateXY().all { (x, y, _) ->
+                        verifyOperation(x, y) == solve(x, y, possibleSwap)
+                    }
+        }
+        // flatten
         .flatMap { listOf(it.first, it.second) }
+        // sort
         .sorted()
+        // ...and join
         .joinToString(",")
 }
 
 fun main() {
-    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS, quiet = false)
+    simpleIO(YEAR, DAY, ::run1 to ::run2, EXPECTED_RESULTS, quiet = true)
 }
