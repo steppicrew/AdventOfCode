@@ -12,8 +12,8 @@ typealias ResultType = Int
 // ref to (run1 to run2)
 // values may be of any type, null is for 'not known' and write result into file
 val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
-    1 to (3 to null),
-    0 to (null to null),
+    1 to (3 to 3),
+    0 to (3264 to 3264),
 )
 
 
