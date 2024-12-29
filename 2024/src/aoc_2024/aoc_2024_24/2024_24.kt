@@ -98,7 +98,7 @@ fun run2(input: InputData): ResultType {
 
     val verifyOperation: (ULong, ULong) -> ULong = when (input.ref) {
         0 -> { x, y -> (x + y).and(zBitMask) }
-        3 -> { x, y -> (x.and(y)).and(zBitMask) }
+        3 -> { x, y -> x.and(y).and(zBitMask) }
         else -> return "no result"
     }
 
