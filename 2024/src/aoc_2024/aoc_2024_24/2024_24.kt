@@ -97,7 +97,7 @@ fun run2(input: InputData): ResultType {
     val zBitMask = 1UL.shl(originalGates.keys.count { it.startsWith("z") }) - 1UL
 
     val verifyOperation: (ULong, ULong) -> ULong = when (input.ref) {
-        0 -> { x, y -> (x + y).and(zBitMask) }
+        0 -> { x, y -> x.plus(y).and(zBitMask) }
         3 -> { x, y -> x.and(y).and(zBitMask) }
         else -> return "no result"
     }
@@ -144,17 +144,17 @@ fun run2(input: InputData): ResultType {
 
         val getDependencies = getGetDependencies(gates)
 
-        try {
-            fun getValue(name: String): Boolean {
-                return values.getOrPut(name) {
-                    val (operation, wire1, wire2) = gates[name]!!
-                    if (name in getDependencies(wire1) || name in getDependencies(wire2)) {
-                        throw RuntimeException("Circular dependency")
-                    }
-                    operations[operation]!!(getValue(wire1), getValue(wire2))
-                }
-            }
+        fun getValue(name: String): Boolean {
+            return values.getOrPut(name) {
+                val (operation, wire1, wire2) = gates[name]!!
 
+                // Throws an exception if there is a circular dependency
+                getDependencies(name)
+                operations[operation]!!(getValue(wire1), getValue(wire2))
+            }
+        }
+
+        try {
             val zValues =
                 gates.keys.filter { it.startsWith("z") }.sortedDescending()
                     .joinToString("") { boolToString(getValue(it)) }
