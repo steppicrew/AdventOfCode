@@ -123,16 +123,17 @@ fun run2(input: InputData): ResultType {
 
     fun getGetDependencies(gates: Map<String, Gate>): (String) -> Set<String> {
         val cache = mutableMapOf<String, Set<String>>()
-        fun getDependencies(wire: String, round: Int): Set<String> {
-            if (round > 100) throw RuntimeException("Circular dependency")
+        fun getDependencies(wire: String, seen: MutableSet<String>): Set<String> {
             return cache.getOrPut(wire) {
                 val gate = gates[wire] ?: return@getOrPut setOf()
-                val inputs =
-                    setOf(gate.second, gate.third).filter { !it.startsWith("x") && !it.startsWith("y") }.toSet()
-                inputs + inputs.flatMap { getDependencies(it, round + 1) }
+                if (!seen.add(wire)) throw RuntimeException("Circular dependency")
+                val inputs = setOf(gate.second, gate.third)
+                    .filter { !it.startsWith("x") && !it.startsWith("y") }
+                    .toSet()
+                inputs + inputs.flatMap { getDependencies(it, seen) }.also { seen.remove(wire) }
             }
         }
-        return { getDependencies(it, 0) }
+        return { getDependencies(it, mutableSetOf()) }
     }
 
     val getOriginalDependencies = getGetDependencies(originalGates)
