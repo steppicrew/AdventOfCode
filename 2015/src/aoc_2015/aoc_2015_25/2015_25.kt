@@ -39,9 +39,7 @@ fun run1(input: InputData): ResultType {
 
     fun getIndex(position: Pair<Int, Int>): Int {
         val (col, row) = position
-        val rowStart = row * (row - 1) / 2
-        val colOffset = (col + row) * (col + row - 1) / 2 - row * (row + 1) / 2
-        return rowStart + colOffset
+        return (col + row) * (col + row - 1) / 2 - row
     }
 
     return generate().drop(getIndex(codePosition)).first()
