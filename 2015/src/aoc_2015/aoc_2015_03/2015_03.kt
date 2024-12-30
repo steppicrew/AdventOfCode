@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_03
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -13,10 +14,10 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (2081 to 2341)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     var pos = 0 to 0
     val visited = sequenceOf(0 to 0)
-        .plus(lines[0].map { char ->
+        .plus(input.lines[0].map { char ->
             when (char) {
                 '<' -> pos.first - 1 to pos.second
                 '>' -> pos.first + 1 to pos.second
@@ -30,10 +31,10 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return visited.count()
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val bots = mutableListOf(0 to 0, 0 to 0)
     val visited = sequenceOf(0 to 0)
-        .plus(lines[0].mapIndexed { index, char ->
+        .plus(input.lines[0].mapIndexed { index, char ->
             val pos = bots[index % 2]
             when (char) {
                 '<' -> pos.first - 1 to pos.second

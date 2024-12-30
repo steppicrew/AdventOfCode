@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_16
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -12,7 +13,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (40 to 241)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reAunt = """Sue (\d+): (.*)""".toRegex()
     val reProperty = """(\w+): (\d+)""".toRegex()
     val knownProperties = mapOf(
@@ -28,7 +29,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         "perfumes" to 1,
     )
 
-    return lines
+    return input.lines
         .mapNotNull { reAunt.matchEntire(it) }
         .map { match ->
             val (number, propertiesList) = match.destructured
@@ -45,7 +46,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }.first
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reAunt = """Sue (\d+): (.*)""".toRegex()
     val reProperty = """(\w+): (\d+)""".toRegex()
     val knownProperties = mapOf<String, (Int) -> Boolean>(
@@ -61,7 +62,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         "perfumes" to { it == 1 },
     )
 
-    return lines
+    return input.lines
         .mapNotNull { reAunt.matchEntire(it) }
         .map { match ->
             val (number, propertiesList) = match.destructured

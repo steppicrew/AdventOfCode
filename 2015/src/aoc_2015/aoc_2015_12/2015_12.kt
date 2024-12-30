@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_12
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -13,13 +14,13 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (191164 to 87842)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reNumber = """-?\d+""".toRegex()
 
-    return reNumber.findAll(lines.first()).sumOf { it.value.toInt() }
+    return reNumber.findAll(input.lines.first()).sumOf { it.value.toInt() }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reNumber = """-?\d+""".toRegex()
 
     val reObject = """\{([^{}]+)}""".toRegex()
@@ -35,7 +36,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
     }
 
-    var line = lines.first()
+    var line = input.lines.first()
     while (true) {
         val nextLine = replace(line)
         if (line == nextLine) {

@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_21
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 import kotlin.math.max
 
@@ -60,8 +61,7 @@ fun addGold(items: List<Pair<Int, Pair<Int, Int>>>): Int {
 }
 
 fun run1(
-    @Suppress("UNUSED_PARAMETER") lines: List<String>,
-    @Suppress("UNUSED_PARAMETER") log: (String) -> Unit
+    @Suppress("UNUSED_PARAMETER") input: InputData
 ): ResultType {
     return weapons.flatMap { weapon ->
         armors.flatMap { armor ->
@@ -77,8 +77,7 @@ fun run1(
 }
 
 fun run2(
-    @Suppress("UNUSED_PARAMETER") lines: List<String>,
-    @Suppress("UNUSED_PARAMETER") log: (String) -> Unit
+    @Suppress("UNUSED_PARAMETER") input: InputData
 ): ResultType {
     return weapons.flatMap { weapon ->
         armors.flatMap { armor ->

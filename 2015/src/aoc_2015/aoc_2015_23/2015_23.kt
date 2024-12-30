@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_23
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -12,7 +13,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (255 to 334)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     var prog = 0
 
     val registers = mutableMapOf<String, Int>()
@@ -27,7 +28,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     )
 
     val reSpit = """,?\s+""".toRegex()
-    val program = lines.map {
+    val program = input.lines.map {
         val parts = it.split(reSpit)
         parts.first() to parts.drop(1)
     }
@@ -41,7 +42,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 }
 
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     var prog = 0
 
     val registers = mutableMapOf("a" to 1)
@@ -56,7 +57,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     )
 
     val reSpit = """,?\s+""".toRegex()
-    val program = lines.map {
+    val program = input.lines.map {
         val parts = it.split(reSpit)
         parts.first() to parts.drop(1)
     }

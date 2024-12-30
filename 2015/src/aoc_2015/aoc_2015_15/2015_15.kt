@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_15
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 import kotlin.math.max
 
@@ -14,11 +15,11 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (222870 to 117936)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reIngredients =
         """\w+: capacity (-?\d+), durability (-?\d+), flavor (-?\d+), texture (-?\d+), calories -?\d+""".toRegex()
 
-    val scores = lines
+    val scores = input.lines
         .mapNotNull { reIngredients.matchEntire(it) }
         .map { match ->
             match.destructured.toList().map(String::toInt)
@@ -51,11 +52,11 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reIngredients =
         """\w+: capacity (-?\d+), durability (-?\d+), flavor (-?\d+), texture (-?\d+), calories (-?\d+)""".toRegex()
 
-    val scores = lines
+    val scores = input.lines
         .mapNotNull { reIngredients.matchEntire(it) }
         .map { match ->
             match.destructured.toList().map(String::toInt)

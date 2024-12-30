@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_22
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -105,8 +106,7 @@ class Player(
 }
 
 fun run1(
-    @Suppress("UNUSED_PARAMETER") lines: List<String>,
-    @Suppress("UNUSED_PARAMETER") log: (String) -> Unit
+    @Suppress("UNUSED_PARAMETER") input: InputData
 ): ResultType {
     val me = Player(50, mana = 500)
     val boss = Player(71, damage = 10)
@@ -135,8 +135,7 @@ fun run1(
 }
 
 fun run2(
-    @Suppress("UNUSED_PARAMETER") lines: List<String>,
-    @Suppress("UNUSED_PARAMETER") log: (String) -> Unit
+    @Suppress("UNUSED_PARAMETER") input: InputData
 ): ResultType {
     val me = Player(50, mana = 500)
     val boss = Player(71, damage = 10)

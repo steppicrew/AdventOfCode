@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_18
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -13,7 +14,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (821 to 886)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val neighbours = listOf(
         -1 to 0,
         -1 to -1,
@@ -25,7 +26,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         -1 to 1,
     )
 
-    val map = lines.flatMapIndexed { row, line ->
+    val map = input.lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, char -> (col to row) to (char == '#') }
     }.toMap()
 
@@ -44,7 +45,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     }.values.count { it }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val neighbours = listOf(
         -1 to 0,
         -1 to -1,
@@ -56,8 +57,8 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         -1 to 1,
     )
 
-    val maxX = lines.first().length - 1
-    val maxY = lines.size - 1
+    val maxX = input.lines.first().length - 1
+    val maxY = input.lines.size - 1
 
     val corners = setOf(
         0 to 0,
@@ -67,7 +68,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     )
 
 
-    val map = lines.flatMapIndexed { row, line ->
+    val map = input.lines.flatMapIndexed { row, line ->
         line.mapIndexed { col, char -> (col to row) to (char == '#') }
     }.plus(
         corners.map { it to true }

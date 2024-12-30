@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_06
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 import kotlin.math.max
 
@@ -13,7 +14,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (377891 to 14110788)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val map = mutableSetOf<Pair<Int, Int>>()
 
     val reLine = """(turn on|turn off|toggle) (\d+),(\d+) through (\d+),(\d+)""".toRegex()
@@ -32,7 +33,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
     }
 
-    lines.asSequence()
+    input.lines.asSequence()
         .mapNotNull { reLine.matchEntire(it) }
         .forEach { match ->
             val (command, fromX, fromY, toX, toY) = match.destructured
@@ -49,7 +50,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return map.size
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val map = mutableMapOf<Pair<Int, Int>, Int>()
 
     val reLine = """(turn on|turn off|toggle) (\d+),(\d+) through (\d+),(\d+)""".toRegex()
@@ -66,7 +67,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         map.compute(xy) { key, oldValue -> (oldValue ?: 0) + 2 }
     }
 
-    lines.asSequence()
+    input.lines.asSequence()
         .mapNotNull { reLine.matchEntire(it) }
         .forEach { match ->
             val (command, fromX, fromY, toX, toY) = match.destructured

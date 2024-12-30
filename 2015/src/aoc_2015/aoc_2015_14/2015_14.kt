@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_14
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 import kotlin.math.min
 
@@ -14,12 +15,12 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (2640 to 1102)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reSpeed = """\w+ can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.""".toRegex()
 
     val timeTotal = 2503
 
-    return lines
+    return input.lines
         .mapNotNull { reSpeed.matchEntire(it) }
         .maxOf { match ->
             val (distance, time1, time2) = match.destructured.toList().map(String::toInt)
@@ -31,12 +32,12 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reSpeed = """\w+ can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.""".toRegex()
 
     val timeTotal = 2503
 
-    val speeds = lines
+    val speeds = input.lines
         .mapNotNull { reSpeed.matchEntire(it) }
         .map { match ->
             val (distance, time1, time2) = match.destructured.toList().map(String::toInt)

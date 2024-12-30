@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_13
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -28,10 +29,10 @@ fun <T> permutationsSequence(list: List<T>): Sequence<List<T>> = sequence {
 }
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reSentence = """(\w+) would (gain|lose) (\d+) happiness units by sitting next to (\w+).""".toRegex()
 
-    val map = lines
+    val map = input.lines
         .mapNotNull { reSentence.matchEntire(it) }
         .map { match ->
             val (subject, verb, value, obj) = match.destructured
@@ -49,10 +50,10 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reSentence = """(\w+) would (gain|lose) (\d+) happiness units by sitting next to (\w+).""".toRegex()
 
-    val map = lines
+    val map = input.lines
         .mapNotNull { reSentence.matchEntire(it) }
         .map { match ->
             val (subject, verb, value, obj) = match.destructured

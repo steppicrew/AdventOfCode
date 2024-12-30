@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_11
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -14,7 +15,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to ("hxbxxyzz" to "hxcaabcc")
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun commonRun(input: String): ResultType {
     val forbidden = mapOf('i' to 'j', 'o' to 'p', 'l' to 'm')
     val reDouble = """(\w)\1.*(\w)\2""".toRegex()
 
@@ -30,7 +31,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     }
 
     var line =
-        lines.first().replace("""([iol])(.*)""".toRegex()) { match ->
+        input.replace("""([iol])(.*)""".toRegex()) { match ->
             "${forbidden[match.groupValues[1].first()]}${"a".repeat(match.groupValues[2].length)}"
         }
 
@@ -44,8 +45,12 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return line
 }
 
-fun run2(lines: List<String>, log: (String) -> Unit): ResultType {
-    return run1(listOf(run1(lines, log)), log)
+fun run1(input: InputData): ResultType {
+    return commonRun(input.lines.first())
+}
+
+fun run2(input: InputData): ResultType {
+    return commonRun(commonRun(input.lines.first()))
 }
 
 fun main() {

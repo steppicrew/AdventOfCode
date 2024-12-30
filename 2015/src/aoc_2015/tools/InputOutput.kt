@@ -36,14 +36,31 @@ typealias ExpectedResult<T> = Pair<T?, T?>
 typealias ExpectedRefResult<T> = Pair<Int, ExpectedResult<T>>
 typealias ExpectedRefResults<T> = List<ExpectedRefResult<T>>
 
-typealias RunType<T> = (List<String>, (String) -> Unit) -> T
-
 val formatter = NumberFormat.getInstance(Locale.GERMAN)!!
+
+class InputData(val lines: List<String>, val ref: Int, private val logfileName: String, private val quiet: Boolean) {
+    private var file: File? = null
+
+    fun log(line: String) {
+        val logfile = file ?: File(logfileName)
+        if (logfile == file) {
+            logfile.appendText("$line\n")
+        } else {
+            file = logfile
+            logfile.writeText("$line\n")
+        }
+        if (!quiet) println(line)
+    }
+
+}
+
+typealias RunType<T> = (InputData) -> T
 
 fun <T> simpleIO(
     year: Int, day: Int,
     run: Pair<RunType<T>, RunType<T>>,
-    expectedResults: ExpectedRefResults<T>
+    expectedResults: ExpectedRefResults<T>,
+    quiet: Boolean = false
 ) {
     fun printResult(result: T): String {
         return "${bold}${result}${reset}"
@@ -61,23 +78,14 @@ fun <T> simpleIO(
                 ).joinToString("")
             }
 
-            val logLines = mutableListOf<String>()
-            fun log(line: String) {
-                logLines.add("$line\n")
-                println(line)
-            }
-
             val lines = File(getPath(false, "txt"))
                 .readLines()
                 .filter { !it.startsWith(';') }
 
-            val (result, duration) = measureTimedValue { run(lines, ::log) }
-            val time = "${formatter.format(duration.inWholeMilliseconds / 1000.0)}s"
+            val inputData = InputData(lines, ref, getPath(true, "log"), quiet)
 
-            if (logLines.size > 0) {
-                File(getPath(true, "log"))
-                    .writeText(logLines.joinToString(""))
-            }
+            val (result, duration) = measureTimedValue { run(inputData) }
+            val time = "${formatter.format(duration.inWholeMilliseconds / 1000.0)}s"
 
             print("${if (ref > 0) "ref${ref}" else "main"}/${part}: ")
 

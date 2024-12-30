@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_07
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -12,7 +13,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (46065.toUShort() to 14134.toUShort())
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reCommands = mapOf<Regex, (Pair<UShort, UShort>) -> UShort>(
         """(\w+) -> (\w+)""".toRegex() to { it.first },
         """(\w+) AND (\w+) -> (\w+)""".toRegex() to { it.first and it.second },
@@ -24,7 +25,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 
     val reNumber = """\d+""".toRegex()
 
-    val rules = lines.mapNotNull { line ->
+    val rules = input.lines.mapNotNull { line ->
         val command = reCommands.keys.first { it.matches(line) }
         val match = command.matchEntire(line)
         if (match != null) {
@@ -62,7 +63,7 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return getOutput("a")
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reCommands = mapOf<Regex, (Pair<UShort, UShort>) -> UShort>(
         """(\w+) -> (\w+)""".toRegex() to { it.first },
         """(\w+) AND (\w+) -> (\w+)""".toRegex() to { it.first and it.second },
@@ -74,7 +75,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
 
     val reNumber = """\d+""".toRegex()
 
-    val rules = lines.mapNotNull { line ->
+    val rules = input.lines.mapNotNull { line ->
         val command = reCommands.keys.first { it.matches(line) }
         val match = command.matchEntire(line)
         if (match != null) {

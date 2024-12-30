@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_05
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -14,11 +15,11 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 )
 
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val vowels = setOf('a', 'e', 'i', 'u', 'o')
     val reForbidden = """ab|cd|pq|xy""".toRegex()
     val reTwice = """(\w)\1""".toRegex()
-    return lines
+    return input.lines
         .count { line ->
             line.count {
                 vowels.contains(it)
@@ -28,11 +29,11 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
         }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reRepeat1 = """(\w\w).*\1""".toRegex()
     val reRepeat2 = """(\w).\1""".toRegex()
 
-    return lines
+    return input.lines
         .count { line ->
             reRepeat1.containsMatchIn(line) && reRepeat2.containsMatchIn(line)
         }

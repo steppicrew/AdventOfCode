@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_17
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -12,8 +13,8 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (null to null)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val containers = lines.map(String::toInt)
+fun run1(input: InputData): ResultType {
+    val containers = input.lines.map(String::toInt)
 
     fun fill(liter: Int, containers: List<Int>): List<List<Int>>? {
         if (liter == 0) {
@@ -31,8 +32,8 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return fill(150, containers)!!.size
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
-    val containers = lines.map(String::toInt)
+fun run2(input: InputData): ResultType {
+    val containers = input.lines.map(String::toInt)
 
     fun fill(liter: Int, containers: List<Int>): List<List<Int>>? {
         if (liter == 0) {

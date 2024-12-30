@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_19
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -14,18 +15,18 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (535 to 212)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reReplacement = """(\w+) => (\w+)""".toRegex()
     val reInput = """\w+""".toRegex()
 
-    val replacements = lines
+    val replacements = input.lines
         .mapNotNull { reReplacement.matchEntire(it) }
         .map { match ->
             val (from, to) = match.destructured
             from to to
         }
 
-    val input = lines.first { reInput.matches(it) }
+    val input = input.lines.first { reInput.matches(it) }
 
     return replacements.flatMap { (from, to) ->
         from.toRegex().findAll(input).map { match ->
@@ -35,11 +36,11 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     }.toSet().size
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reReplacement = """(\w+) => (\w+)""".toRegex()
     val reInput = """\w+""".toRegex()
 
-    val allReplacements = lines
+    val allReplacements = input.lines
         .mapNotNull { reReplacement.matchEntire(it) }
         .map { match ->
             val (from, to) = match.destructured
@@ -49,7 +50,7 @@ fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     val replacements = allReplacements.filter { it.first != "e" }
     val eReplacements = allReplacements.filter { it.first == "e" }.map { it.second }.toSet()
 
-    val startMolecule = lines.first { reInput.matches(it) }
+    val startMolecule = input.lines.first { reInput.matches(it) }
 
     fun getCounts(molecule: String, replacement: Pair<String, String>): Pair<Int, String> {
         return molecule.replace(replacement.second, ".").count { it == '.' } to molecule.replace(

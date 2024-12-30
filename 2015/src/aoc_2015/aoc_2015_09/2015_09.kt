@@ -1,6 +1,7 @@
 package aoc_2015.aoc_2015_09
 
 import aoc_2015.tools.ExpectedRefResults
+import aoc_2015.tools.InputData
 import aoc_2015.tools.simpleIO
 
 const val YEAR = 2015
@@ -13,9 +14,9 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
     0 to (141 to 736)
 )
 
-fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run1(input: InputData): ResultType {
     val reDistance = """(\w+) to (\w+) = (\d+)""".toRegex()
-    val distances = lines
+    val distances = input.lines
         .mapNotNull { reDistance.matchEntire(it) }
         .flatMap {
             val (location1, location2, distance) = it.destructured
@@ -35,9 +36,9 @@ fun run1(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Uni
     return distances.keys.minOf { getDistances(it, setOf(it)) }
 }
 
-fun run2(lines: List<String>, @Suppress("UNUSED_PARAMETER") log: (String) -> Unit): ResultType {
+fun run2(input: InputData): ResultType {
     val reDistance = """(\w+) to (\w+) = (\d+)""".toRegex()
-    val distances = lines
+    val distances = input.lines
         .mapNotNull { reDistance.matchEntire(it) }
         .flatMap {
             val (location1, location2, distance) = it.destructured
