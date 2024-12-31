@@ -24,7 +24,7 @@ fun run1(input: InputData): ResultType {
     var direction = 0 to -1
 
     val visited = mutableSetOf(position)
-    while (map.containsKey(position)) {
+    while (position in map) {
         visited.add(position)
         val nextPosition = position.first + direction.first to position.second + direction.second
         if (map.get(nextPosition) == '#') {
@@ -52,16 +52,17 @@ fun run2(input: InputData): ResultType {
 
         var position = startPosition
         var directionIndex = 0
+        var direction = directions[directionIndex]
 
         val visited = mutableSetOf(position to directionIndex)
 
-        while (map.containsKey(position)) {
+        while (position in map) {
             val nextPosition =
-                position.first + directions[directionIndex].first to
-                        position.second + directions[directionIndex].second
+                position.first + direction.first to position.second + direction.second
             if (map[nextPosition] == '#' || nextPosition == obstacle.key) {
                 // Rotate direction clockwise
                 directionIndex = (directionIndex + 1) % directions.size
+                direction = directions[directionIndex]
             } else {
                 position = nextPosition
                 if (!visited.add(position to directionIndex)) {
@@ -73,7 +74,7 @@ fun run2(input: InputData): ResultType {
     }
 
     return map.asSequence()
-        .filter { it.value == '.' && it.key != startPosition }
+        .filter { it.value == '.' }
         .count(::hasCycle)
 }
 

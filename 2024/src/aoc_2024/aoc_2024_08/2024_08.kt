@@ -36,11 +36,10 @@ fun run1(input: InputData): ResultType {
         .filterValues { it.size > 1 }
         .values
 
-    val antinodes = antennas
+    val antiNodes = antennas
         .flatMap { positions ->
             positions.flatMapIndexed { index, position ->
-                positions
-                    .filterIndexed { i, _ -> i > index }
+                positions.drop(index + 1)
                     .flatMap { otherPosition ->
                         val distance = position.first - otherPosition.first to position.second - otherPosition.second
                         listOf(
@@ -53,7 +52,7 @@ fun run1(input: InputData): ResultType {
             }
         }.toSet()
 
-    return antinodes.size
+    return antiNodes.size
 }
 
 fun run2(input: InputData): ResultType {
@@ -76,15 +75,15 @@ fun run2(input: InputData): ResultType {
 
     fun normalize(distance: Pair<Int, Int>): Pair<Int, Int> {
         val minValue = min(distance.first, distance.second)
-        for (i in minValue downTo 2) {
-            if (distance.first % i == 0 && distance.second % i == 0) {
-                return distance.first / i to distance.second / i
+        (minValue downTo 2).forEach {
+            if (distance.first % it == 0 && distance.second % it == 0) {
+                return distance.first / it to distance.second / it
             }
         }
         return distance
     }
 
-    val antinodes = antennas
+    val antiNodes = antennas
         .flatMap { positions ->
             positions.flatMapIndexed { index, position ->
                 positions
@@ -102,7 +101,7 @@ fun run2(input: InputData): ResultType {
             }
         }.toSet()
 
-    return antinodes.size
+    return antiNodes.size
 }
 
 fun main() {

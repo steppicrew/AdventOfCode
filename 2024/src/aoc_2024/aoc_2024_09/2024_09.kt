@@ -22,7 +22,7 @@ fun run1(input: InputData): ResultType {
     val files = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
     val gaps = ArrayDeque<Pair<Int, Int>>()
     input.lines.first().map { it.digitToInt() }.foldIndexed(0) { index, pos, size ->
-        if (index % 2 == 0) {
+        if (index.and(1) == 0) {
             files.addLast(index / 2 to (pos to size))
         } else {
             gaps.addLast(pos to size)
@@ -64,7 +64,7 @@ fun run2(input: InputData): ResultType {
     val files = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
     val gaps = ArrayDeque<Pair<Int, Int>>()
     input.lines.first().map { it.digitToInt() }.foldIndexed(0) { index, pos, size ->
-        if (index % 2 == 0) {
+        if (index.and(1) == 0) {
             files.addLast(index / 2 to (pos to size))
         } else {
             gaps.addLast(pos to size)

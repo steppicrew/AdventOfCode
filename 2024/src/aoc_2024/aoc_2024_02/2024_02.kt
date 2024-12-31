@@ -38,10 +38,11 @@ fun run2(input: InputData): ResultType {
     }
 
     fun isSafe(parts: List<Int>): Boolean {
-        val glitches = countGlitches(parts)
-        if (glitches == 0) return true
-        if (glitches > 2) return false
-        return removeOne(parts).any { countGlitches(it) == 0 }
+        return when (countGlitches(parts)) {
+            0 -> true
+            1, 2 -> removeOne(parts).any { countGlitches(it) == 0 }
+            else -> false
+        }
     }
 
     return input.lines.count { line ->

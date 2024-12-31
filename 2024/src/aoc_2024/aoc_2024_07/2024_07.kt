@@ -25,16 +25,16 @@ fun run1(input: InputData): ResultType {
             result.toULong() to operators.split(" ").map(String::toULong)
         }
 
-    fun getResults(operators: List<ULong>): Set<ULong> {
+    fun getResults(operators: List<ULong>): Sequence<ULong> {
         val last = operators.last()
-        if (operators.size == 1) return setOf(last)
+        if (operators.size == 1) return sequenceOf(last)
         return getResults(operators.dropLast(1)).flatMap {
-            listOf(it + last, it * last)
-        }.toSet()
+            sequenceOf(it + last, it * last)
+        }
     }
 
     return equations.filter { (result, operators) ->
-        getResults(operators).contains(result)
+        result in getResults(operators)
     }.sumOf { it.first }
 }
 
@@ -47,16 +47,16 @@ fun run2(input: InputData): ResultType {
             result.toULong() to operators.split(" ").map(String::toULong)
         }
 
-    fun getResults(operators: List<ULong>): Set<ULong> {
+    fun getResults(operators: List<ULong>): Sequence<ULong> {
         val last = operators.last()
-        if (operators.size == 1) return setOf(last)
+        if (operators.size == 1) return sequenceOf(last)
         return getResults(operators.dropLast(1)).flatMap {
-            listOf(it + last, it * last, "${it}${last}".toULong())
-        }.toSet()
+            sequenceOf(it + last, it * last, "${it}${last}".toULong())
+        }
     }
 
     return equations.filter { (result, operators) ->
-        getResults(operators).contains(result)
+        result in getResults(operators)
     }.sumOf { it.first }
 }
 

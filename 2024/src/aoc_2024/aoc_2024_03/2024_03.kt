@@ -18,8 +18,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 fun run1(input: InputData): ResultType {
     val re = """mul\((\d+),(\d+)\)""".toRegex()
 
-    return input.lines.joinToString("")
-        .let { re.findAll(it) }
+    return re.findAll(input.lines.joinToString(""))
         .sumOf { match ->
             val (factor1, factor2) = match.destructured
             factor1.toInt() * factor2.toInt()
@@ -34,8 +33,7 @@ fun run2(input: InputData): ResultType {
     return input.lines.joinToString("")
         .split(reDo)
         .sumOf { doPart ->
-            doPart.split(reDoNot, limit = 2).first()
-                .let { reMul.findAll(it) }
+            reMul.findAll(doPart.split(reDoNot, limit = 2).first())
                 .sumOf { match ->
                     val (factor1, factor2) = match.destructured
                     factor1.toInt() * factor2.toInt()

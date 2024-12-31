@@ -21,7 +21,7 @@ fun run1(input: InputData): ResultType {
         }
     }.toMap()
 
-    val dirs = listOf(
+    val directions = listOf(
         1 to 0,
         0 to 1,
         1 to 1,
@@ -32,17 +32,14 @@ fun run1(input: InputData): ResultType {
         -1 to 1,
     )
 
-    fun testPos(pos: Pair<Int, Int>): Int {
-        fun testWord(dir: Pair<Int, Int>): Boolean {
+    return field.keys.sumOf { position ->
+        directions.count { direction ->
             fun getChar(i: Int): Char? {
-                return field[pos.first + i * dir.first to pos.second + i * dir.second]
+                return field[position.first + i * direction.first to position.second + i * direction.second]
             }
-            return getChar(0) == 'X' && getChar(1) == 'M' && getChar(2) == 'A' && getChar(3) == 'S'
+            getChar(0) == 'X' && getChar(1) == 'M' && getChar(2) == 'A' && getChar(3) == 'S'
         }
-        return dirs.count { testWord(it) }
     }
-
-    return field.keys.sumOf { testPos(it) }
 }
 
 fun run2(input: InputData): ResultType {
@@ -52,24 +49,21 @@ fun run2(input: InputData): ResultType {
         }
     }.toMap()
 
-    val dirs = listOf(
+    val directions = listOf(
         1 to 1,
         1 to -1,
         -1 to -1,
         -1 to 1,
     )
 
-    fun testPos(pos: Pair<Int, Int>): Boolean {
-        fun testWord(dir: Pair<Int, Int>): Boolean {
+    return field.keys.count { position ->
+        directions.count { direction ->
             fun getChar(i: Int): Char? {
-                return field[pos.first + i * dir.first to pos.second + i * dir.second]
+                return field[position.first + i * direction.first to position.second + i * direction.second]
             }
-            return getChar(-1) == 'M' && getChar(0) == 'A' && getChar(1) == 'S'
-        }
-        return dirs.count { testWord(it) } == 2
+            getChar(-1) == 'M' && getChar(0) == 'A' && getChar(1) == 'S'
+        } == 2
     }
-
-    return field.keys.count { testPos(it) }
 }
 
 fun main() {
