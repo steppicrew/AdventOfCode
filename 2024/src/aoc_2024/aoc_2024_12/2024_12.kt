@@ -42,10 +42,10 @@ fun run1(input: InputData): ResultType {
         val c = map[startPos]!!
         val area = mutableSetOf<Pos>(startPos)
         val todo = ArrayDeque<Pos>(listOf(startPos))
-        while (todo.size > 0) {
+        while (todo.isNotEmpty()) {
             val pos = todo.removeFirst()
             val neighbours = getNeighbours(pos).filter {
-                map[it] == c && !area.contains(it)
+                map[it] == c && it !in area
             }
             todo.addAll(neighbours)
             area.addAll(neighbours)
@@ -56,7 +56,7 @@ fun run1(input: InputData): ResultType {
     fun getPerimeter(area: Set<Pos>): Int {
         val seen = mutableSetOf<Pos>()
         return area.sumOf { pos ->
-            val knownNeighboursCount = getNeighbours(pos).filter { seen.contains(it) }.count()
+            val knownNeighboursCount = getNeighbours(pos).filter { it in seen }.count()
             seen.add(pos)
             4 - 2 * knownNeighboursCount
         }
@@ -64,7 +64,7 @@ fun run1(input: InputData): ResultType {
 
     val visited = mutableSetOf<Pos>()
     return map.keys.sumOf { pos ->
-        if (visited.contains(pos)) {
+        if (pos in visited) {
             0
         } else {
             floodFill(pos)
@@ -99,10 +99,10 @@ fun run2(input: InputData): ResultType {
         val c = map[startPos]!!
         val area = mutableSetOf<Pos>(startPos)
         val todo = ArrayDeque<Pos>(listOf(startPos))
-        while (todo.size > 0) {
+        while (todo.isNotEmpty()) {
             val pos = todo.removeFirst()
             val neighbours = getNeighbours(pos).filter {
-                map[it] == c && !area.contains(it)
+                map[it] == c && it !in area
             }
             todo.addAll(neighbours)
             area.addAll(neighbours)
@@ -120,7 +120,7 @@ fun run2(input: InputData): ResultType {
     fun getCorners(area: Set<Pos>): Int {
         return area.sumOf { pos ->
             val neighbourPairs = getNeighbours(pos)
-                .map { area.contains(it) }.toList()
+                .map { it in area }.toList()
                 .let { it + it.first() }
                 .zipWithNext()
             val diagonalNeighbours = getDiagonalNeighbours(pos).map { area.contains(it) }
@@ -142,12 +142,12 @@ fun run2(input: InputData): ResultType {
 
     val visited = mutableSetOf<Pos>()
     return map.keys.sumOf { pos ->
-        if (visited.contains(pos)) {
+        if (pos in visited) {
             0
         } else {
-            floodFill(pos)
-                .also { visited.addAll(it) }
-                .let { it.size * getCorners(it) }
+            val area = floodFill(pos)
+            visited.addAll(area)
+            area.size * getCorners(area)
         }
     }
 }

@@ -27,7 +27,7 @@ fun run1(input: InputData): ResultType {
         val nextI = i - 1
         return when {
             number == "0" -> blink("1", nextI)
-            number.length % 2 == 0 -> {
+            number.length.and(1) == 0 -> {
                 val l2 = number.length / 2
                 blink(number.substring(0, l2), nextI) + blink(number.substring(l2).toLong().toString(), nextI)
             }
@@ -47,21 +47,19 @@ fun run2(input: InputData): ResultType {
     fun blink(number: String, i: Int): Long {
         return cache.getOrPut(number to i, {
             if (i == 0) {
-                1L
-            } else {
-                val nextI = i - 1
-                when {
-                    number == "0" -> blink("1", nextI)
-                    number.length % 2 == 0 -> {
-                        val l2 = number.length / 2
-                        blink(number.substring(0, l2), nextI) + blink(number.substring(l2).toLong().toString(), nextI)
-                    }
-
-                    else -> blink((number.toLong() * 2024).toString(), nextI)
-                }
+                return@getOrPut 1L
             }
-        }
-        )
+            val nextI = i - 1
+            when {
+                number == "0" -> blink("1", nextI)
+                number.length.and(1) == 0 -> {
+                    val l2 = number.length / 2
+                    blink(number.substring(0, l2), nextI) + blink(number.substring(l2).toLong().toString(), nextI)
+                }
+
+                else -> blink((number.toLong() * 2024).toString(), nextI)
+            }
+        })
     }
 
     return numbers.sumOf { blink(it, 75) }

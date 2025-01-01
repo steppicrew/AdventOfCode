@@ -76,8 +76,8 @@ fun run2(input: InputData): ResultType {
 
         if (connected.size > input.lines.size / 2) {
             input.log("Time: $time")
-            (0..<size.second).asSequence().forEach { line ->
-                input.log((0..<size.first).joinToString("") { if (endPositions.contains(it to line)) "#" else " " })
+            (0 until size.second).asSequence().forEach { line ->
+                input.log((0 until size.first).joinToString("") { if ((it to line) in endPositions) "#" else " " })
             }
             return time
         }

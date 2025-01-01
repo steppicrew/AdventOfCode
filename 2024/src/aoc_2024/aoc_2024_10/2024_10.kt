@@ -24,7 +24,7 @@ fun run1(input: InputData): ResultType {
         }
     }.toMap()
 
-    val directions = listOf(
+    val directions = sequenceOf(
         -1 to 0,
         1 to 0,
         0 to -1,
@@ -36,7 +36,7 @@ fun run1(input: InputData): ResultType {
         if (height == 9) {
             return setOf(position)
         }
-        return directions.asSequence()
+        return directions
             .map { (dx, dy) -> (position.first + dx) to (position.second + dy) }
             .filter { map[it] == height + 1 }
             .flatMap { countHeads((it)) }.toSet()
@@ -52,7 +52,7 @@ fun run2(input: InputData): ResultType {
         }
     }.toMap()
 
-    val directions = listOf(
+    val directions = sequenceOf(
         -1 to 0,
         1 to 0,
         0 to -1,
@@ -64,7 +64,7 @@ fun run2(input: InputData): ResultType {
         if (height == 9) {
             return 1
         }
-        return directions.asSequence()
+        return directions
             .map { (dx, dy) -> (position.first + dx) to (position.second + dy) }
             .filter { map[it] == height + 1 }
             .sumOf { countHeads(it) }

@@ -28,20 +28,16 @@ fun run1(input: InputData): ResultType {
         .flatMapIndexed { row, line ->
             line.mapIndexedNotNull { col, c ->
                 when (c) {
-                    '#' -> col to row
+                    '#' -> return@mapIndexedNotNull col to row
                     'O' -> {
                         boxes.add(col to row)
-                        null
                     }
 
                     '@' -> {
                         robotPosition = col to row
-                        null
                     }
-
-                    else -> null
-
                 }
+                null
             }
         }.toSet()
 
@@ -59,17 +55,17 @@ fun run1(input: InputData): ResultType {
 
     fun moveBox(pos: Pair<Int, Int>, direction: Pair<Int, Int>): Boolean {
         val nextPos = pos.first + direction.first to pos.second + direction.second
-        if (walls.contains(nextPos)) return false
-        if (boxes.contains(nextPos) && !moveBox(nextPos, direction)) return false
+        if (nextPos in walls) return false
+        if (nextPos in boxes && !moveBox(nextPos, direction)) return false
         boxes.remove(pos)
         boxes.add(nextPos)
         return true
     }
 
-    for (move in moves) {
+    moves.forEach { move ->
         val nextPos = robotPosition.first + move.first to robotPosition.second + move.second
-        if (walls.contains(nextPos)) continue
-        if (!boxes.contains(nextPos) || moveBox(nextPos, move)) {
+        if (nextPos in walls) return@forEach
+        if (nextPos !in boxes || moveBox(nextPos, move)) {
             robotPosition = nextPos
         }
     }
@@ -84,22 +80,18 @@ fun run2(input: InputData): ResultType {
     var robotPosition = 0 to 0
     val walls = input.lines.filter { reMap.matches(it) }
         .flatMapIndexed { row, line ->
-            line.flatMapIndexed { col, c ->
+            line.flatMapIndexed inner@{ col, c ->
                 when (c) {
-                    '#' -> listOf(2 * col to row, 2 * col + 1 to row)
+                    '#' -> return@inner listOf(2 * col to row, 2 * col + 1 to row)
                     'O' -> {
                         boxes.add(2 * col to row)
-                        listOf()
                     }
 
                     '@' -> {
                         robotPosition = 2 * col to row
-                        listOf()
                     }
-
-                    else -> listOf()
-
                 }
+                listOf()
             }
         }.toSet()
 
@@ -116,34 +108,32 @@ fun run2(input: InputData): ResultType {
         }
 
     fun checkBox(pos: Pair<Int, Int>): Pair<Int, Int>? {
-        if (boxes.contains(pos)) return pos
-        if (boxes.contains(pos.first - 1 to pos.second)) return pos.first - 1 to pos.second
+        if (pos in boxes) return pos
+        if ((pos.first - 1 to pos.second) in boxes) return pos.first - 1 to pos.second
         return null
     }
 
     fun moveBox(boxPos: Pair<Int, Int>, direction: Pair<Int, Int>): Set<Pair<Int, Int>>? {
         val nextPos1 = boxPos.first + direction.first to boxPos.second + direction.second
         val nextPos2 = nextPos1.first + 1 to nextPos1.second
-        if (walls.contains(nextPos1) || walls.contains(nextPos2)) return null
-        val nextBoxes = listOfNotNull(checkBox(nextPos1), checkBox(nextPos2)).toSet() - boxPos
+        if (nextPos1 in walls || nextPos2 in walls) return null
+        val nextBoxes = setOfNotNull(checkBox(nextPos1), checkBox(nextPos2)) - boxPos
         if (nextBoxes.isNotEmpty()) {
             val boxesToMove = nextBoxes.map { moveBox(it, direction) }
-            if (boxesToMove.contains(null)) return null
+            if (null in boxesToMove) return null
             return boxesToMove.fold(setOf(boxPos)) { acc, boxes -> acc + boxes!! }
         }
         return setOf(boxPos)
     }
 
-    for (move in moves) {
+    moves.forEach { move ->
         val nextPos = robotPosition.first + move.first to robotPosition.second + move.second
-        if (walls.contains(nextPos)) continue
+        if (nextPos in walls) return@forEach
         val nextBox = checkBox(nextPos)
         if (nextBox != null) {
-            val boxesToMove = moveBox(nextBox, move) ?: continue
+            val boxesToMove = moveBox(nextBox, move) ?: return@forEach
             boxes.removeAll(boxesToMove)
-            for (box in boxesToMove) {
-                boxes.add(box.first + move.first to box.second + move.second)
-            }
+            boxes.addAll(boxesToMove.map { it.first + move.first to it.second + move.second })
         }
         robotPosition = nextPos
     }
