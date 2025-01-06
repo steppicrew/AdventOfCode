@@ -45,7 +45,7 @@ fun run1(input: InputData): ResultType {
         }
     })
 
-    while (navigationQueue.size > 0) {
+    while (navigationQueue.isNotEmpty()) {
         val positionDirection = navigationQueue.remove()
         val (position, direction) = positionDirection
         val cost = costMap[positionDirection] ?: throw RuntimeException("Missing positionDirection $positionDirection")
@@ -95,7 +95,7 @@ fun run2(input: InputData): ResultType {
 
     val bestPrevious = mutableMapOf<PositionDirection, Set<PositionDirection>>()
 
-    while (navigationQueue.size > 0) {
+    while (navigationQueue.isNotEmpty()) {
         val positionDirection = navigationQueue.remove()
         val (position, direction) = positionDirection
         val cost = costMap[positionDirection] ?: throw RuntimeException("Missing positionDirection $positionDirection")

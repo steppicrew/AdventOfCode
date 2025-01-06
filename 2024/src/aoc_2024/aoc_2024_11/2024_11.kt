@@ -18,7 +18,7 @@ val EXPECTED_RESULTS: ExpectedRefResults<ResultType> = listOf(
 
 
 fun run1(input: InputData): ResultType {
-    val numbers = input.lines.first().split(" ")
+    val numbers = input.lines.single().split(" ")
 
     fun blink(number: String, i: Int): Long {
         if (i == 0) {
@@ -29,7 +29,7 @@ fun run1(input: InputData): ResultType {
             number == "0" -> blink("1", nextI)
             number.length.and(1) == 0 -> {
                 val l2 = number.length / 2
-                blink(number.substring(0, l2), nextI) + blink(number.substring(l2).toLong().toString(), nextI)
+                blink(number.dropLast(l2), nextI) + blink(number.drop(l2).toLong().toString(), nextI)
             }
 
             else -> blink((number.toLong() * 2024).toString(), nextI)
@@ -40,8 +40,7 @@ fun run1(input: InputData): ResultType {
 }
 
 fun run2(input: InputData): ResultType {
-    val numbers = input.lines.first().split(" ")
-
+    val numbers = input.lines.single().split(" ")
 
     val cache = mutableMapOf<Pair<String, Int>, Long>()
     fun blink(number: String, i: Int): Long {
@@ -54,7 +53,7 @@ fun run2(input: InputData): ResultType {
                 number == "0" -> blink("1", nextI)
                 number.length.and(1) == 0 -> {
                     val l2 = number.length / 2
-                    blink(number.substring(0, l2), nextI) + blink(number.substring(l2).toLong().toString(), nextI)
+                    blink(number.dropLast(l2), nextI) + blink(number.drop(l2).toLong().toString(), nextI)
                 }
 
                 else -> blink((number.toLong() * 2024).toString(), nextI)

@@ -167,8 +167,8 @@ fun run2(input: InputData): ResultType {
             }, // jnz
             { b = b xor c; null }, // bxc
             { combo(it).and(7UL) }, // out
-            { b = a / 1UL.shl(combo(it).toInt()); null }, //bdv
-            { c = a / 1UL.shl(combo(it).toInt()); null }, //cdv
+            { b = a / 1UL.shl(combo(it).toInt()); null }, // bdv
+            { c = a / 1UL.shl(combo(it).toInt()); null }, // cdv
         )
 
         while (true) {

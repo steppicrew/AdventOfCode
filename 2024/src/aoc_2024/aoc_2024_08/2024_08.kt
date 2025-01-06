@@ -46,9 +46,7 @@ fun run1(input: InputData): ResultType {
                             position.first + distance.first to position.second + distance.second,
                             position.first - 2 * distance.first to position.second - 2 * distance.second,
                         ).filter { it.first in 0..<maxX && it.second in 0..<maxY }
-
                     }
-
             }
         }.toSet()
 
@@ -83,21 +81,21 @@ fun run2(input: InputData): ResultType {
         return distance
     }
 
+    val maxDim = maxOf(maxX, maxY)
+    val testRange = (-maxDim..maxDim).asSequence()
+
     val antiNodes = antennas
         .flatMap { positions ->
             positions.flatMapIndexed { index, position ->
-                positions
-                    .filterIndexed { i, _ -> i > index }
+                positions.drop(index + 1)
                     .flatMap { otherPosition ->
                         val distance =
                             normalize(position.first - otherPosition.first to position.second - otherPosition.second)
-                        (-maxX..maxX).map {
+                        testRange.map {
                             position.first + it * distance.first to position.second + it * distance.second
                         }
                             .filter { it.first in 0..<maxX && it.second in 0..<maxY }
-
                     }
-
             }
         }.toSet()
 

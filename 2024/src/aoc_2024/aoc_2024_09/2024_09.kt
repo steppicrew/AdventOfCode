@@ -33,23 +33,23 @@ fun run1(input: InputData): ResultType {
     val newFiles = files.reversed().flatMap { file ->
         val fileIndex = file.first
         val fileStart = file.second.first
-        var fileSize = file.second.second
+        var remainingFileSize = file.second.second
         val chunks = ArrayDeque<Pair<Int, Pair<Int, Int>>>()
-        while (fileSize > 0 && gaps.first().first < fileStart) {
+        while (remainingFileSize > 0 && gaps.first().first < fileStart) {
             val (gapStart, gapSize) = gaps.removeFirst()
-            if (gapSize >= fileSize) {
-                chunks.add(fileIndex to (gapStart to fileSize))
-                if (gapSize > fileSize) {
-                    gaps.addFirst((gapStart + fileSize) to (gapSize - fileSize))
+            if (gapSize >= remainingFileSize) {
+                chunks.add(fileIndex to (gapStart to remainingFileSize))
+                if (gapSize > remainingFileSize) {
+                    gaps.addFirst((gapStart + remainingFileSize) to (gapSize - remainingFileSize))
                 }
-                fileSize = 0
+                remainingFileSize = 0
             } else {
                 chunks.add(fileIndex to (gapStart to gapSize))
-                fileSize -= gapSize
+                remainingFileSize -= gapSize
             }
         }
-        if (fileSize > 0) {
-            chunks.addLast(fileIndex to (fileStart to fileSize))
+        if (remainingFileSize > 0) {
+            chunks.addLast(fileIndex to (fileStart to remainingFileSize))
         }
         chunks
     }
@@ -78,13 +78,11 @@ fun run2(input: InputData): ResultType {
         val matchingGapIndex = gaps.indexOfFirst {
             it.first < fileStart && it.second >= fileSize
         }
-        if (matchingGapIndex >= 0) {
-            val gap = gaps[matchingGapIndex]
-            gaps[matchingGapIndex] = (gap.first + fileSize) to (gap.second - fileSize)
-            fileIndex to (gap.first to fileSize)
-        } else {
-            file
-        }
+        if (matchingGapIndex < 0) return@map file
+
+        val gap = gaps[matchingGapIndex]
+        gaps[matchingGapIndex] = (gap.first + fileSize) to (gap.second - fileSize)
+        fileIndex to (gap.first to fileSize)
     }
     return newFiles.sumOf { file ->
         val (index, fileStat) = file

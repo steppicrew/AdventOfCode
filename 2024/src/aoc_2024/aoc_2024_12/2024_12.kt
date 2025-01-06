@@ -40,15 +40,12 @@ fun run1(input: InputData): ResultType {
 
     fun floodFill(startPos: Pos): Set<Pos> {
         val c = map[startPos]!!
-        val area = mutableSetOf<Pos>(startPos)
-        val todo = ArrayDeque<Pos>(listOf(startPos))
+        val area = mutableSetOf(startPos)
+        val todo = ArrayDeque(listOf(startPos))
         while (todo.isNotEmpty()) {
-            val pos = todo.removeFirst()
-            val neighbours = getNeighbours(pos).filter {
-                map[it] == c && it !in area
-            }
-            todo.addAll(neighbours)
-            area.addAll(neighbours)
+            todo.addAll(getNeighbours(todo.removeFirst()).filter {
+                map[it] == c && area.add(it)
+            })
         }
         return area
     }
@@ -100,12 +97,9 @@ fun run2(input: InputData): ResultType {
         val area = mutableSetOf<Pos>(startPos)
         val todo = ArrayDeque<Pos>(listOf(startPos))
         while (todo.isNotEmpty()) {
-            val pos = todo.removeFirst()
-            val neighbours = getNeighbours(pos).filter {
-                map[it] == c && it !in area
-            }
-            todo.addAll(neighbours)
-            area.addAll(neighbours)
+            todo.addAll(getNeighbours(todo.removeFirst()).filter {
+                map[it] == c && area.add(it)
+            })
         }
         return area
     }

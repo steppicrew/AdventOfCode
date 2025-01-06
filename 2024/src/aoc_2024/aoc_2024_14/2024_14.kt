@@ -34,7 +34,7 @@ fun run1(input: InputData): ResultType {
             (startPos.first + speed.first * time) % size.first to (startPos.second + speed.second * time) % size.second
         }
         .map { (if (it.first < 0) it.first + size.first else it.first) to (if (it.second < 0) it.second + size.second else it.second) }
-        .groupingBy { it }.eachCount().filterValues { it > 0 }
+        .groupingBy { it }.eachCount()
 
     val quadrantBorder = (size.first) / 2 to (size.second) / 2
 
