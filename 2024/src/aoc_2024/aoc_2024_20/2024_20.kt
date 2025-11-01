@@ -54,8 +54,7 @@ fun run1(input: InputData): ResultType {
             directions.map { position.first + it.first to position.second + it.second }
                 .filter { map.contains(it) }
                 .forEach {
-                    val oldCost = costs[it]!!
-                    if (newCost < oldCost) {
+                    if (newCost < costs[it]!!) {
                         queue.add(it)
                         costs[it] = newCost
                     }
@@ -176,27 +175,27 @@ fun run2(input: InputData): ResultType {
      * Starts from the current position to all possible end points
      * Yields every position on path with low enough time til the end
      */
-    fun cheat(wallStart: Pair<Int, Int>, maxTimeLeft: Int): Sequence<Pair<Pair<Int, Int>, Int>> = sequence {
-        val times = mutableMapOf<Pair<Int, Int>, Int>()
-        val queue = PriorityQueue<Pair<Int, Int>> { p1, p2 -> times[p1]!! - times[p2]!! }
-        times[wallStart] = 0
-        queue.add(wallStart)
+    fun cheat(cheatStart: Pair<Int, Int>, maxTimeLeft: Int): Sequence<Pair<Pair<Int, Int>, Int>> = sequence {
+        val cheatTimes = mutableMapOf<Pair<Int, Int>, Int>()
+        val queue = PriorityQueue<Pair<Int, Int>> { p1, p2 -> cheatTimes[p1]!! - cheatTimes[p2]!! }
+        cheatTimes[cheatStart] = 0
+        queue.add(cheatStart)
 
         while (queue.isNotEmpty()) {
-            val wallEnd = queue.remove()
-            val time = times[wallEnd]!!
+            val cheatEnd = queue.remove()
+            val cheatTime = cheatTimes[cheatEnd]!!
 
-            val timeToEnd = globalTimesToEnd[wallEnd]
-            if (timeToEnd != null && time + timeToEnd <= maxTimeLeft) {
-                yield(wallEnd to timeToEnd + time)
+            val timeToEnd = globalTimesToEnd[cheatEnd]
+            if (timeToEnd != null && cheatTime + timeToEnd <= maxTimeLeft) {
+                yield(cheatEnd to cheatTime)
             }
 
-            if (time < maxWallTime) {
-                val newTime = time + 1
-                getNeighbours(wallEnd)
-                    .filter { (walls.contains(it) || map.contains(it)) && !times.containsKey(it) }
+            if (cheatTime < maxWallTime) {
+                val newTime = cheatTime + 1
+                getNeighbours(cheatEnd)
+                    .filter { (walls.contains(it) || map.contains(it)) && !cheatTimes.containsKey(it) }
                     .forEach {
-                        times[it] = newTime
+                        cheatTimes[it] = newTime
                         queue.add(it)
                     }
             }
@@ -208,11 +207,10 @@ fun run2(input: InputData): ResultType {
     while (position != null) {
         val timeToEnd = globalTimesToEnd[position]!!
         if (timeToEnd <= minSaving) break
-        cheat(position, timeToEnd - minSaving).forEach { (endPosition, timeLeft) ->
+        cheat(position, timeToEnd - minSaving).forEach { (endPosition, timeSaved) ->
             val key = position!! to endPosition
-            val timeSaving = timeToEnd - timeLeft
-            if (timeSaving > (cheats[key] ?: 0)) {
-                cheats[key] = timeSaving
+            if (timeSaved > (cheats[key] ?: 0)) {
+                cheats[key] = timeSaved
             }
         }
         position = wayToEnd[position]
