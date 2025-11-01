@@ -3,25 +3,22 @@ import gleam/io
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
+import gleam_community/ansi.{bold, green, red, yellow}
 import simplifile
 import tools/timer
 import tools/types.{type ExpectedResult, Expected}
 
-const green = "\u{1B}[32m"
+fn correct() -> String {
+  "✓" |> bold |> green
+}
 
-const red = "\u{1B}[31m"
+fn failed() -> String {
+  "✗" |> bold |> red
+}
 
-const yellow = "\u{1B}[33m"
-
-const bold = "\u{1B}[1m"
-
-const reset = "\u{1B}[0m"
-
-const correct = green <> bold <> "✓" <> reset
-
-const failed = red <> bold <> "✗" <> reset
-
-const new_result = yellow <> bold <> "?" <> reset
+fn new_result() -> String {
+  "?" |> bold |> yellow
+}
 
 type TestResult {
   Passed
@@ -77,10 +74,7 @@ pub fn simple_io(
 
   io.println(
     "\n"
-    <> color
-    <> bold
-    <> "SUMMARY"
-    <> reset
+    <> { "SUMMARY" |> bold |> color }
     <> ": "
     <> string.inspect(success)
     <> "/"
@@ -144,7 +138,7 @@ fn part_run(
       case quiet {
         True -> Nil
         False ->
-          io.println(correct <> " (" <> result_str <> ") in " <> time_str)
+          io.println(correct() <> " (" <> result_str <> ") in " <> time_str)
       }
       Passed
     }
@@ -153,7 +147,7 @@ fn part_run(
       case quiet {
         True -> Nil
         False -> {
-          io.println(failed <> " in " <> time_str)
+          io.println(failed() <> " in " <> time_str)
           io.println("\tEXPECTED: " <> string.inspect(exp))
           io.println("\tGOT     : " <> result_str)
         }
@@ -165,7 +159,7 @@ fn part_run(
       case quiet {
         True -> Nil
         False ->
-          io.println(new_result <> " (" <> result_str <> ") in " <> time_str)
+          io.println(new_result() <> " (" <> result_str <> ") in " <> time_str)
       }
       let _ = simplifile.write(result_file, result_str)
       Unchecked
