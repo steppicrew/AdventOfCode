@@ -126,7 +126,7 @@ fn part_run(
   let time_str = format_time(time)
   let result_str = string.inspect(result)
   let result_file =
-    dir <> "/input" <> suffix <> "_" <> int.to_string(part) <> ".result"
+    dir <> "/result" <> suffix <> "_" <> int.to_string(part) <> ".txt"
 
   case quiet {
     True -> Nil
