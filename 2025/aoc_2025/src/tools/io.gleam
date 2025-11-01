@@ -7,24 +7,30 @@ import simplifile
 import tools/timer
 import tools/types.{type ExpectedResult, Expected}
 
-pub const green = "\u{1B}[32m"
+const green = "\u{1B}[32m"
 
-pub const red = "\u{1B}[31m"
+const red = "\u{1B}[31m"
 
-pub const yellow = "\u{1B}[33m"
+const yellow = "\u{1B}[33m"
 
-pub const bold = "\u{1B}[1m"
+const bold = "\u{1B}[1m"
 
-pub const reset = "\u{1B}[0m"
+const reset = "\u{1B}[0m"
 
-pub const correct = green <> bold <> "✓" <> reset
+const correct = green <> bold <> "✓" <> reset
 
-pub const failed = red <> bold <> "✗" <> reset
+const failed = red <> bold <> "✗" <> reset
 
-pub const new_result = yellow <> bold <> "?" <> reset
+const new_result = yellow <> bold <> "?" <> reset
+
+type TestResult {
+  Passed
+  Failed
+  Unchecked
+}
 
 /// Reads lines from file, skipping comment lines starting with ';'.
-pub fn read_lines(path: String) -> List(String) {
+fn read_lines(path: String) -> List(String) {
   case simplifile.read(path) {
     Ok(content) ->
       content
@@ -50,16 +56,17 @@ pub fn simple_io(
 ) -> Nil {
   let results =
     expected_results
-    |> list.map(fn(expected) {
+    |> list.flat_map(fn(expected) {
       case expected {
-        Expected(ref, exp1, exp2) ->
-          ref_run(year, day, ref, exp1, exp2, run1, run2, quiet)
+        Expected(ref, exp1, exp2) -> {
+          let #(r1, r2) = ref_run(year, day, ref, exp1, exp2, run1, run2, quiet)
+          [r1, r2]
+        }
       }
     })
-    |> list.flatten
 
-  let success = list.count(results, fn(r) { r == True })
-  let failed = list.count(results, fn(r) { r == False })
+  let success = list.count(results, fn(r) { r == Passed })
+  let failed = list.count(results, fn(r) { r == Failed })
   let total = list.length(results)
 
   let color = case success, failed {
@@ -93,25 +100,22 @@ fn ref_run(
   run1: fn(List(String)) -> a,
   run2: fn(List(String)) -> a,
   quiet: Bool,
-) -> List(Bool) {
+) -> #(TestResult, TestResult) {
   let padded_day = string.pad_start(int.to_string(day), 2, "0")
   let dir = "src/aoc_" <> int.to_string(year) <> "_" <> padded_day
-  let suffix = case ref == 0 {
-    True -> ""
-    False -> "_ref" <> int.to_string(ref)
+  let #(suffix, label) = case ref {
+    0 -> #("", "main")
+    _ -> {
+      let ref = "ref" <> int.to_string(ref)
+      #("_" <> ref, ref)
+    }
   }
-  let input_path = dir <> "/input" <> suffix <> ".txt"
-  let lines = read_lines(input_path)
+  let lines = read_lines(dir <> "/input" <> suffix <> ".txt")
 
-  let label = case ref == 0 {
-    True -> "main"
-    False -> "ref" <> int.to_string(ref)
-  }
-
-  [
+  #(
     part_run(dir, label, 1, lines, exp1, run1, suffix, quiet),
     part_run(dir, label, 2, lines, exp2, run2, suffix, quiet),
-  ]
+  )
 }
 
 fn part_run(
@@ -123,7 +127,7 @@ fn part_run(
   run: fn(List(String)) -> a,
   suffix: String,
   quiet: Bool,
-) -> Bool {
+) -> TestResult {
   let #(result, time) = timer.measure_time(fn() { run(input) })
   let time_str = format_time(time)
   let result_str = string.inspect(result)
@@ -142,7 +146,19 @@ fn part_run(
         False ->
           io.println(correct <> " (" <> result_str <> ") in " <> time_str)
       }
-      True
+      Passed
+    }
+
+    Some(exp) -> {
+      case quiet {
+        True -> Nil
+        False -> {
+          io.println(failed <> " in " <> time_str)
+          io.println("\tEXPECTED: " <> string.inspect(exp))
+          io.println("\tGOT     : " <> result_str)
+        }
+      }
+      Failed
     }
 
     None -> {
@@ -152,19 +168,7 @@ fn part_run(
           io.println(new_result <> " (" <> result_str <> ") in " <> time_str)
       }
       let _ = simplifile.write(result_file, result_str)
-      True
-    }
-
-    Some(_) -> {
-      case quiet {
-        True -> Nil
-        False -> {
-          io.println(failed <> " in " <> time_str)
-          io.println("\tEXPECTED: " <> string.inspect(expected))
-          io.println("\tGOT     : " <> result_str)
-        }
-      }
-      False
+      Unchecked
     }
   }
 }

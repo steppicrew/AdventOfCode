@@ -1,5 +1,5 @@
 import gleam/list
-import gleam/option.{None}
+import gleam/option.{None, Some}
 import tools/io
 import tools/types.{Expected}
 
@@ -19,7 +19,7 @@ pub fn main() {
   io.simple_io(
     year,
     day,
-    [Expected(1, None, None), Expected(0, None, None)],
+    [Expected(1, Some(0), None), Expected(0, None, None)],
     run1,
     run2,
     False,
