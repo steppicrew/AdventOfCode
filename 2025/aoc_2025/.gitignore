@@ -2,4 +2,4 @@
 *.ez
 /build
 erl_crash.dump
-src/aoc_2025_*/result*.txt
+src/aoc_202?_*/result*.txt

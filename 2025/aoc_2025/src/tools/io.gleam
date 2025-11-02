@@ -1,3 +1,4 @@
+import gleam/float
 import gleam/int
 import gleam/io
 import gleam/list
@@ -74,14 +75,18 @@ pub fn simple_io(
 
   io.println(
     "\n"
-    <> { "SUMMARY" |> bold |> color }
-    <> ": "
+    <> { "SUMMARY:" |> bold |> color }
+    <> " "
     <> string.inspect(success)
     <> "/"
     <> string.inspect(total)
-    <> " passed ("
-    <> string.inspect(failed)
-    <> " failed)",
+    <> " passed"
+    <> {
+      case failed {
+        0 -> ""
+        _ -> " (" <> string.inspect(failed) <> " failed)"
+      }
+    },
   )
 }
 
@@ -168,7 +173,8 @@ fn part_run(
 }
 
 fn format_time(seconds: Float) -> String {
-  let ms = seconds *. 1000.0
+  let ms =
+    { seconds *. 1_000_000.0 |> float.round() |> int.to_float() } /. 1000.0
   case ms <. 1.0 {
     True -> string.inspect(ms *. 1000.0) <> "µs"
     False ->
