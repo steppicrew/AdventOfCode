@@ -12,78 +12,61 @@ pub const day = 2
 pub fn run1(lines: List(String)) -> Int {
   let assert Ok(re) = regexp.from_string("\\s+")
 
-  let test_list_ = fn(windowed: List(#(Int, Int))) {
-    windowed
+  let descending = fn(l: List(Int)) {
+    l
+    |> list.window_by_2
     |> list.all(fn(pair) {
-      let #(a, b) = pair
-      let diff = a - b
+      let diff = pair.0 - pair.1
       1 <= diff && diff <= 3
     })
   }
 
   let test_list = fn(l: List(Int)) {
-    test_list_(l |> list.window_by_2())
-    || test_list_(l |> list.reverse() |> list.window_by_2())
+    descending(l) || descending(l |> list.reverse)
   }
 
   lines
-  |> list.map(fn(s) {
+  |> list.filter(fn(s) {
     regexp.split(re, s)
-    |> list.filter_map(fn(num_str) {
-      case int.parse(num_str) {
-        Ok(n) -> Ok(n)
-        _ -> Error(Nil)
-      }
-    })
-    |> test_list()
+    |> list.filter_map(int.parse)
+    |> test_list
   })
-  |> list.filter(fn(b) { b })
-  |> list.length()
+  |> list.length
 }
 
 pub fn run2(lines: List(String)) -> Int {
   let assert Ok(re) = regexp.from_string("\\s+")
 
-  let test_list_ = fn(l: List(Int)) {
+  let descending = fn(l: List(Int)) {
     l
     |> list.window_by_2()
     |> list.all(fn(pair) {
-      let #(a, b) = pair
-      let diff = a - b
+      let diff = pair.0 - pair.1
       1 <= diff && diff <= 3
     })
   }
 
-  let test_list__ = fn(l: List(Int)) {
-    l |> test_list_() || l |> list.reverse() |> test_list_()
+  let test_list = fn(l: List(Int)) {
+    l |> descending || l |> list.reverse |> descending
   }
 
-  let test_list = fn(l: List(Int)) {
-    case test_list__(l) {
-      True -> True
-      False -> {
-        l
-        |> list.index_map(fn(_, idx) { idx })
-        |> list.any(fn(idx) {
-          test_list__(list.append(l |> list.take(idx), l |> list.drop(idx + 1)))
-        })
-      }
+  let test_list_with_one_off = fn(l: List(Int)) {
+    test_list(l)
+    || {
+      list.range(0, list.length(l) - 1)
+      |> list.any(fn(idx) {
+        test_list(list.append(l |> list.take(idx), l |> list.drop(idx + 1)))
+      })
     }
   }
 
   lines
-  |> list.map(fn(s) {
+  |> list.filter(fn(s) {
     regexp.split(re, s)
-    |> list.filter_map(fn(num_str) {
-      case int.parse(num_str) {
-        Ok(n) -> Ok(n)
-        _ -> Error(Nil)
-      }
-    })
-    |> test_list()
+    |> list.filter_map(int.parse)
+    |> test_list_with_one_off
   })
-  |> list.filter(fn(b) { b })
-  |> list.length()
+  |> list.length
 }
 
 pub fn main() {
