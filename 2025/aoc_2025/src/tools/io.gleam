@@ -173,14 +173,13 @@ fn part_run(
 }
 
 fn format_time(seconds: Float) -> String {
-  let ms =
-    { seconds *. 1_000_000.0 |> float.round() |> int.to_float() } /. 1000.0
+  let ms = { seconds *. 1_000_000.0 |> float.round |> int.to_float } /. 1000.0
   case ms <. 1.0 {
-    True -> string.inspect(ms *. 1000.0) <> "µs"
+    True -> string.inspect(ms *. 1000.0 |> float.round) <> "µs"
     False ->
       case ms <. 1000.0 {
         True -> string.inspect(ms) <> "ms"
-        False -> string.inspect(seconds) <> "s"
+        False -> string.inspect(ms /. 1000.0) <> "s"
       }
   }
 }
