@@ -6,7 +6,7 @@
 set -e
 
 # === Configuration ===
-YEAR=2024
+YEAR=2025
 SRC_BASE="src"
 
 # Get day argument or current day (UTC to avoid local day rollovers)

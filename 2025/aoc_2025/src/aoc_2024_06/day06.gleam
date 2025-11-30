@@ -168,16 +168,12 @@ pub fn run2(lines: List(String)) -> Int {
     lines |> list.length,
   )
 
-  walk1(start_pos_dir, set.from_list([start_pos_dir.0]), max_xy, obsticles)
+  walk1(start_pos_dir, set.new(), max_xy, obsticles)
+  |> set.delete(start_pos_dir.0)
   |> set.to_list
-  |> list.filter(fn(pos) {
-    case pos == start_pos_dir.0 {
-      True -> False
-      False ->
-        walk2(start_pos_dir, set.new(), max_xy, obsticles |> set.insert(pos))
-    }
+  |> list.count(fn(pos) {
+    walk2(start_pos_dir, set.new(), max_xy, obsticles |> set.insert(pos))
   })
-  |> list.length
 }
 
 pub fn main() {
