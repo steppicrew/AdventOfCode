@@ -172,6 +172,15 @@ fn part_run(
   }
 }
 
+pub fn debug(data: a, label: String) -> a {
+  case label {
+    "" -> Nil
+    l -> io.print(l <> " ")
+  }
+  io.println(string.inspect(data))
+  data
+}
+
 fn format_time(seconds: Float) -> String {
   let ms = { seconds *. 1_000_000.0 |> float.round |> int.to_float } /. 1000.0
   case ms <. 1.0 {
