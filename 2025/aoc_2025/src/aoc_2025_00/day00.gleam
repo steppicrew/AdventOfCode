@@ -20,7 +20,7 @@ pub fn main() {
     year,
     day,
     [
-      Expected(1, Some(0), None),
+      Expected(1, Some(0), Some(0)),
       Expected(0, None, None),
     ],
     run1,
