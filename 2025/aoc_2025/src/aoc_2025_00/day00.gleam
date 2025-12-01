@@ -19,7 +19,10 @@ pub fn main() {
   io.simple_io(
     year,
     day,
-    [Expected(1, Some(0), None), Expected(0, None, None)],
+    [
+      Expected(1, Some(0), None),
+      Expected(0, None, None),
+    ],
     run1,
     run2,
     False,
