@@ -16,6 +16,10 @@ else
   DAY=$(date -u +%d)
 fi
 
+if [ -n "$2" ]; then
+  YEAR=$2
+fi
+
 # Pad to two digits (01, 02, 03, ...)
 PADDED_DAY=$(printf "%02d" "$DAY")
 MODULE="aoc_${YEAR}_${PADDED_DAY}"
