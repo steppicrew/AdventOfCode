@@ -19,7 +19,7 @@ fn parse_lines(lines: List(String)) -> #(List(Int), List(Int)) {
     case regexp.split(re, s) {
       [left, right, ..] -> {
         case int.parse(left), int.parse(right) {
-          Ok(l), Ok(r) -> Ok(#(l, r))
+          Ok(left), Ok(right) -> Ok(#(left, right))
           _, _ -> Error(Nil)
         }
       }
@@ -36,8 +36,8 @@ fn run1(lines: List(String)) -> Int {
   let right = list.sort(right, int.compare)
   list.zip(left, right)
   |> list.map(fn(pair) {
-    let #(l, r) = pair
-    int.absolute_value(r - l)
+    let #(left, right) = pair
+    int.absolute_value(right - left)
   })
   |> int.sum()
 }
