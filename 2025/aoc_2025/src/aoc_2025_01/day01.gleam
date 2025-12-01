@@ -22,6 +22,11 @@ fn parse_lines(lines: List(String)) -> List(Int) {
   })
 }
 
+fn get_count(count_pos: #(Int, Int)) -> Int {
+  let #(count, _) = count_pos
+  count
+}
+
 fn run1(lines: List(String)) -> Int {
   lines
   |> parse_lines
@@ -33,7 +38,7 @@ fn run1(lines: List(String)) -> Int {
       _ -> #(count, next_pos)
     }
   })
-  |> fn(result) { result.0 }
+  |> get_count
 }
 
 fn run2(lines: List(String)) -> Int {
@@ -50,7 +55,7 @@ fn run2(lines: List(String)) -> Int {
 
     #(new_count, { next_pos % 100 + 100 } % 100)
   })
-  |> fn(result) { result.0 }
+  |> get_count
 }
 
 pub fn main() {
