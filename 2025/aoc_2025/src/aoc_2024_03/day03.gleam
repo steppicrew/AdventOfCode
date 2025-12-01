@@ -6,16 +6,13 @@ import gleam/string
 import tools/io
 import tools/types.{Expected}
 
-pub const year = 2024
+const year = 2024
 
-pub const day = 3
+const day = 3
 
-pub fn run1(lines: List(String)) -> Int {
-  let text = lines |> string.join("\n")
+fn sum_matches(text: String) -> Int {
   let assert Ok(re_mul) = regexp.from_string("mul\\((\\d{1,3}),(\\d{1,3})\\)")
-
-  let matches = regexp.scan(re_mul, text)
-  matches
+  regexp.scan(re_mul, text)
   |> list.map(fn(captures) {
     case captures.submatches {
       [Some(a_str), Some(b_str), ..] -> {
@@ -30,8 +27,11 @@ pub fn run1(lines: List(String)) -> Int {
   |> int.sum
 }
 
-pub fn run2(lines: List(String)) -> Int {
-  let assert Ok(re_mul) = regexp.from_string("mul\\((\\d{1,3}),(\\d{1,3})\\)")
+fn run1(lines: List(String)) -> Int {
+  lines |> string.join("\n") |> sum_matches
+}
+
+fn run2(lines: List(String)) -> Int {
   lines
   |> string.join("\n")
   |> string.split("do()")
@@ -41,22 +41,7 @@ pub fn run2(lines: List(String)) -> Int {
       _ -> part
     }
   })
-  |> list.map(fn(text) {
-    let matches = regexp.scan(re_mul, text)
-    matches
-    |> list.map(fn(captures) {
-      case captures.submatches {
-        [Some(a_str), Some(b_str), ..] -> {
-          case int.parse(a_str), int.parse(b_str) {
-            Ok(a), Ok(b) -> a * b
-            _, _ -> 0
-          }
-        }
-        _ -> 0
-      }
-    })
-    |> int.sum
-  })
+  |> list.map(sum_matches)
   |> int.sum
 }
 

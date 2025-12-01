@@ -9,11 +9,11 @@ import gleam/string
 import tools/io
 import tools/types.{Expected}
 
-pub const year = 2024
+const year = 2024
 
-pub const day = 5
+const day = 5
 
-pub fn run1(lines: List(String)) -> Int {
+fn parse_lines(lines: List(String)) -> #(List(#(Int, Int)), List(List(Int))) {
   let order =
     lines
     |> list.filter_map(fn(line) {
@@ -38,6 +38,12 @@ pub fn run1(lines: List(String)) -> Int {
         _ -> Error(Nil)
       }
     })
+
+  #(order, pages)
+}
+
+fn run1(lines: List(String)) -> Int {
+  let #(order, pages) = parse_lines(lines)
 
   let test_page = fn(page: Int, before_pages: List(Int)) -> Bool {
     let next_pages =
@@ -112,31 +118,8 @@ fn compare(a: Int, b: Int, order: Set(#(Int, Int))) -> Result(Order, Nil) {
   }
 }
 
-pub fn run2(lines: List(String)) -> Int {
-  let order =
-    lines
-    |> list.filter_map(fn(line) {
-      case line |> string.split("|") {
-        [left, right] ->
-          Ok(#(
-            int.parse(left) |> result.unwrap(0),
-            int.parse(right) |> result.unwrap(0),
-          ))
-        _ -> Error(Nil)
-      }
-    })
-
-  let pages =
-    lines
-    |> list.filter_map(fn(line) {
-      case line |> string.trim |> string.split(",") {
-        [_, _, ..] as parts ->
-          parts
-          |> list.try_map(int.parse)
-          |> result.map_error(fn(_) { Nil })
-        _ -> Error(Nil)
-      }
-    })
+fn run2(lines: List(String)) -> Int {
+  let #(order, pages) = parse_lines(lines)
 
   let test_page = fn(page: Int, before_pages: List(Int)) -> Bool {
     let next_pages =

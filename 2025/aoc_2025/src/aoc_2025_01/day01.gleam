@@ -10,19 +10,21 @@ pub const year = 2025
 
 pub const day = 1
 
-pub fn run1(lines: List(String)) -> Int {
-  let turns =
-    lines
-    |> list.map(fn(line) {
-      let num = line |> string.slice(1, 100) |> int.parse |> result.unwrap(0)
-      case line |> string.first {
-        Ok("L") -> -num
-        Ok("R") -> num
-        _ -> 0
-      }
-    })
+fn parse_lines(lines: List(String)) -> List(Int) {
+  lines
+  |> list.map(fn(line) {
+    let num = line |> string.drop_start(1) |> int.parse |> result.unwrap(0)
+    case line |> string.first {
+      Ok("L") -> -num
+      Ok("R") -> num
+      _ -> 0
+    }
+  })
+}
 
-  turns
+fn run1(lines: List(String)) -> Int {
+  lines
+  |> parse_lines
   |> list.fold(#(0, 50), fn(count_pos, turn) {
     let #(count, pos) = count_pos
     let next_pos = { pos + turn } % 100
@@ -34,29 +36,19 @@ pub fn run1(lines: List(String)) -> Int {
   |> fn(result) { result.0 }
 }
 
-pub fn run2(lines: List(String)) -> Int {
-  let turns =
-    lines
-    |> list.map(fn(line) {
-      let num = line |> string.slice(1, 100) |> int.parse |> result.unwrap(0)
-      case line |> string.first {
-        Ok("L") -> -num
-        Ok("R") -> num
-        _ -> 0
-      }
-    })
-
-  turns
+fn run2(lines: List(String)) -> Int {
+  lines
+  |> parse_lines
   |> list.fold(#(0, 50), fn(count_pos, turn) {
     let #(count, pos) = count_pos
     let next_pos = pos + turn
     let new_count = case pos, next_pos {
-      p, np if np < 0 && p == 0 -> count - np / 100
+      0, np if np < 0 -> count - np / 100
       _, np if np <= 0 -> count + 1 - np / 100
       _, np -> count + np / 100
     }
 
-    #(new_count, { next_pos + 10_000_000 } % 100)
+    #(new_count, { next_pos % 100 + 100 } % 100)
   })
   |> fn(result) { result.0 }
 }

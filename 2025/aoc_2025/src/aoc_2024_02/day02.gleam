@@ -5,51 +5,40 @@ import gleam/regexp
 import tools/io
 import tools/types.{Expected}
 
-pub const year = 2024
+const year = 2024
 
-pub const day = 2
+const day = 2
 
-pub fn run1(lines: List(String)) -> Int {
+fn parse_lines(lines: List(String)) -> List(List(Int)) {
   let assert Ok(re) = regexp.from_string("\\s+")
 
-  let descending = fn(l: List(Int)) {
-    l
-    |> list.window_by_2
-    |> list.all(fn(pair) {
-      let diff = pair.0 - pair.1
-      1 <= diff && diff <= 3
-    })
-  }
-
-  let test_list = fn(l: List(Int)) {
-    descending(l) || descending(l |> list.reverse)
-  }
-
   lines
-  |> list.filter(fn(s) {
+  |> list.map(fn(s) {
     regexp.split(re, s)
     |> list.filter_map(int.parse)
-    |> test_list
   })
+}
+
+fn descending(l: List(Int)) {
+  l
+  |> list.window_by_2
+  |> list.all(fn(pair) {
+    let diff = pair.0 - pair.1
+    1 <= diff && diff <= 3
+  })
+}
+
+fn test_list(l: List(Int)) {
+  descending(l) || descending(l |> list.reverse)
+}
+
+fn run1(lines: List(String)) -> Int {
+  parse_lines(lines)
+  |> list.filter(test_list)
   |> list.length
 }
 
-pub fn run2(lines: List(String)) -> Int {
-  let assert Ok(re) = regexp.from_string("\\s+")
-
-  let descending = fn(l: List(Int)) {
-    l
-    |> list.window_by_2()
-    |> list.all(fn(pair) {
-      let diff = pair.0 - pair.1
-      1 <= diff && diff <= 3
-    })
-  }
-
-  let test_list = fn(l: List(Int)) {
-    l |> descending || l |> list.reverse |> descending
-  }
-
+fn run2(lines: List(String)) -> Int {
   let test_list_with_one_off = fn(l: List(Int)) {
     test_list(l)
     || {
@@ -60,12 +49,8 @@ pub fn run2(lines: List(String)) -> Int {
     }
   }
 
-  lines
-  |> list.filter(fn(s) {
-    regexp.split(re, s)
-    |> list.filter_map(int.parse)
-    |> test_list_with_one_off
-  })
+  parse_lines(lines)
+  |> list.filter(test_list_with_one_off)
   |> list.length
 }
 

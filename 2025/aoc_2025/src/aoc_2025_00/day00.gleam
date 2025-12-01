@@ -3,15 +3,15 @@ import gleam/option.{None, Some}
 import tools/io
 import tools/types.{Expected}
 
-pub const year = 2025
+const year = 2025
 
-pub const day = 0
+const day = 0
 
-pub fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String)) -> Int {
   list.length(lines)
 }
 
-pub fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String)) -> Int {
   list.length(lines)
 }
 

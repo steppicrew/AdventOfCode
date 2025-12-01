@@ -7,27 +7,30 @@ import gleam/result
 import tools/io
 import tools/types.{Expected}
 
-pub const year = 2024
+const year = 2024
 
-pub const day = 1
+const day = 1
 
-pub fn run1(lines: List(String)) -> Int {
+fn parse_lines(lines: List(String)) -> #(List(Int), List(Int)) {
   let assert Ok(re) = regexp.from_string("\\s+")
 
-  let #(left, right) =
-    lines
-    |> list.filter_map(fn(s) {
-      case regexp.split(re, s) {
-        [left, right, ..] -> {
-          case int.parse(left), int.parse(right) {
-            Ok(l), Ok(r) -> Ok(#(l, r))
-            _, _ -> Error(Nil)
-          }
+  lines
+  |> list.filter_map(fn(s) {
+    case regexp.split(re, s) {
+      [left, right, ..] -> {
+        case int.parse(left), int.parse(right) {
+          Ok(l), Ok(r) -> Ok(#(l, r))
+          _, _ -> Error(Nil)
         }
-        _ -> Error(Nil)
       }
-    })
-    |> list.unzip()
+      _ -> Error(Nil)
+    }
+  })
+  |> list.unzip()
+}
+
+fn run1(lines: List(String)) -> Int {
+  let #(left, right) = parse_lines(lines)
 
   let left = list.sort(left, int.compare)
   let right = list.sort(right, int.compare)
@@ -39,23 +42,8 @@ pub fn run1(lines: List(String)) -> Int {
   |> int.sum()
 }
 
-pub fn run2(lines: List(String)) -> Int {
-  let assert Ok(re) = regexp.from_string("\\s+")
-
-  let #(left, right) =
-    lines
-    |> list.filter_map(fn(s) {
-      case regexp.split(re, s) {
-        [left, right, ..] -> {
-          case int.parse(left), int.parse(right) {
-            Ok(l), Ok(r) -> Ok(#(l, r))
-            _, _ -> Error(Nil)
-          }
-        }
-        _ -> Error(Nil)
-      }
-    })
-    |> list.unzip()
+fn run2(lines: List(String)) -> Int {
+  let #(left, right) = parse_lines(lines)
 
   let counts =
     right

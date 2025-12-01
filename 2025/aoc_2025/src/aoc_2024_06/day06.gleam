@@ -7,17 +7,59 @@ import gleam/string
 import tools/io
 import tools/types.{Expected}
 
-pub const year = 2024
+const year = 2024
 
-pub const day = 6
+const day = 6
+
+fn parse_lines(
+  lines: List(String),
+) -> #(Set(#(Int, Int)), #(Int, Int), #(Int, Int)) {
+  let obsticles =
+    lines
+    |> list.index_map(fn(line, y) {
+      line
+      |> string.split("")
+      |> list.index_map(fn(char, x) {
+        case char {
+          "#" -> Ok(#(x, y))
+          _ -> Error(Nil)
+        }
+      })
+    })
+    |> list.flatten
+    |> list.filter_map(fn(x) { x })
+    |> set.from_list
+
+  let #(start_position, direction) =
+    lines
+    |> list.index_map(fn(line, y) {
+      line
+      |> string.split("")
+      |> list.index_map(fn(char, x) {
+        case char {
+          "^" -> Ok(#(#(x, y), #(0, -1)))
+          "v" -> Ok(#(#(x, y), #(0, 1)))
+          "<" -> Ok(#(#(x, y), #(-1, 0)))
+          ">" -> Ok(#(#(x, y), #(1, 0)))
+          _ -> Error(Nil)
+        }
+      })
+    })
+    |> list.flatten
+    |> list.filter_map(fn(x) { x })
+    |> list.first
+    |> result.unwrap(#(#(0, 0), #(0, 0)))
+
+  #(obsticles, start_position, direction)
+}
 
 fn walk1(
-  pos: #(#(Int, Int), #(Int, Int)),
+  position: #(Int, Int),
+  direction: #(Int, Int),
   visited: Set(#(Int, Int)),
   max_xy: #(Int, Int),
   obsticles: Set(#(Int, Int)),
 ) -> Set(#(Int, Int)) {
-  let #(position, direction) = pos
   let #(x, y) = position
   let #(dx, dy) = direction
   let next_pos = #(x + dx, y + dy)
@@ -29,10 +71,11 @@ fn walk1(
     #(_, y) if y == max_xy.1 -> visited
     #(x, y) -> {
       case obsticles |> set.contains(#(x, y)) {
-        True -> walk1(#(position, #(-dy, dx)), visited, max_xy, obsticles)
+        True -> walk1(position, #(-dy, dx), visited, max_xy, obsticles)
         False ->
           walk1(
-            #(next_pos, direction),
+            next_pos,
+            direction,
             set.insert(visited, next_pos),
             max_xy,
             obsticles,
@@ -42,42 +85,8 @@ fn walk1(
   }
 }
 
-pub fn run1(lines: List(String)) -> Int {
-  let obsticles =
-    lines
-    |> list.index_map(fn(line, y) {
-      line
-      |> string.split("")
-      |> list.index_map(fn(char, x) {
-        case char {
-          "#" -> Ok(#(x, y))
-          _ -> Error(Nil)
-        }
-      })
-    })
-    |> list.flatten
-    |> list.filter_map(fn(x) { x })
-    |> set.from_list
-
-  let start_pos_dir =
-    lines
-    |> list.index_map(fn(line, y) {
-      line
-      |> string.split("")
-      |> list.index_map(fn(char, x) {
-        case char {
-          "^" -> Ok(#(#(x, y), #(0, -1)))
-          "v" -> Ok(#(#(x, y), #(0, 1)))
-          "<" -> Ok(#(#(x, y), #(-1, 0)))
-          ">" -> Ok(#(#(x, y), #(1, 0)))
-          _ -> Error(Nil)
-        }
-      })
-    })
-    |> list.flatten
-    |> list.filter_map(fn(x) { x })
-    |> list.first
-    |> result.unwrap(#(#(0, 0), #(0, 0)))
+fn run1(lines: List(String)) -> Int {
+  let #(obsticles, start_position, direction) = parse_lines(lines)
 
   let max_xy = #(
     lines
@@ -87,21 +96,28 @@ pub fn run1(lines: List(String)) -> Int {
     lines |> list.length,
   )
 
-  walk1(start_pos_dir, set.from_list([start_pos_dir.0]), max_xy, obsticles)
+  walk1(
+    start_position,
+    direction,
+    set.from_list([start_position]),
+    max_xy,
+    obsticles,
+  )
   |> set.size
 }
 
 fn walk2(
-  pos: #(#(Int, Int), #(Int, Int)),
+  position: #(Int, Int),
+  direction: #(Int, Int),
   visited: Set(#(#(Int, Int), #(Int, Int))),
   max_xy: #(Int, Int),
   obsticles: Set(#(Int, Int)),
 ) -> Bool {
-  case visited |> set.contains(pos) {
+  let pos_dir = #(position, direction)
+  case visited |> set.contains(pos_dir) {
     True -> True
     False -> {
-      let visited = set.insert(visited, pos)
-      let #(position, direction) = pos
+      let visited = set.insert(visited, pos_dir)
       let #(x, y) = position
       let #(dx, dy) = direction
       let next_pos = #(x + dx, y + dy)
@@ -112,53 +128,19 @@ fn walk2(
         #(x, _) if x == max_xy.0 -> False
         #(_, y) if y == max_xy.1 -> False
         #(x, y) -> {
-          let pos = case obsticles |> set.contains(#(x, y)) {
+          let #(position, direction) = case obsticles |> set.contains(#(x, y)) {
             True -> #(position, #(-dy, dx))
             False -> #(next_pos, direction)
           }
-          walk2(pos, visited, max_xy, obsticles)
+          walk2(position, direction, visited, max_xy, obsticles)
         }
       }
     }
   }
 }
 
-pub fn run2(lines: List(String)) -> Int {
-  let obsticles =
-    lines
-    |> list.index_map(fn(line, y) {
-      line
-      |> string.split("")
-      |> list.index_map(fn(char, x) {
-        case char {
-          "#" -> Ok(#(x, y))
-          _ -> Error(Nil)
-        }
-      })
-    })
-    |> list.flatten
-    |> list.filter_map(fn(x) { x })
-    |> set.from_list
-
-  let start_pos_dir =
-    lines
-    |> list.index_map(fn(line, y) {
-      line
-      |> string.split("")
-      |> list.index_map(fn(char, x) {
-        case char {
-          "^" -> Ok(#(#(x, y), #(0, -1)))
-          "v" -> Ok(#(#(x, y), #(0, 1)))
-          "<" -> Ok(#(#(x, y), #(-1, 0)))
-          ">" -> Ok(#(#(x, y), #(1, 0)))
-          _ -> Error(Nil)
-        }
-      })
-    })
-    |> list.flatten
-    |> list.filter_map(fn(x) { x })
-    |> list.first
-    |> result.unwrap(#(#(0, 0), #(0, 0)))
+fn run2(lines: List(String)) -> Int {
+  let #(obsticles, start_position, direction) = parse_lines(lines)
 
   let max_xy = #(
     lines
@@ -168,11 +150,17 @@ pub fn run2(lines: List(String)) -> Int {
     lines |> list.length,
   )
 
-  walk1(start_pos_dir, set.new(), max_xy, obsticles)
-  |> set.delete(start_pos_dir.0)
+  walk1(start_position, direction, set.new(), max_xy, obsticles)
+  |> set.delete(start_position)
   |> set.to_list
   |> list.count(fn(pos) {
-    walk2(start_pos_dir, set.new(), max_xy, obsticles |> set.insert(pos))
+    walk2(
+      start_position,
+      direction,
+      set.new(),
+      max_xy,
+      obsticles |> set.insert(pos),
+    )
   })
 }
 

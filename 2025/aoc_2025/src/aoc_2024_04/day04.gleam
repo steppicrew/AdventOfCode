@@ -7,20 +7,23 @@ import gleam/string
 import tools/io
 import tools/types.{Expected}
 
-pub const year = 2024
+const year = 2024
 
-pub const day = 4
+const day = 4
 
-pub fn run1(lines: List(String)) -> Int {
-  let map =
-    lines
-    |> list.index_fold(dict.new(), fn(map, line, y) {
-      line
-      |> string.split("")
-      |> list.index_fold(map, fn(map, char, x) {
-        map |> dict.insert(#(x, y), char)
-      })
+fn parse_lines(lines: List(String)) -> dict.Dict(#(Int, Int), String) {
+  lines
+  |> list.index_fold(dict.new(), fn(map, line, y) {
+    line
+    |> string.split("")
+    |> list.index_fold(map, fn(map, char, x) {
+      map |> dict.insert(#(x, y), char)
     })
+  })
+}
+
+fn run1(lines: List(String)) -> Int {
+  let map = parse_lines(lines)
 
   let xmas = "XMAS" |> string.split("")
 
@@ -60,16 +63,8 @@ pub fn run1(lines: List(String)) -> Int {
   |> int.sum
 }
 
-pub fn run2(lines: List(String)) -> Int {
-  let map =
-    lines
-    |> list.index_fold(dict.new(), fn(map, line, y) {
-      line
-      |> string.split("")
-      |> list.index_fold(map, fn(map, char, x) {
-        map |> dict.insert(#(x, y), char)
-      })
-    })
+fn run2(lines: List(String)) -> Int {
+  let map = parse_lines(lines)
 
   let get_around = fn(x: Int, y: Int, dx: Int, dy: Int) -> Bool {
     case dict.get(map, #(x + dx, y + dy)), dict.get(map, #(x - dx, y - dy)) {
