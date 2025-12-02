@@ -83,8 +83,8 @@ fn run1(lines: List(String)) -> Int {
   |> int.sum
 }
 
-fn test_any_devisors(last_devisor: Int, n: Int, test_fn: fn(Int) -> Bool) {
-  let devisor = last_devisor + 1
+fn test_any_devisors(devisor: Int, n: Int, test_fn: fn(Int) -> Bool) {
+  let devisor = devisor + 1
   case devisor * devisor {
     x if x > n -> False
     x if x == n -> test_fn(devisor)
