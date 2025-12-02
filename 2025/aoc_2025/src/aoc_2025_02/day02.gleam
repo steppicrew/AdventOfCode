@@ -75,12 +75,8 @@ fn check_multiple_repeat(n: Int) -> Bool {
   case len > 1 {
     True ->
       list.range(1, len / 2)
-      |> list.any(fn(part_size) {
-        case len % part_size {
-          0 -> check_repeat(s, part_size)
-          _ -> False
-        }
-      })
+      |> list.filter(fn(part_size) { len % part_size == 0 })
+      |> list.any(fn(part_size) { check_repeat(s, part_size) })
     False -> False
   }
 }
