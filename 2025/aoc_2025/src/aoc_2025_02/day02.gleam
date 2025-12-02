@@ -69,18 +69,6 @@ fn check_single_repeat(n: Int) -> Bool {
   }
 }
 
-fn check_multiple_repeat(n: Int) -> Bool {
-  let s = int.to_string(n)
-  let len = string.length(s)
-  case len > 1 {
-    True ->
-      list.range(1, len / 2)
-      |> list.filter(fn(part_size) { len % part_size == 0 })
-      |> list.any(fn(part_size) { check_repeat(s, part_size) })
-    False -> False
-  }
-}
-
 fn run1(lines: List(String)) -> Int {
   // let assert Ok(re) = regexp.from_string("^(\\d+)(\\1)$")
   lines
@@ -93,6 +81,36 @@ fn run1(lines: List(String)) -> Int {
     filter_range_sum(0, from, until, check_single_repeat)
   })
   |> int.sum
+}
+
+fn test_any_devisors(last_devisor: Int, n: Int, test_fn: fn(Int) -> Bool) {
+  let devisor = last_devisor + 1
+  case devisor * devisor {
+    x if x > n -> False
+    x if x == n -> test_fn(devisor)
+    _ -> {
+      case n % devisor {
+        0 -> {
+          case test_fn(devisor) || test_fn(n / devisor) {
+            True -> True
+            False -> test_any_devisors(devisor, n, test_fn)
+          }
+        }
+        _ -> test_any_devisors(devisor, n, test_fn)
+      }
+    }
+  }
+}
+
+fn check_multiple_repeat(n: Int) -> Bool {
+  let s = int.to_string(n)
+  let len = string.length(s)
+  case len > 1 {
+    True ->
+      check_repeat(s, 1)
+      || test_any_devisors(1, len, fn(part_size) { check_repeat(s, part_size) })
+    False -> False
+  }
 }
 
 fn run2(lines: List(String)) -> Int {
