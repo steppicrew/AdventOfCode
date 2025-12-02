@@ -188,7 +188,8 @@ fn format_time(seconds: Float) -> String {
     False ->
       case ms <. 1000.0 {
         True -> string.inspect(ms) <> "ms"
-        False -> string.inspect(ms /. 1000.0) <> "s"
+        False ->
+          string.inspect({ ms |> float.round |> int.to_float } /. 1000.0) <> "s"
       }
   }
 }
