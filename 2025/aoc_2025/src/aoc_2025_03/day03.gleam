@@ -40,13 +40,13 @@ fn find_largest_joltage(digits: List(Int), digit_count: Int) -> Int {
 
 fn run1(lines: List(String)) -> Int {
   parse_lines(lines)
-  |> list.map(fn(nums) { find_largest_joltage(nums, 2) })
+  |> list.map(fn(digits) { find_largest_joltage(digits, 2) })
   |> int.sum
 }
 
 fn run2(lines: List(String)) -> Int {
   parse_lines(lines)
-  |> list.map(fn(nums) { find_largest_joltage(nums, 12) })
+  |> list.map(fn(digits) { find_largest_joltage(digits, 12) })
   |> int.sum
 }
 
