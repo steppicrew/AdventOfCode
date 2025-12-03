@@ -73,11 +73,12 @@ fn find_largest_joltage(digits: List(Int), digit_count: Int) -> Int {
 //
 // The stack might be longer than digit_count if we didn’t use all drops — we just keep the first digit_count.
 
-fn fix_stack(digit: Int, stack: List(Int), to_drop: Int) -> #(List(Int), Int) {
+fn fix_stack(digit: Int, stack_drop: #(List(Int), Int)) -> #(List(Int), Int) {
+  let #(stack, to_drop) = stack_drop
   case stack {
     [] ->
       // Nothing on the stack, nothing to drop
-      #(stack, to_drop)
+      stack_drop
 
     [last_digit, ..rest] ->
       // While the current digit is bigger than the last chosen one
@@ -85,11 +86,11 @@ fn fix_stack(digit: Int, stack: List(Int), to_drop: Int) -> #(List(Int), Int) {
       case digit > last_digit && to_drop > 0 {
         True ->
           // Recurse with the rest of the stack and one fewer drop
-          fix_stack(digit, rest, to_drop - 1)
+          fix_stack(digit, #(rest, to_drop - 1))
 
         False ->
           // Either no more drops, or last_digit >= digit → keep stack as-is
-          #(stack, to_drop)
+          stack_drop
       }
   }
 }
@@ -100,8 +101,7 @@ fn find_largest_joltage_chatgpt(digits: List(Int), digit_count: Int) -> Int {
   let #(stack, _) =
     digits
     |> list.fold(#([], drop_init), fn(stack_drop, digit) {
-      let #(stack, to_drop) = stack_drop
-      let #(stack, to_drop) = fix_stack(digit, stack, to_drop)
+      let #(stack, to_drop) = fix_stack(digit, stack_drop)
       // Push current digit on top of the (possibly trimmed) stack
       #([digit, ..stack], to_drop)
     })
