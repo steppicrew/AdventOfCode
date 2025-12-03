@@ -19,22 +19,25 @@ fn parse_lines(lines: List(String)) -> List(List(Int)) {
 }
 
 fn find_largest_joltage(digits: List(Int), digit_count: Int) -> Int {
-  let #(sum, _) =
+  let #(sum, _, _) =
     list.range(digit_count - 1, 0)
-    |> list.fold(#(0, digits), fn(sum_digits, index_left) {
-      let #(sum, digits) = sum_digits
-      let #(digit, index) =
-        digits
-        |> list.take(list.length(digits) - index_left)
-        |> list.index_fold(#(0, 0), fn(max, digit, index) {
-          let #(current_max, current_index) = max
-          case digit > current_max {
-            True -> #(digit, index)
-            False -> #(current_max, current_index)
-          }
-        })
-      #(sum * 10 + digit, list.drop(digits, index + 1))
-    })
+    |> list.fold(
+      #(0, digits, list.length(digits)),
+      fn(sum_digits_len, digits_left) {
+        let #(sum, digits, len) = sum_digits_len
+        let max_len = len - digits_left
+        let #(digit, index) =
+          digits
+          |> list.index_fold(#(0, 0), fn(max, digit, index) {
+            let #(current_max, current_index) = max
+            case index < max_len && digit > current_max {
+              True -> #(digit, index)
+              False -> #(current_max, current_index)
+            }
+          })
+        #(sum * 10 + digit, list.drop(digits, index + 1), len - index - 1)
+      },
+    )
   sum
 }
 
