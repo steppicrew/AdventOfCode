@@ -1,7 +1,6 @@
 import gleam/int
 import gleam/list
-import gleam/option.{None, Some}
-import gleam/result
+import gleam/option.{Some}
 import gleam/string
 import tools/io
 import tools/types.{Expected}
@@ -19,60 +18,35 @@ fn parse_lines(lines: List(String)) -> List(List(Int)) {
   })
 }
 
-fn find_largest_pair(nums: List(Int)) -> Int {
-  let first_digit =
-    nums
-    |> list.take(list.length(nums) - 1)
-    |> list.max(int.compare)
-    |> result.unwrap(0)
-  let first_index =
-    nums
-    |> list.fold_until(0, fn(i, n) {
-      case n == first_digit {
-        True -> list.Stop(i)
-        False -> list.Continue(i + 1)
-      }
-    })
-  let second_digit =
-    nums
-    |> list.drop(first_index + 1)
-    |> list.max(int.compare)
-    |> result.unwrap(0)
-  first_digit * 10 + second_digit
-}
-
-fn run1(lines: List(String)) -> Int {
-  parse_lines(lines)
-  |> list.map(find_largest_pair)
-  |> int.sum
-}
-
-fn find_largest_joltage(nums: List(Int)) -> Int {
+fn find_largest_joltage(nums: List(Int), digits: Int) -> Int {
   let #(sum, _) =
-    list.range(11, 0)
+    list.range(digits - 1, 0)
     |> list.fold(#(0, nums), fn(sum_nums, index_left) {
       let #(sum, nums) = sum_nums
-      let next_digit =
+      let #(digit, index) =
         nums
         |> list.take(list.length(nums) - index_left)
-        |> list.max(int.compare)
-        |> result.unwrap(0)
-      let index =
-        nums
-        |> list.fold_until(0, fn(i, n) {
-          case n == next_digit {
-            True -> list.Stop(i)
-            False -> list.Continue(i + 1)
+        |> list.index_fold(#(0, 0), fn(max, n, i) {
+          let #(current_max, current_index) = max
+          case n > current_max {
+            True -> #(n, i)
+            False -> #(current_max, current_index)
           }
         })
-      #(sum * 10 + next_digit, list.drop(nums, index + 1))
+      #(sum * 10 + digit, list.drop(nums, index + 1))
     })
   sum
 }
 
+fn run1(lines: List(String)) -> Int {
+  parse_lines(lines)
+  |> list.map(fn(nums) { find_largest_joltage(nums, 2) })
+  |> int.sum
+}
+
 fn run2(lines: List(String)) -> Int {
   parse_lines(lines)
-  |> list.map(find_largest_joltage)
+  |> list.map(fn(nums) { find_largest_joltage(nums, 12) })
   |> int.sum
 }
 
