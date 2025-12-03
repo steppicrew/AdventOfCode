@@ -18,10 +18,10 @@ fn parse_lines(lines: List(String)) -> List(List(Int)) {
   })
 }
 
-fn find_largest_joltage(nums: List(Int), digits: Int) -> Int {
+fn find_largest_joltage(digits: List(Int), digit_count: Int) -> Int {
   let #(sum, _) =
-    list.range(digits - 1, 0)
-    |> list.fold(#(0, nums), fn(sum_nums, index_left) {
+    list.range(digit_count - 1, 0)
+    |> list.fold(#(0, digits), fn(sum_nums, index_left) {
       let #(sum, nums) = sum_nums
       let #(digit, index) =
         nums
