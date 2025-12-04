@@ -9,37 +9,42 @@ const year = 2025
 
 const day = 4
 
+const neighbour_offsets: List(#(Int, Int)) = [
+  #(-1, 0),
+  #(1, 0),
+  #(0, -1),
+  #(0, 1),
+  #(-1, -1),
+  #(-1, 1),
+  #(1, -1),
+  #(1, 1),
+]
+
 fn parse_lines(lines: List(String)) -> Set(#(Int, Int)) {
   lines
   |> list.index_map(fn(line, y) {
     line
-    |> string.split("")
+    |> string.to_graphemes
     |> list.index_map(fn(char, x) {
       case char {
         "@" -> Ok(#(x, y))
         _ -> Error(Nil)
       }
     })
-    |> list.filter_map(fn(r) { r })
+    |> list.filter_map(fn(position) { position })
   })
   |> list.flatten
   |> set.from_list()
 }
 
-fn get_test(rolls: Set(#(Int, Int))) -> fn(#(Int, Int)) -> Bool {
+fn get_test_removable(rolls: Set(#(Int, Int))) -> fn(#(Int, Int)) -> Bool {
   fn(pos: #(Int, Int)) -> Bool {
     let #(x, y) = pos
-    [
-      #(x - 1, y),
-      #(x + 1, y),
-      #(x, y - 1),
-      #(x, y + 1),
-      #(x - 1, y - 1),
-      #(x - 1, y + 1),
-      #(x + 1, y - 1),
-      #(x + 1, y + 1),
-    ]
-    |> list.count(fn(n) { set.contains(rolls, n) })
+    neighbour_offsets
+    |> list.count(fn(offset) {
+      let #(dx, dy) = offset
+      set.contains(rolls, #(x + dx, y + dy))
+    })
     < 4
   }
 }
@@ -49,7 +54,7 @@ fn run1(lines: List(String)) -> Int {
 
   rolls
   |> set.to_list
-  |> list.filter(get_test(rolls))
+  |> list.filter(get_test_removable(rolls))
   |> list.length
 }
 
@@ -57,16 +62,15 @@ fn remove_rolls(rolls: Set(#(Int, Int))) -> Set(#(Int, Int)) {
   let rolls_to_remove =
     rolls
     |> set.to_list
-    |> list.filter(get_test(rolls))
+    |> list.filter(get_test_removable(rolls))
     |> set.from_list
 
-  case rolls_to_remove |> set.is_empty {
+  case set.is_empty(rolls_to_remove) {
     True -> rolls
     False ->
-      remove_rolls(
-        rolls
-        |> set.difference(rolls_to_remove),
-      )
+      rolls
+      |> set.difference(rolls_to_remove)
+      |> remove_rolls
   }
 }
 
