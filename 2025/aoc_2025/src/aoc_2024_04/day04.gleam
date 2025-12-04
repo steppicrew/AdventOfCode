@@ -15,7 +15,7 @@ fn parse_lines(lines: List(String)) -> dict.Dict(#(Int, Int), String) {
   lines
   |> list.index_fold(dict.new(), fn(map, line, y) {
     line
-    |> string.split("")
+    |> string.to_graphemes
     |> list.index_fold(map, fn(map, char, x) {
       map |> dict.insert(#(x, y), char)
     })

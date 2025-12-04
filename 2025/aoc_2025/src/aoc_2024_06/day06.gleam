@@ -18,7 +18,7 @@ fn parse_lines(
     lines
     |> list.index_map(fn(line, y) {
       line
-      |> string.split("")
+      |> string.to_graphemes
       |> list.index_map(fn(char, x) {
         case char {
           "#" -> Ok(#(x, y))
@@ -34,7 +34,7 @@ fn parse_lines(
     lines
     |> list.index_map(fn(line, y) {
       line
-      |> string.split("")
+      |> string.to_graphemes
       |> list.index_map(fn(char, x) {
         case char {
           "^" -> Ok(#(#(x, y), #(0, -1)))

@@ -23,7 +23,7 @@ fn parse_lines(lines: List(String)) -> List(List(Int)) {
   lines
   |> list.map(fn(line) {
     line
-    |> string.split("")
+    |> string.to_graphemes
     |> list.filter_map(int.parse)
   })
 }
