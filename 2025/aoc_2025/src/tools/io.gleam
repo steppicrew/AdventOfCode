@@ -134,10 +134,7 @@ fn create_env(path: String) -> RunEnv {
 
   RunEnv(log: fn(msg) {
     io.println(msg)
-    let _ = case simplifile.is_file(path) {
-      Ok(True) -> simplifile.append(path, msg)
-      _ -> simplifile.write(path, msg)
-    }
+    let _ = simplifile.append(path, msg)
     Nil
   })
 }
