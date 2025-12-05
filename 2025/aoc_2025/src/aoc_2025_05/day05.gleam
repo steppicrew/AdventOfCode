@@ -13,37 +13,24 @@ const day = 5
 /// - ranges like "10-20"
 /// - ingredients like "42"
 fn parse_line(lines: List(String)) -> #(List(#(Int, Int)), List(Int)) {
-  list.fold(lines, #([], []), fn(acc, line) {
+  lines
+  |> list.filter(fn(s) { !string.is_empty(s) })
+  |> list.fold(#([], []), fn(acc, line) {
     let #(ranges, ingredients) = acc
 
-    case string.is_empty(line) {
-      True ->
-        // Ignore empty lines
-        acc
+    // Try range "a-b" first
+    case string.split(line, "-") {
+      [from_s, to_s] ->
+        case int.parse(from_s), int.parse(to_s) {
+          Ok(from), Ok(to) -> #([#(from, to), ..ranges], ingredients)
+          _, _ -> acc
+        }
 
-      False ->
-        // Try range "a-b" first
-        case string.split(line, "-") {
-          [from_s, to_s] ->
-            case int.parse(from_s), int.parse(to_s) {
-              Ok(from), Ok(to) ->
-                // Cons is cheap, order doesn't matter for us
-                #([#(from, to), ..ranges], ingredients)
-
-              _, _ ->
-                // Bad line, ignore
-                acc
-            }
-
-          _ ->
-            // Not a range, then try a single integer
-            case int.parse(line) {
-              Ok(value) -> #(ranges, [value, ..ingredients])
-
-              Error(_) ->
-                // Bad line, ignore
-                acc
-            }
+      _ ->
+        // Not a range, then try a single integer
+        case int.parse(line) {
+          Ok(value) -> #(ranges, [value, ..ingredients])
+          _ -> acc
         }
     }
   })
