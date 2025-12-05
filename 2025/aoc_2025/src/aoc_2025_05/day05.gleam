@@ -100,7 +100,7 @@ fn run2(lines: List(String)) -> Int {
   |> list.fold(0, fn(count, range) {
     let #(from, to) = range
     // Inclusive range: [from, to]
-    count + { to - from + 1 }
+    count + to - from + 1
   })
 }
 
