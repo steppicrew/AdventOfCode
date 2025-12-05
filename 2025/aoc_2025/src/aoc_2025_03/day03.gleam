@@ -5,7 +5,7 @@ import gleam/int
 import gleam/list
 import gleam/option.{Some}
 import gleam/string
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2025
@@ -112,7 +112,7 @@ fn find_largest_joltage_chatgpt(digits: List(Int), digit_count: Int) -> Int {
   |> list.fold(0, fn(acc, digit) { acc * 10 + digit })
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   let find_joltage = case version {
     Original -> find_largest_joltage
     ChatGpt -> find_largest_joltage_chatgpt
@@ -122,7 +122,7 @@ fn run1(lines: List(String)) -> Int {
   |> int.sum
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   let find_joltage = case version {
     Original -> find_largest_joltage
     ChatGpt -> find_largest_joltage_chatgpt

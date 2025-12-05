@@ -3,7 +3,7 @@ import gleam/list
 import gleam/option.{Some}
 import gleam/regexp
 import gleam/string
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2024
@@ -27,11 +27,11 @@ fn sum_matches(text: String) -> Int {
   |> int.sum
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   lines |> string.join("\n") |> sum_matches
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   lines
   |> string.join("\n")
   |> string.split("do()")

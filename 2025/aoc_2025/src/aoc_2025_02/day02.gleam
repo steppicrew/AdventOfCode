@@ -3,7 +3,7 @@ import gleam/list
 import gleam/option.{Some}
 import gleam/regexp
 import gleam/string
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2025
@@ -69,7 +69,7 @@ fn check_single_repeat(n: Int) -> Bool {
   }
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   // let assert Ok(re) = regexp.from_string("^(\\d+)(\\1)$")
   lines
   |> parse_lines
@@ -113,7 +113,7 @@ fn check_multiple_repeat(n: Int) -> Bool {
   }
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   // let assert Ok(re) = regexp.from_string("^(\\d+)(\\1)+$")
   lines
   |> parse_lines

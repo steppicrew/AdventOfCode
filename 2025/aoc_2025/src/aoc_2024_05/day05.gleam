@@ -6,7 +6,7 @@ import gleam/order.{type Order}
 import gleam/result
 import gleam/set.{type Set}
 import gleam/string
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2024
@@ -42,7 +42,7 @@ fn parse_lines(lines: List(String)) -> #(List(#(Int, Int)), List(List(Int))) {
   #(order, pages)
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   let #(order, pages) = parse_lines(lines)
 
   let test_page = fn(page: Int, before_pages: List(Int)) -> Bool {
@@ -118,7 +118,7 @@ fn compare(a: Int, b: Int, order: Set(#(Int, Int))) -> Result(Order, Nil) {
   }
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   let #(order, pages) = parse_lines(lines)
 
   let test_page = fn(page: Int, before_pages: List(Int)) -> Bool {

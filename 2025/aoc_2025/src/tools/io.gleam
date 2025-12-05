@@ -9,6 +9,16 @@ import simplifile
 import tools/timer
 import tools/types.{type ExpectedResult, Expected}
 
+type TestResult {
+  Passed
+  Failed
+  Unchecked
+}
+
+pub type RunEnv {
+  RunEnv(log: fn(String) -> Nil)
+}
+
 fn correct() -> String {
   "✓" |> bold |> green
 }
@@ -21,19 +31,15 @@ fn new_result() -> String {
   "?" |> bold |> yellow
 }
 
-type TestResult {
-  Passed
-  Failed
-  Unchecked
-}
-
 /// Reads lines from file, skipping comment lines starting with ';'.
 fn read_lines(path: String) -> List(String) {
   case simplifile.read(path) {
     Ok(content) ->
       content
       |> string.split("\n")
-      |> list.filter(fn(line) { !string.starts_with(line, ";") && line != "" })
+      |> list.filter(fn(line) {
+        !string.starts_with(line, ";") && !string.is_empty(line)
+      })
     Error(_) -> []
   }
 }
@@ -48,8 +54,8 @@ pub fn simple_io(
   year: Int,
   day: Int,
   expected_results: List(ExpectedResult(a)),
-  run1: fn(List(String)) -> a,
-  run2: fn(List(String)) -> a,
+  run1: fn(List(String), RunEnv) -> a,
+  run2: fn(List(String), RunEnv) -> a,
   quiet: Bool,
 ) -> Nil {
   let results =
@@ -96,8 +102,8 @@ fn ref_run(
   ref: Int,
   exp1: Option(a),
   exp2: Option(a),
-  run1: fn(List(String)) -> a,
-  run2: fn(List(String)) -> a,
+  run1: fn(List(String), RunEnv) -> a,
+  run2: fn(List(String), RunEnv) -> a,
   quiet: Bool,
 ) -> #(TestResult, TestResult) {
   let padded_day = string.pad_start(int.to_string(day), 2, "0")
@@ -117,21 +123,41 @@ fn ref_run(
   )
 }
 
+fn create_env(path: String) -> RunEnv {
+  case simplifile.is_file(path) {
+    Ok(True) -> {
+      let _ = simplifile.delete(path)
+      Nil
+    }
+    _ -> Nil
+  }
+
+  RunEnv(log: fn(msg) {
+    io.println(msg)
+    let _ = case simplifile.is_file(path) {
+      Ok(True) -> simplifile.append(path, msg)
+      _ -> simplifile.write(path, msg)
+    }
+    Nil
+  })
+}
+
 fn part_run(
   dir: String,
   label: String,
   part: Int,
   input: List(String),
   expected: Option(a),
-  run: fn(List(String)) -> a,
+  run: fn(List(String), RunEnv) -> a,
   suffix: String,
   quiet: Bool,
 ) -> TestResult {
-  let #(result, time) = timer.measure_time(fn() { run(input) })
-  let time_str = format_time(time)
-  let result_str = string.inspect(result)
   let result_file =
     dir <> "/result" <> suffix <> "_" <> int.to_string(part) <> ".txt"
+  let env = create_env(result_file)
+  let #(result, time) = timer.measure_time(fn() { run(input, env) })
+  let time_str = format_time(time)
+  let result_str = string.inspect(result)
 
   case quiet {
     True -> Nil
@@ -166,18 +192,21 @@ fn part_run(
         False ->
           io.println(new_result() <> " (" <> result_str <> ") in " <> time_str)
       }
-      let _ = simplifile.write(result_file, result_str)
+      let _ = env.log(result_str)
       Unchecked
     }
   }
 }
 
-pub fn debug(data: a, label: String) -> a {
-  case label {
-    "" -> Nil
-    l -> io.print(l <> " ")
+pub fn debug(data: a, label: String, env: Option(RunEnv)) -> a {
+  let message = case string.is_empty(label) {
+    True -> string.inspect(data)
+    False -> label <> " " <> string.inspect(data)
   }
-  io.println(string.inspect(data))
+  case env {
+    Some(e) -> e.log(message)
+    None -> Nil
+  }
   data
 }
 

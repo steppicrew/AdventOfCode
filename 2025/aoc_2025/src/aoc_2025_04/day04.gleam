@@ -2,7 +2,7 @@ import gleam/list
 import gleam/option.{Some}
 import gleam/set.{type Set}
 import gleam/string
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2025
@@ -49,7 +49,7 @@ fn get_test_removable(rolls: Set(#(Int, Int))) -> fn(#(Int, Int)) -> Bool {
   }
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   let rolls = parse_lines(lines)
 
   rolls
@@ -74,7 +74,7 @@ fn remove_rolls(rolls: Set(#(Int, Int))) -> Set(#(Int, Int)) {
   }
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   let rolls = parse_lines(lines)
 
   set.size(rolls) - set.size(remove_rolls(rolls))

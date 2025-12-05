@@ -4,7 +4,7 @@ import gleam/option.{Some}
 import gleam/result
 import gleam/set.{type Set}
 import gleam/string
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2024
@@ -85,7 +85,7 @@ fn walk1(
   }
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   let #(obsticles, start_position, direction) = parse_lines(lines)
 
   let max_xy = #(
@@ -139,7 +139,7 @@ fn walk2(
   }
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   let #(obsticles, start_position, direction) = parse_lines(lines)
 
   let max_xy = #(

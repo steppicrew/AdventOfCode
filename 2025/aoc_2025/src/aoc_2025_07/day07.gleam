@@ -1,17 +1,17 @@
 import gleam/list
 import gleam/option.{None, Some}
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2025
 
 const day = 7
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   list.length(lines)
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   list.length(lines)
 }
 

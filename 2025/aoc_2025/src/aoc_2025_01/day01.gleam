@@ -3,7 +3,7 @@ import gleam/list
 import gleam/option.{Some}
 import gleam/result
 import gleam/string
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 pub const year = 2025
@@ -27,7 +27,7 @@ fn get_count(count_pos: #(Int, Int)) -> Int {
   count
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   lines
   |> parse_lines
   |> list.fold(#(0, 50), fn(count_pos, turn) {
@@ -41,7 +41,7 @@ fn run1(lines: List(String)) -> Int {
   |> get_count
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   lines
   |> parse_lines
   |> list.fold(#(0, 50), fn(count_pos, turn) {

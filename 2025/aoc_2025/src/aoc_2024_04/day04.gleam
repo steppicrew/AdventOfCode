@@ -4,7 +4,7 @@ import gleam/list
 import gleam/option.{Some}
 import gleam/result
 import gleam/string
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2024
@@ -22,7 +22,7 @@ fn parse_lines(lines: List(String)) -> dict.Dict(#(Int, Int), String) {
   })
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   let map = parse_lines(lines)
 
   let xmas = "XMAS" |> string.split("")
@@ -63,7 +63,7 @@ fn run1(lines: List(String)) -> Int {
   |> int.sum
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   let map = parse_lines(lines)
 
   let get_around = fn(x: Int, y: Int, dx: Int, dy: Int) -> Bool {

@@ -4,7 +4,7 @@ import gleam/list
 import gleam/option.{Some}
 import gleam/regexp
 import gleam/result
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2024
@@ -29,7 +29,7 @@ fn parse_lines(lines: List(String)) -> #(List(Int), List(Int)) {
   |> list.unzip()
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   let #(left, right) = parse_lines(lines)
 
   let left = list.sort(left, int.compare)
@@ -42,7 +42,7 @@ fn run1(lines: List(String)) -> Int {
   |> int.sum()
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   let #(left, right) = parse_lines(lines)
 
   let counts =

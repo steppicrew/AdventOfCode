@@ -2,7 +2,7 @@ import gleam/int
 import gleam/list
 import gleam/option.{Some}
 import gleam/regexp
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2024
@@ -32,13 +32,13 @@ fn test_list(l: List(Int)) {
   descending(l) || descending(l |> list.reverse)
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   parse_lines(lines)
   |> list.filter(test_list)
   |> list.length
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   let test_list_with_one_off = fn(l: List(Int)) {
     test_list(l)
     || {

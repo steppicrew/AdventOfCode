@@ -1,8 +1,8 @@
 import gleam/int
 import gleam/list
-import gleam/option.{Some}
+import gleam/option.{None, Some}
 import gleam/string
-import tools/io
+import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
 const year = 2025
@@ -64,7 +64,7 @@ fn merge_ranges(ranges: List(#(Int, Int))) -> List(#(Int, Int)) {
   })
 }
 
-fn run1(lines: List(String)) -> Int {
+fn run1(lines: List(String), _: RunEnv) -> Int {
   let #(ranges, ingredients) = parse_line(lines)
 
   ingredients
@@ -78,7 +78,7 @@ fn run1(lines: List(String)) -> Int {
   |> list.length
 }
 
-fn run2(lines: List(String)) -> Int {
+fn run2(lines: List(String), _: RunEnv) -> Int {
   let #(ranges, _) = parse_line(lines)
   let ranges = merge_ranges(ranges)
 
