@@ -14,7 +14,6 @@ const day = 5
 /// - ingredients like "42"
 fn parse_line(lines: List(String)) -> #(List(#(Int, Int)), List(Int)) {
   lines
-  |> list.filter(fn(s) { !string.is_empty(s) })
   |> list.fold(#([], []), fn(acc, line) {
     let #(ranges, ingredients) = acc
 
