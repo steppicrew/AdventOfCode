@@ -1,7 +1,7 @@
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
-import gleam/regexp
+import gleam/string
 import tools/io
 import tools/types.{Expected}
 
@@ -9,56 +9,82 @@ const year = 2025
 
 const day = 5
 
+/// Parses all lines into:
+/// - ranges like "10-20"
+/// - ingredients like "42"
 fn parse_line(lines: List(String)) -> #(List(#(Int, Int)), List(Int)) {
-  let assert Ok(re) = regexp.from_string("(\\d+)-(\\d+)")
+  list.fold(lines, #([], []), fn(acc, line) {
+    let #(ranges, ingredients) = acc
 
-  let ranges =
-    lines
-    |> list.filter_map(fn(line) {
-      case regexp.scan(re, line) {
-        [match] ->
-          case match.submatches {
-            [Some(a), Some(b)] -> {
-              case int.parse(a), int.parse(b) {
-                Ok(a), Ok(b) -> Ok(#(a, b))
-                _, _ -> Error(Nil)
-              }
+    case string.is_empty(line) {
+      True ->
+        // Ignore empty lines
+        acc
+
+      False ->
+        // Try range "a-b" first
+        case string.split(line, "-") {
+          [from_s, to_s] ->
+            case int.parse(from_s), int.parse(to_s) {
+              Ok(from), Ok(to) ->
+                // Cons is cheap, order doesn't matter for us
+                #([#(from, to), ..ranges], ingredients)
+
+              _, _ ->
+                // Bad line, ignore
+                acc
             }
-            _ -> Error(Nil)
-          }
-        _ -> Error(Nil)
-      }
-    })
 
-  let assert Ok(re) = regexp.from_string("^(\\d+)$")
+          _ ->
+            // Not a range, then try a single integer
+            case int.parse(line) {
+              Ok(value) -> #(ranges, [value, ..ingredients])
 
-  let ingredients =
-    lines
-    |> list.filter_map(fn(line) {
-      case regexp.scan(re, line) {
-        [match] ->
-          case match.submatches {
-            [Some(a)] -> {
-              case int.parse(a) {
-                Ok(a) -> Ok(a)
-                _ -> Error(Nil)
-              }
+              Error(_) ->
+                // Bad line, ignore
+                acc
             }
-            _ -> Error(Nil)
-          }
-        _ -> Error(Nil)
-      }
-    })
+        }
+    }
+  })
+}
 
-  #(ranges, ingredients)
+/// Merge overlapping / touching ranges into a minimal set of disjoint ranges.
+/// Example: [1-3, 2-5, 10-12] -> [1-5, 10-12]
+fn merge_ranges(ranges: List(#(Int, Int))) -> List(#(Int, Int)) {
+  ranges
+  |> list.sort(fn(a, b) {
+    let #(a_from, _) = a
+    let #(b_from, _) = b
+    int.compare(a_from, b_from)
+  })
+  |> list.fold([], fn(acc, range) {
+    case acc {
+      [] -> [range]
+
+      [last, ..rest] -> {
+        let #(last_from, last_to) = last
+        let #(from, to) = range
+
+        case from > last_to {
+          // Disjoint: keep both
+          True -> [range, last, ..rest]
+
+          // Overlapping / touching: merge them
+          False -> [#(last_from, int.max(to, last_to)), ..rest]
+        }
+      }
+    }
+  })
 }
 
 fn run1(lines: List(String)) -> Int {
   let #(ranges, ingredients) = parse_line(lines)
+  let merged = merge_ranges(ranges)
 
   ingredients
   |> list.filter(fn(ingredient) {
-    ranges
+    merged
     |> list.any(fn(range) {
       let #(from, to) = range
       ingredient >= from && ingredient <= to
@@ -69,28 +95,14 @@ fn run1(lines: List(String)) -> Int {
 
 fn run2(lines: List(String)) -> Int {
   let #(ranges, _) = parse_line(lines)
+  let merged = merge_ranges(ranges)
 
-  let #(count, _) =
-    ranges
-    |> list.sort(fn(a, b) {
-      let #(a_from, _) = a
-      let #(b_from, _) = b
-      int.compare(a_from, b_from)
-    })
-    |> list.fold(#(0, 0), fn(acc, range) {
-      let #(count, current_end) = acc
-      let #(from, to) = range
-      case from > current_end {
-        True -> #(count + { to - from + 1 }, to)
-        False ->
-          case to > current_end {
-            True -> #(count + { to - current_end }, to)
-            False -> #(count, current_end)
-          }
-      }
-    })
-
-  count
+  merged
+  |> list.fold(0, fn(count, range) {
+    let #(from, to) = range
+    // Inclusive range: [from, to]
+    count + { to - from + 1 }
+  })
 }
 
 pub fn main() {
