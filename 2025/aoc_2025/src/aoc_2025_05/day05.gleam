@@ -80,11 +80,10 @@ fn merge_ranges(ranges: List(#(Int, Int))) -> List(#(Int, Int)) {
 
 fn run1(lines: List(String)) -> Int {
   let #(ranges, ingredients) = parse_line(lines)
-  let merged = merge_ranges(ranges)
 
   ingredients
   |> list.filter(fn(ingredient) {
-    merged
+    ranges
     |> list.any(fn(range) {
       let #(from, to) = range
       ingredient >= from && ingredient <= to
@@ -95,9 +94,9 @@ fn run1(lines: List(String)) -> Int {
 
 fn run2(lines: List(String)) -> Int {
   let #(ranges, _) = parse_line(lines)
-  let merged = merge_ranges(ranges)
+  let ranges = merge_ranges(ranges)
 
-  merged
+  ranges
   |> list.fold(0, fn(count, range) {
     let #(from, to) = range
     // Inclusive range: [from, to]
