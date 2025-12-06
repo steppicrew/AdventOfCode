@@ -133,7 +133,6 @@ fn create_env(path: String) -> RunEnv {
   }
 
   RunEnv(log: fn(msg) {
-    io.println(msg)
     let _ = simplifile.append(path, msg)
     Nil
   })
@@ -200,9 +199,10 @@ pub fn debug(data: a, label: String, env: Option(RunEnv)) -> a {
     True -> string.inspect(data)
     False -> label <> " " <> string.inspect(data)
   }
+  io.println(message)
   case env {
     Some(e) -> e.log(message)
-    None -> io.println(message)
+    None -> Nil
   }
   data
 }
