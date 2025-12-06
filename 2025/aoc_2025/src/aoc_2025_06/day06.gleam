@@ -71,11 +71,10 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
       Error(_) -> acc
     }
   })
-  |> list.map(fn(task) {
+  |> list.fold(0, fn(sum, task) {
     let #(fun, values) = task
-    fun(values)
+    sum + fun(values)
   })
-  |> int.sum
 }
 
 pub fn main() {
