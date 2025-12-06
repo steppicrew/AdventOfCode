@@ -202,7 +202,7 @@ pub fn debug(data: a, label: String, env: Option(RunEnv)) -> a {
   }
   case env {
     Some(e) -> e.log(message)
-    None -> Nil
+    None -> io.println(message)
   }
   data
 }
