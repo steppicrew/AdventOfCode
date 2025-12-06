@@ -1,7 +1,6 @@
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
-import gleam/regexp
 import gleam/string
 import tools/io.{type RunEnv}
 import tools/types.{Expected}
@@ -11,21 +10,15 @@ const year = 2025
 const day = 2
 
 fn parse_lines(lines: List(String)) -> List(#(Int, Int)) {
-  let assert Ok(re) = regexp.from_string("(\\d+)-(\\d+)")
   lines
   |> string.join("")
   |> string.split(",")
-  |> list.filter_map(fn(part) {
-    case regexp.scan(re, part) {
-      [match] ->
-        case match.submatches {
-          [Some(a), Some(b)] -> {
-            case int.parse(a), int.parse(b) {
-              Ok(a), Ok(b) -> Ok(#(a, b))
-              _, _ -> Error(Nil)
-            }
-          }
-          _ -> Error(Nil)
+  |> list.filter_map(fn(range) {
+    case string.split(range, "-") {
+      [from, until] ->
+        case int.parse(from), int.parse(until) {
+          Ok(from), Ok(until) -> Ok(#(from, until))
+          _, _ -> Error(Nil)
         }
       _ -> Error(Nil)
     }
@@ -70,14 +63,10 @@ fn check_single_repeat(n: Int) -> Bool {
 }
 
 fn run1(lines: List(String), _: RunEnv) -> Int {
-  // let assert Ok(re) = regexp.from_string("^(\\d+)(\\1)$")
   lines
   |> parse_lines
   |> list.map(fn(range) {
     let #(from, until) = range
-    // filter_range_sum(0, from, until, fn(n) {
-    //   regexp.check(re, int.to_string(n))
-    // })
     filter_range_sum(0, from, until, check_single_repeat)
   })
   |> int.sum
@@ -114,14 +103,10 @@ fn check_multiple_repeat(n: Int) -> Bool {
 }
 
 fn run2(lines: List(String), _: RunEnv) -> Int {
-  // let assert Ok(re) = regexp.from_string("^(\\d+)(\\1)+$")
   lines
   |> parse_lines
   |> list.map(fn(range) {
     let #(from, until) = range
-    // filter_range_sum(0, from, until, fn(n) {
-    //   regexp.check(re, int.to_string(n))
-    // })
     filter_range_sum(0, from, until, check_multiple_repeat)
   })
   |> int.sum
