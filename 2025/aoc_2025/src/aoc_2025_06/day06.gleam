@@ -61,12 +61,12 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
 
     case value |> string.trim |> int.parse {
       Ok(number) ->
-        case list.first(acc) {
-          Ok(#(fun, numbers)) -> [
+        case acc {
+          [#(fun, numbers), ..rest] -> [
             #(fun, [number, ..numbers]),
-            ..list.drop(acc, 1)
+            ..rest
           ]
-          Error(_) -> acc
+          old_acc -> old_acc
         }
       Error(_) -> acc
     }
