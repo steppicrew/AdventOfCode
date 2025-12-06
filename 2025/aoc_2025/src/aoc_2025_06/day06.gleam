@@ -45,34 +45,27 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
   lines
   |> list.map(fn(line) { string.to_graphemes(line) })
   |> list.transpose()
-  |> list.filter_map(fn(chars) {
-    let value = string.join(chars, "") |> string.trim
-    case string.is_empty(value) {
-      True -> Error(Nil)
-      False -> Ok(value)
-    }
-  })
+  |> list.map(fn(chars) { string.join(chars, "") })
   |> list.fold([], fn(acc, value) {
     let #(acc, value) = case string.last(value) {
       Ok("+") -> #(
         [#(int.sum, []), ..acc],
-        value
-          |> string.slice(0, string.length(value) - 1)
-          |> string.trim,
+        string.slice(value, 0, string.length(value) - 1),
       )
       Ok("*") -> #(
         [#(int.product, []), ..acc],
-        value
-          |> string.slice(0, string.length(value) - 1)
-          |> string.trim,
+        string.slice(value, 0, string.length(value) - 1),
       )
       _ -> #(acc, value)
     }
 
-    case int.parse(value) {
-      Ok(value) ->
+    case value |> string.trim |> int.parse {
+      Ok(number) ->
         case list.first(acc) {
-          Ok(#(fun, values)) -> [#(fun, [value, ..values]), ..list.drop(acc, 1)]
+          Ok(#(fun, numbers)) -> [
+            #(fun, [number, ..numbers]),
+            ..list.drop(acc, 1)
+          ]
           Error(_) -> acc
         }
       Error(_) -> acc
