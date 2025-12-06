@@ -1,8 +1,6 @@
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
-import gleam/regexp
-import gleam/result
 import gleam/string
 import tools/io.{type RunEnv}
 import tools/types.{Expected}
@@ -11,86 +9,96 @@ const year = 2025
 
 const day = 6
 
-fn parse_lines(lines: List(String)) -> List(#(List(Int), String)) {
-  let assert Ok(re_numbers) = regexp.from_string("\\d+")
-  let assert Ok(re_operators) = regexp.from_string("[+*]")
-
-  let operators =
-    regexp.scan(
-      re_operators,
-      lines
-        |> list.last
-        |> result.unwrap(""),
-    )
-    |> list.map(fn(op_str) -> String { op_str.content })
-
-  let init =
-    operators
-    |> list.map(fn(op) -> #(List(Int), String) { #([], op) })
-
-  lines
-  |> list.fold(init, fn(acc, line) -> List(#(List(Int), String)) {
-    case regexp.scan(re_numbers, line) {
-      [] -> acc
-      numbers_strs -> {
-        numbers_strs
-        |> list.map(fn(n_str) -> Int {
-          int.parse(n_str.content) |> result.unwrap(0)
-        })
-        |> list.zip(acc)
-        |> list.map(fn(pair) {
-          let #(num, #(nums, op)) = pair
-          #([num, ..nums], op)
-        })
-      }
-    }
-  })
-}
-
 fn run1(lines: List(String), _: RunEnv) -> Int {
-  parse_lines(lines)
-  |> list.map(fn(quest) -> Int {
-    let #(nums, op) = quest
-    case op {
-      "+" -> int.sum(nums)
-      "*" -> int.product(nums)
-      _ -> 0
+  let table =
+    lines
+    |> list.map(fn(line) {
+      line |> string.split(" ") |> list.filter(fn(s) { s != "" })
+    })
+
+  let acc0 = case list.first(table) {
+    Ok(l) -> list.map(l, fn(_) { [] })
+    Error(Nil) -> []
+  }
+
+  table
+  |> list.fold(acc0, fn(acc, row) {
+    list.zip(acc, row)
+    |> list.map(fn(pair) {
+      let #(nums, number) = pair
+      case int.parse(number) {
+        Ok(n) -> [n, ..nums]
+        Error(_) ->
+          case number {
+            "+" -> [int.sum(nums)]
+            "*" -> [int.product(nums)]
+            _ -> nums
+          }
+      }
+    })
+  })
+  |> list.map(fn(nums) {
+    case list.first(nums) {
+      Ok(n) -> n
+      Error(_) -> 0
     }
   })
-  |> int.sum()
+  |> int.sum
 }
 
 fn run2(lines: List(String), _: RunEnv) -> Int {
-  let assert Ok(re_numbers) = regexp.from_string("\\d+")
-  let assert Ok(re_operators) = regexp.from_string("[+*]")
-
-  let #(sum, current, _) =
-    lines
-    |> list.map(fn(line) { string.to_graphemes(line) })
-    |> list.transpose()
-    |> list.map(fn(chars) { string.join(chars, "") })
-    |> list.fold(#(0, 0, ""), fn(acc, part) {
-      let #(sum, current_value, current_op) = acc
-      case regexp.scan(re_numbers, part) {
-        [num] ->
-          case int.parse(num.content) {
-            Ok(num) -> {
-              case regexp.scan(re_operators, part) {
-                [op] -> #(sum + current_value, num, op.content)
-                _ ->
-                  case current_op {
-                    "+" -> #(sum, current_value + num, current_op)
-                    "*" -> #(sum, current_value * num, current_op)
-                    _ -> acc
-                  }
-              }
+  lines
+  |> list.map(fn(line) { string.to_graphemes(line) })
+  |> list.transpose()
+  |> list.filter_map(fn(chars) {
+    let value = string.join(chars, "") |> string.trim
+    case string.is_empty(value) {
+      True -> Error(Nil)
+      False -> Ok(value)
+    }
+  })
+  |> list.fold([], fn(acc, value) {
+    case string.last(value) {
+      Ok("+") ->
+        case
+          value
+          |> string.slice(0, string.length(value) - 1)
+          |> string.trim
+          |> int.parse
+        {
+          Ok(number) -> [#(int.sum, [number]), ..acc]
+          Error(_) -> acc
+        }
+      Ok("*") ->
+        case
+          value
+          |> string.slice(0, string.length(value) - 1)
+          |> string.trim
+          |> int.parse
+        {
+          Ok(number) -> [#(int.product, [number]), ..acc]
+          Error(_) -> acc
+        }
+      _ -> {
+        case int.parse(value) {
+          Ok(value) ->
+            case list.first(acc) {
+              Ok(#(fun, values)) -> [
+                #(fun, [value, ..values]),
+                ..list.drop(acc, 1)
+              ]
+              Error(_) -> acc
             }
-            Error(_) -> acc
-          }
-        _ -> acc
+          Error(_) -> acc
+        }
       }
-    })
-  sum + current
+    }
+  })
+  |> list.map(fn(task) {
+    let #(fun, values) = task
+    fun(values)
+  })
+  |> int.sum
 }
 
 pub fn main() {
