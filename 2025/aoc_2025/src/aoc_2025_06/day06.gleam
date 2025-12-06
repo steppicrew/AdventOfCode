@@ -62,10 +62,7 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
     case value |> string.trim |> int.parse {
       Ok(number) ->
         case acc {
-          [#(fun, numbers), ..rest] -> [
-            #(fun, [number, ..numbers]),
-            ..rest
-          ]
+          [#(fun, numbers), ..rest] -> [#(fun, [number, ..numbers]), ..rest]
           old_acc -> old_acc
         }
       Error(_) -> acc
