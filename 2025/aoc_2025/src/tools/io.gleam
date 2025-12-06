@@ -194,16 +194,22 @@ fn part_run(
   }
 }
 
-pub fn debug(data: a, label: String, env: Option(RunEnv)) -> a {
-  let message = case string.is_empty(label) {
+fn debug_message(data: a, label: String) {
+  case string.is_empty(label) {
     True -> string.inspect(data)
     False -> label <> " " <> string.inspect(data)
   }
+}
+
+pub fn debug(data: a, label: String) -> a {
+  io.println(debug_message(data, label))
+  data
+}
+
+pub fn log_debug(data: a, label: String, env: RunEnv) -> a {
+  let message = debug_message(data, label)
   io.println(message)
-  case env {
-    Some(e) -> e.log(message)
-    None -> Nil
-  }
+  env.log(message)
   data
 }
 
