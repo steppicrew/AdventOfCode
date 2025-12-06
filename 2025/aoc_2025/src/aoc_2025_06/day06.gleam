@@ -25,24 +25,19 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
   |> list.fold(acc0, fn(acc, row) {
     list.zip(acc, row)
     |> list.map(fn(pair) {
-      let #(nums, number) = pair
-      case int.parse(number) {
-        Ok(n) -> [n, ..nums]
+      let #(numbers, value) = pair
+      case int.parse(value) {
+        Ok(number) -> [number, ..numbers]
         Error(_) ->
-          case number {
-            "+" -> [int.sum(nums)]
-            "*" -> [int.product(nums)]
-            _ -> nums
+          case value {
+            "+" -> [int.sum(numbers)]
+            "*" -> [int.product(numbers)]
+            _ -> numbers
           }
       }
     })
   })
-  |> list.map(fn(nums) {
-    case list.first(nums) {
-      Ok(n) -> n
-      Error(_) -> 0
-    }
-  })
+  |> list.flatten
   |> int.sum
 }
 
@@ -58,40 +53,29 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
     }
   })
   |> list.fold([], fn(acc, value) {
-    case string.last(value) {
-      Ok("+") ->
-        case
-          value
+    let #(acc, value) = case string.last(value) {
+      Ok("+") -> #(
+        [#(int.sum, []), ..acc],
+        value
           |> string.slice(0, string.length(value) - 1)
-          |> string.trim
-          |> int.parse
-        {
-          Ok(number) -> [#(int.sum, [number]), ..acc]
-          Error(_) -> acc
-        }
-      Ok("*") ->
-        case
-          value
+          |> string.trim,
+      )
+      Ok("*") -> #(
+        [#(int.product, []), ..acc],
+        value
           |> string.slice(0, string.length(value) - 1)
-          |> string.trim
-          |> int.parse
-        {
-          Ok(number) -> [#(int.product, [number]), ..acc]
+          |> string.trim,
+      )
+      _ -> #(acc, value)
+    }
+
+    case int.parse(value) {
+      Ok(value) ->
+        case list.first(acc) {
+          Ok(#(fun, values)) -> [#(fun, [value, ..values]), ..list.drop(acc, 1)]
           Error(_) -> acc
         }
-      _ -> {
-        case int.parse(value) {
-          Ok(value) ->
-            case list.first(acc) {
-              Ok(#(fun, values)) -> [
-                #(fun, [value, ..values]),
-                ..list.drop(acc, 1)
-              ]
-              Error(_) -> acc
-            }
-          Error(_) -> acc
-        }
-      }
+      Error(_) -> acc
     }
   })
   |> list.map(fn(task) {
