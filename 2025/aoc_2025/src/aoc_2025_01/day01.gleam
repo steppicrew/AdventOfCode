@@ -1,7 +1,6 @@
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
-import gleam/result
 import gleam/string
 import tools/io.{type RunEnv}
 import tools/types.{Expected}
@@ -13,10 +12,13 @@ pub const day = 1
 fn parse_lines(lines: List(String)) -> List(Int) {
   lines
   |> list.map(fn(line) {
-    let num = line |> string.drop_start(1) |> int.parse |> result.unwrap(0)
-    case line |> string.first {
-      Ok("L") -> -num
-      Ok("R") -> num
+    case string.drop_start(line, 1) |> int.parse {
+      Ok(num) ->
+        case line |> string.first {
+          Ok("L") -> -num
+          Ok("R") -> num
+          _ -> 0
+        }
       _ -> 0
     }
   })
