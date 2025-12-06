@@ -2,8 +2,7 @@ import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
-import gleam/regexp
-import gleam/result
+import gleam/string
 import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
@@ -12,12 +11,10 @@ const year = 2024
 const day = 1
 
 fn parse_lines(lines: List(String)) -> #(List(Int), List(Int)) {
-  let assert Ok(re) = regexp.from_string("\\s+")
-
   lines
   |> list.filter_map(fn(s) {
-    case regexp.split(re, s) {
-      [left, right, ..] -> {
+    case string.split(s, " ") |> list.filter(fn(s) { s != "" }) {
+      [left, right] -> {
         case int.parse(left), int.parse(right) {
           Ok(left), Ok(right) -> Ok(#(left, right))
           _, _ -> Error(Nil)
@@ -49,14 +46,12 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
     right
     |> list.fold(dict.new(), fn(counts, n) {
       counts
-      |> dict.insert(
-        n,
-        {
-          dict.get(counts, n)
-          |> result.unwrap(0)
+      |> dict.upsert(n, fn(count) {
+        case count {
+          Some(count) -> count + 1
+          _ -> 1
         }
-          + 1,
-      )
+      })
     })
 
   left

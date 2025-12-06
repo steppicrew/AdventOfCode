@@ -1,7 +1,7 @@
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
-import gleam/regexp
+import gleam/string
 import tools/io.{type RunEnv}
 import tools/types.{Expected}
 
@@ -10,11 +10,10 @@ const year = 2024
 const day = 2
 
 fn parse_lines(lines: List(String)) -> List(List(Int)) {
-  let assert Ok(re) = regexp.from_string("\\s+")
-
   lines
   |> list.map(fn(s) {
-    regexp.split(re, s)
+    s
+    |> string.split(" ")
     |> list.filter_map(int.parse)
   })
 }

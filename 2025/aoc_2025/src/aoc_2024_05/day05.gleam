@@ -17,12 +17,8 @@ fn parse_lines(lines: List(String)) -> #(List(#(Int, Int)), List(List(Int))) {
   let order =
     lines
     |> list.filter_map(fn(line) {
-      case line |> string.split("|") {
-        [left, right] ->
-          Ok(#(
-            int.parse(left) |> result.unwrap(0),
-            int.parse(right) |> result.unwrap(0),
-          ))
+      case line |> string.split("|") |> list.map(int.parse) {
+        [Ok(left), Ok(right)] -> Ok(#(left, right))
         _ -> Error(Nil)
       }
     })
@@ -30,11 +26,10 @@ fn parse_lines(lines: List(String)) -> #(List(#(Int, Int)), List(List(Int))) {
   let pages =
     lines
     |> list.filter_map(fn(line) {
-      case line |> string.trim |> string.split(",") {
-        [_, _, ..] as parts ->
-          parts
-          |> list.try_map(int.parse)
-          |> result.map_error(fn(_) { Nil })
+      case
+        line |> string.trim |> string.split(",") |> list.filter_map(int.parse)
+      {
+        [_, _, ..] as parts -> Ok(parts)
         _ -> Error(Nil)
       }
     })
@@ -50,9 +45,10 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
       set.from_list(
         order
         |> list.filter_map(fn(order) {
-          case order.1 {
-            after_page if after_page == page -> Ok(order.0)
-            _ -> Error(Nil)
+          let #(before, after) = order
+          case page == after {
+            True -> Ok(before)
+            False -> Error(Nil)
           }
         }),
       )
@@ -76,39 +72,40 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
   |> int.sum
 }
 
-fn compare(a: Int, b: Int, order: Set(#(Int, Int))) -> Result(Order, Nil) {
+fn compare(a: Int, b: Int, order: Set(#(Int, Int))) -> Order {
   case set.contains(order, #(a, b)) {
-    True -> Ok(order.Lt)
+    True -> order.Lt
     False -> {
       case set.contains(order, #(b, a)) {
-        True -> Ok(order.Gt)
+        True -> order.Gt
         False -> {
+          let order_list = set.to_list(order)
           case
-            order
-            |> set.to_list()
+            order_list
             |> list.filter(fn(pair) { pair.0 == a })
             |> list.any(fn(pair) {
-              case compare(pair.1, b, order) {
-                Ok(order.Lt) -> True
+              let #(_, after) = pair
+              case compare(after, b, order) {
+                order.Lt -> True
                 _ -> False
               }
             })
           {
-            True -> Ok(order.Lt)
+            True -> order.Lt
             False -> {
               case
-                order
-                |> set.to_list()
+                order_list
                 |> list.filter(fn(p) { p.1 == a })
                 |> list.any(fn(pair) {
-                  case compare(b, pair.0, order) {
-                    Ok(order.Lt) -> True
+                  let #(before, _) = pair
+                  case compare(b, before, order) {
+                    order.Lt -> True
                     _ -> False
                   }
                 })
               {
-                True -> Ok(order.Gt)
-                False -> Error(Nil)
+                True -> order.Gt
+                False -> order.Eq
               }
             }
           }
@@ -126,9 +123,10 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
       set.from_list(
         order
         |> list.filter_map(fn(order) {
-          case order.1 {
-            after_page if after_page == page -> Ok(order.0)
-            _ -> Error(Nil)
+          let #(before, after) = order
+          case page == after {
+            True -> Ok(before)
+            False -> Error(Nil)
           }
         }),
       )
@@ -138,7 +136,7 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
   }
 
   let sort_fn = fn(order: Set(#(Int, Int))) {
-    fn(a, b) { compare(a, b, order) |> result.unwrap(order.Eq) }
+    fn(a, b) { compare(a, b, order) }
   }
 
   pages
