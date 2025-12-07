@@ -1,6 +1,6 @@
 import gleam/dict.{type Dict}
 import gleam/list
-import gleam/option.{None, Some}
+import gleam/option.{Some}
 import gleam/set.{type Set}
 import gleam/string
 import tools/io.{type RunEnv}
@@ -39,7 +39,7 @@ fn parse_lines(lines: List(String)) -> #(Set(#(Int, Int)), #(Int, Int), Int) {
 
     Error(Nil) -> #(0, 0)
   }
-  #(splitters, start, list.length(lines))
+  #(splitters, start, list.length(lines) - 1)
 }
 
 fn fall_down1(
@@ -52,7 +52,7 @@ fn fall_down1(
   case positions {
     [#(x, y), ..rest] -> {
       let next_y = y + 1
-      case next_y >= max_y || set.contains(seen_splitters, #(x, next_y)) {
+      case next_y > max_y || set.contains(seen_splitters, #(x, next_y)) {
         False -> {
           let #(positions, seen_splitters, count) = case
             set.contains(splitters, #(x, next_y))
@@ -87,7 +87,7 @@ fn fall_down2(
 ) -> #(Int, Dict(#(Int, Int), Int)) {
   let #(x, y) = position
   let next_y = y + 1
-  case next_y >= max_y, dict.get(seen_pathes, #(x, next_y)) {
+  case next_y > max_y, dict.get(seen_pathes, #(x, next_y)) {
     False, Ok(c) -> #(c, seen_pathes)
     False, _ -> {
       case set.contains(splitters, #(x, next_y)) {
@@ -96,9 +96,8 @@ fn fall_down2(
             fall_down2(splitters, max_y, #(x - 1, next_y), seen_pathes)
           let #(count2, seen_pathes) =
             fall_down2(splitters, max_y, #(x + 1, next_y), seen_pathes)
-          let seen_pathes =
-            dict.insert(seen_pathes, #(x, next_y), count1 + count2)
-          #(count1 + count2, seen_pathes)
+          let count = count1 + count2
+          #(count, dict.insert(seen_pathes, #(x, next_y), count))
         }
         False -> fall_down2(splitters, max_y, #(x, next_y), seen_pathes)
       }
