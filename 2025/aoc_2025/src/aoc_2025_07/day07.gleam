@@ -11,21 +11,17 @@ const year = 2025
 const day = 7
 
 fn parse_lines(lines: List(String)) -> #(Set(#(Int, Int)), #(Int, Int), Int) {
-  let splitters =
+  let splitter_positions =
     lines
-    |> list.index_map(fn(line, y) {
-      line
-      |> string.to_graphemes
-      |> list.index_map(fn(char, x) {
+    |> list.index_fold([], fn(acc, line, y) {
+      string.to_graphemes(line)
+      |> list.index_fold(acc, fn(acc2, char, x) {
         case char {
-          "^" -> Ok(#(x, y))
-          _ -> Error(Nil)
+          "^" -> [#(x, y), ..acc2]
+          _ -> acc2
         }
       })
-      |> list.filter_map(fn(x) { x })
     })
-    |> list.flatten()
-    |> set.from_list
 
   let start = case list.first(lines) {
     Ok(line) ->
@@ -39,7 +35,8 @@ fn parse_lines(lines: List(String)) -> #(Set(#(Int, Int)), #(Int, Int), Int) {
 
     Error(Nil) -> #(0, 0)
   }
-  #(splitters, start, list.length(lines))
+
+  #(set.from_list(splitter_positions), start, list.length(lines))
 }
 
 fn fall_down1(
@@ -53,24 +50,31 @@ fn fall_down1(
     [#(x, y), ..rest] -> {
       let next_y = y + 1
       let next_position = #(x, next_y)
+
       let #(positions, seen_splitters, count) = case
         next_y < len_y,
-        seen_splitters |> set.contains(next_position)
+        set.contains(seen_splitters, next_position)
       {
+        // inside grid, not yet seen as splitter impact
         True, False ->
-          case splitters |> set.contains(next_position) {
+          case set.contains(splitters, next_position) {
+            // splitter: branch left+right, mark seen, count+1
             True -> #(
               [#(x - 1, next_y), #(x + 1, next_y), ..rest],
               set.insert(seen_splitters, next_position),
               count + 1,
             )
+
+            // empty: just move straight down
             False -> #([next_position, ..rest], seen_splitters, count)
           }
+
+        // out of grid OR already seen: drop this path
         _, _ -> #(rest, seen_splitters, count)
       }
       fall_down1(splitters, len_y, positions, seen_splitters, count)
     }
-    _ -> count
+    [] -> count
   }
 }
 
@@ -91,10 +95,15 @@ fn fall_down2(
   let #(x, y) = position
   let next_y = y + 1
   let next_position = #(x, next_y)
+
   case next_y < len_y, dict.get(seen_pathes, next_position) {
-    True, Ok(c) -> #(c, seen_pathes)
-    True, _ -> {
+    // already computed from here
+    True, Ok(cached) -> #(cached, seen_pathes)
+
+    // inside grid, not cached yet
+    True, Error(_) ->
       case set.contains(splitters, next_position) {
+        // splitter: branch left/right and cache result for this splitter
         True -> {
           let #(count, seen_pathes) =
             dxs
@@ -106,9 +115,12 @@ fn fall_down2(
             })
           #(count, dict.insert(seen_pathes, next_position, count))
         }
+
+        // empty: fall straight down, no cache needed
         False -> fall_down2(splitters, len_y, next_position, seen_pathes)
       }
-    }
+
+    // out of grid bottom: one path finished
     False, _ -> #(1, seen_pathes)
   }
 }
