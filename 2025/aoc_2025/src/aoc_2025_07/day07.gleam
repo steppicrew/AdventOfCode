@@ -55,16 +55,18 @@ fn fall_down1(
       let next_position = #(x, next_y)
       let #(positions, seen_splitters, count) = case
         next_y < len_y,
-        seen_splitters |> set.contains(next_position),
-        splitters |> set.contains(next_position)
+        seen_splitters |> set.contains(next_position)
       {
-        True, False, True -> #(
-          [#(x - 1, next_y), #(x + 1, next_y), ..rest],
-          set.insert(seen_splitters, next_position),
-          count + 1,
-        )
-        True, False, False -> #([next_position, ..rest], seen_splitters, count)
-        _, _, _ -> #(rest, seen_splitters, count)
+        True, False ->
+          case splitters |> set.contains(next_position) {
+            True -> #(
+              [#(x - 1, next_y), #(x + 1, next_y), ..rest],
+              set.insert(seen_splitters, next_position),
+              count + 1,
+            )
+            False -> #([next_position, ..rest], seen_splitters, count)
+          }
+        _, _ -> #(rest, seen_splitters, count)
       }
       fall_down1(splitters, len_y, positions, seen_splitters, count)
     }
