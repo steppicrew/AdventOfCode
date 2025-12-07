@@ -13,44 +13,51 @@ const day = 6
 
 fn parse_lines(
   lines: List(String),
-) -> #(Set(#(Int, Int)), #(Int, Int), #(Int, Int)) {
+) -> #(Set(#(Int, Int)), #(Int, Int), #(Int, Int), #(Int, Int)) {
   let obsticles =
     lines
-    |> list.index_map(fn(line, y) {
+    |> list.index_fold([], fn(acc, line, y) {
       line
       |> string.to_graphemes
-      |> list.index_map(fn(char, x) {
+      |> list.index_fold(acc, fn(acc, char, x) {
         case char {
-          "#" -> Ok(#(x, y))
-          _ -> Error(Nil)
+          "#" -> [#(x, y), ..acc]
+          _ -> acc
         }
       })
     })
-    |> list.flatten
-    |> list.filter_map(fn(x) { x })
     |> set.from_list
 
-  let #(start_position, direction) =
+  let #(start_position, direction) = case
     lines
-    |> list.index_map(fn(line, y) {
+    |> list.index_fold([], fn(acc, line, y) {
       line
       |> string.to_graphemes
-      |> list.index_map(fn(char, x) {
+      |> list.index_fold(acc, fn(acc, char, x) {
         case char {
-          "^" -> Ok(#(#(x, y), #(0, -1)))
-          "v" -> Ok(#(#(x, y), #(0, 1)))
-          "<" -> Ok(#(#(x, y), #(-1, 0)))
-          ">" -> Ok(#(#(x, y), #(1, 0)))
-          _ -> Error(Nil)
+          "^" -> [#(#(x, y), #(0, -1)), ..acc]
+          "v" -> [#(#(x, y), #(0, 1)), ..acc]
+          "<" -> [#(#(x, y), #(-1, 0)), ..acc]
+          ">" -> [#(#(x, y), #(1, 0)), ..acc]
+          _ -> acc
         }
       })
     })
-    |> list.flatten
-    |> list.filter_map(fn(x) { x })
     |> list.first
-    |> result.unwrap(#(#(0, 0), #(0, 0)))
+  {
+    Ok(pair) -> pair
+    Error(Nil) -> #(#(0, 0), #(0, 0))
+  }
 
-  #(obsticles, start_position, direction)
+  let max_xy = #(
+    lines
+      |> list.map(string.length)
+      |> list.max(int.compare)
+      |> result.unwrap(0),
+    lines |> list.length,
+  )
+
+  #(obsticles, start_position, direction, max_xy)
 }
 
 fn walk1(
@@ -70,7 +77,7 @@ fn walk1(
     #(x, _) if x == max_xy.0 -> visited
     #(_, y) if y == max_xy.1 -> visited
     #(x, y) -> {
-      case obsticles |> set.contains(#(x, y)) {
+      case set.contains(obsticles, #(x, y)) {
         True -> walk1(position, #(-dy, dx), visited, max_xy, obsticles)
         False ->
           walk1(
@@ -86,15 +93,7 @@ fn walk1(
 }
 
 fn run1(lines: List(String), _: RunEnv) -> Int {
-  let #(obsticles, start_position, direction) = parse_lines(lines)
-
-  let max_xy = #(
-    lines
-      |> list.map(string.length)
-      |> list.max(int.compare)
-      |> result.unwrap(0),
-    lines |> list.length,
-  )
+  let #(obsticles, start_position, direction, max_xy) = parse_lines(lines)
 
   walk1(
     start_position,
@@ -140,15 +139,7 @@ fn walk2(
 }
 
 fn run2(lines: List(String), _: RunEnv) -> Int {
-  let #(obsticles, start_position, direction) = parse_lines(lines)
-
-  let max_xy = #(
-    lines
-      |> list.map(string.length)
-      |> list.max(int.compare)
-      |> result.unwrap(0),
-    lines |> list.length,
-  )
+  let #(obsticles, start_position, direction, max_xy) = parse_lines(lines)
 
   walk1(start_position, direction, set.new(), max_xy, obsticles)
   |> set.delete(start_position)
