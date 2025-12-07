@@ -39,12 +39,12 @@ fn parse_lines(lines: List(String)) -> #(Set(#(Int, Int)), #(Int, Int), Int) {
 
     Error(Nil) -> #(0, 0)
   }
-  #(splitters, start, list.length(lines) - 1)
+  #(splitters, start, list.length(lines))
 }
 
 fn fall_down1(
   splitters: Set(#(Int, Int)),
-  max_y: Int,
+  len_y: Int,
   positions: List(#(Int, Int)),
   seen_splitters: Set(#(Int, Int)),
   count: Int,
@@ -52,64 +52,69 @@ fn fall_down1(
   case positions {
     [#(x, y), ..rest] -> {
       let next_y = y + 1
-      case next_y > max_y || set.contains(seen_splitters, #(x, next_y)) {
-        False -> {
-          let #(positions, seen_splitters, count) = case
-            set.contains(splitters, #(x, next_y))
-          {
-            True -> #(
-              [#(x - 1, next_y), #(x + 1, next_y), ..rest],
-              set.insert(seen_splitters, #(x, next_y)),
-              count + 1,
-            )
-            False -> #([#(x, next_y), ..rest], seen_splitters, count)
-          }
-          fall_down1(splitters, max_y, positions, seen_splitters, count)
-        }
-        True -> fall_down1(splitters, max_y, rest, seen_splitters, count)
+      let next_position = #(x, next_y)
+      let #(positions, seen_splitters, count) = case
+        next_y < len_y,
+        seen_splitters |> set.contains(next_position),
+        splitters |> set.contains(next_position)
+      {
+        True, False, True -> #(
+          [#(x - 1, next_y), #(x + 1, next_y), ..rest],
+          set.insert(seen_splitters, next_position),
+          count + 1,
+        )
+        True, False, False -> #([next_position, ..rest], seen_splitters, count)
+        _, _, _ -> #(rest, seen_splitters, count)
       }
+      fall_down1(splitters, len_y, positions, seen_splitters, count)
     }
     _ -> count
   }
 }
 
 fn run1(lines: List(String), _: RunEnv) -> Int {
-  let #(splitters, start, max_y) = parse_lines(lines)
+  let #(splitters, start, len_y) = parse_lines(lines)
 
-  fall_down1(splitters, max_y, [start], set.new(), 0)
+  fall_down1(splitters, len_y, [start], set.new(), 0)
 }
+
+const dxs = [-1, 1]
 
 fn fall_down2(
   splitters: Set(#(Int, Int)),
-  max_y: Int,
+  len_y: Int,
   position: #(Int, Int),
   seen_pathes: Dict(#(Int, Int), Int),
 ) -> #(Int, Dict(#(Int, Int), Int)) {
   let #(x, y) = position
   let next_y = y + 1
-  case next_y > max_y, dict.get(seen_pathes, #(x, next_y)) {
-    False, Ok(c) -> #(c, seen_pathes)
-    False, _ -> {
-      case set.contains(splitters, #(x, next_y)) {
+  let next_position = #(x, next_y)
+  case next_y < len_y, dict.get(seen_pathes, next_position) {
+    True, Ok(c) -> #(c, seen_pathes)
+    True, _ -> {
+      case set.contains(splitters, next_position) {
         True -> {
-          let #(count1, seen_pathes) =
-            fall_down2(splitters, max_y, #(x - 1, next_y), seen_pathes)
-          let #(count2, seen_pathes) =
-            fall_down2(splitters, max_y, #(x + 1, next_y), seen_pathes)
-          let count = count1 + count2
-          #(count, dict.insert(seen_pathes, #(x, next_y), count))
+          let #(count, seen_pathes) =
+            dxs
+            |> list.fold(#(0, seen_pathes), fn(acc, dx) {
+              let #(count_acc, seen_pathes) = acc
+              let #(count, seen_pathes) =
+                fall_down2(splitters, len_y, #(x + dx, next_y), seen_pathes)
+              #(count_acc + count, seen_pathes)
+            })
+          #(count, dict.insert(seen_pathes, next_position, count))
         }
-        False -> fall_down2(splitters, max_y, #(x, next_y), seen_pathes)
+        False -> fall_down2(splitters, len_y, next_position, seen_pathes)
       }
     }
-    True, _ -> #(1, seen_pathes)
+    False, _ -> #(1, seen_pathes)
   }
 }
 
 fn run2(lines: List(String), _: RunEnv) -> Int {
-  let #(splitters, start, max_y) = parse_lines(lines)
+  let #(splitters, start, len_y) = parse_lines(lines)
 
-  let #(count, _) = fall_down2(splitters, max_y, start, dict.new())
+  let #(count, _) = fall_down2(splitters, len_y, start, dict.new())
   count
 }
 
