@@ -22,18 +22,16 @@ const neighbour_offsets: List(#(Int, Int)) = [
 
 fn parse_lines(lines: List(String)) -> Set(#(Int, Int)) {
   lines
-  |> list.index_map(fn(line, y) {
+  |> list.index_fold([], fn(acc, line, y) {
     line
     |> string.to_graphemes
-    |> list.index_map(fn(char, x) {
+    |> list.index_fold(acc, fn(acc, char, x) {
       case char {
-        "@" -> Ok(#(x, y))
-        _ -> Error(Nil)
+        "@" -> [#(x, y), ..acc]
+        _ -> acc
       }
     })
-    |> list.filter_map(fn(position) { position })
   })
-  |> list.flatten
   |> set.from_list()
 }
 
