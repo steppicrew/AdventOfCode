@@ -85,8 +85,6 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
   fall_down1(splitters, len_y, [start_position], set.new(), 0)
 }
 
-const dxs = [-1, 1]
-
 fn fall_down2(
   splitters: Set(#(Int, Int)),
   len_y: Int,
@@ -106,14 +104,12 @@ fn fall_down2(
       case set.contains(splitters, position) {
         // splitter: branch left/right and cache result for this splitter
         True -> {
-          let #(count, seen_pathes) =
-            dxs
-            |> list.fold(#(0, seen_pathes), fn(acc, dx) {
-              let #(count_acc, seen_pathes) = acc
-              let #(count, seen_pathes) =
-                fall_down2(splitters, len_y, #(x + dx, y), seen_pathes)
-              #(count_acc + count, seen_pathes)
-            })
+          let #(count1, seen_pathes) =
+            fall_down2(splitters, len_y, #(x - 1, y), seen_pathes)
+          let #(count2, seen_pathes) =
+            fall_down2(splitters, len_y, #(x + 1, y), seen_pathes)
+          let count = count1 + count2
+
           #(count, dict.insert(seen_pathes, position, count))
         }
 
