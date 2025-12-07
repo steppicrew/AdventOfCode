@@ -104,12 +104,12 @@ fn fall_down2(
       case set.contains(splitters, position) {
         // splitter: branch left/right and cache result for this splitter
         True -> {
-          let #(count1, seen_pathes) =
+          let #(count_left, seen_pathes) =
             fall_down2(splitters, len_y, #(x - 1, y), seen_pathes)
-          let #(count2, seen_pathes) =
+          let #(count_right, seen_pathes) =
             fall_down2(splitters, len_y, #(x + 1, y), seen_pathes)
-          let count = count1 + count2
 
+          let count = count_left + count_right
           #(count, dict.insert(seen_pathes, position, count))
         }
 
