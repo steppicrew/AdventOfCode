@@ -15,15 +15,15 @@ fn parse_lines(lines: List(String)) -> #(Set(#(Int, Int)), #(Int, Int), Int) {
     lines
     |> list.index_fold([], fn(acc, line, y) {
       string.to_graphemes(line)
-      |> list.index_fold(acc, fn(acc2, char, x) {
+      |> list.index_fold(acc, fn(acc, char, x) {
         case char {
-          "^" -> [#(x, y), ..acc2]
-          _ -> acc2
+          "^" -> [#(x, y), ..acc]
+          _ -> acc
         }
       })
     })
 
-  let start = case list.first(lines) {
+  let start_position = case list.first(lines) {
     Ok(line) ->
       string.to_graphemes(line)
       |> list.index_fold(#(0, 0), fn(start, char, x) {
@@ -36,7 +36,7 @@ fn parse_lines(lines: List(String)) -> #(Set(#(Int, Int)), #(Int, Int), Int) {
     Error(Nil) -> #(0, 0)
   }
 
-  #(set.from_list(splitter_positions), start, list.length(lines))
+  #(set.from_list(splitter_positions), start_position, list.length(lines))
 }
 
 fn fall_down1(
@@ -79,9 +79,9 @@ fn fall_down1(
 }
 
 fn run1(lines: List(String), _: RunEnv) -> Int {
-  let #(splitters, start, len_y) = parse_lines(lines)
+  let #(splitters, start_position, len_y) = parse_lines(lines)
 
-  fall_down1(splitters, len_y, [start], set.new(), 0)
+  fall_down1(splitters, len_y, [start_position], set.new(), 0)
 }
 
 const dxs = [-1, 1]
@@ -126,9 +126,9 @@ fn fall_down2(
 }
 
 fn run2(lines: List(String), _: RunEnv) -> Int {
-  let #(splitters, start, len_y) = parse_lines(lines)
+  let #(splitters, start_position, len_y) = parse_lines(lines)
 
-  let #(count, _) = fall_down2(splitters, len_y, start, dict.new())
+  let #(count, _) = fall_down2(splitters, len_y, start_position, dict.new())
   count
 }
 
