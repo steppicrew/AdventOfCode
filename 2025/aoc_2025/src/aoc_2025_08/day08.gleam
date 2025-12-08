@@ -121,30 +121,32 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
 
 fn run2(lines: List(String), _: RunEnv) -> Int {
   let junctions = parse_input(lines)
+  let junction_count = list.length(junctions)
 
   // Add connections until all junctions are connected
   // Mutliply the x-values of the last two connections added
   let #(#(x1, _, _), #(x2, _, _), _) =
     get_sorted_connections(junctions)
-    |> list.fold_until(
-      #(#(0, 0, 0), #(0, 0, 0), set.from_list(junctions)),
-      fn(acc, connection) {
-        let #(_, _, not_seen_joints) = acc
-        let #(j1, j2) = connection
-        let not_seen_joints =
-          not_seen_joints |> set.delete(j1) |> set.delete(j2)
+    |> list.fold_until(#(#(0, 0, 0), #(0, 0, 0), []), fn(acc, connection) {
+      let #(_, _, circuits) = acc
+      let #(j1, j2) = connection
+      let circuits = join_junctions(circuits, connection)
 
-        let new_acc = #(j1, j2, not_seen_joints)
+      let acc = #(j1, j2, circuits)
 
-        case set.is_empty(not_seen_joints) {
-          // All junctions are connected
-          True -> list.Stop(new_acc)
+      // If there is only one circuit with all junctions, all junctions are connected
+      case circuits {
+        [only] ->
+          case set.size(only) == junction_count {
+            // All junctions are connected
+            True -> list.Stop(acc)
 
-          // Not all junctions are connected
-          False -> list.Continue(new_acc)
-        }
-      },
-    )
+            // Not all junctions are connected
+            False -> list.Continue(acc)
+          }
+        _ -> list.Continue(acc)
+      }
+    })
 
   x1 * x2
 }
