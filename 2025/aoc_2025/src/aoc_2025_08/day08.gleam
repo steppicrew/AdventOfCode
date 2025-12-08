@@ -68,11 +68,11 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
         Ok(#(j1, j2)) -> {
           case
             circuits
-            |> list.filter(fn(circuit) { set.contains(circuit, j1) }),
+            |> list.find(fn(circuit) { set.contains(circuit, j1) }),
             circuits
-            |> list.filter(fn(circuit) { set.contains(circuit, j2) })
+            |> list.find(fn(circuit) { set.contains(circuit, j2) })
           {
-            [c1], [c2] ->
+            Ok(c1), Ok(c2) ->
               case c1 == c2 {
                 True -> circuits
                 False -> {
@@ -85,16 +85,15 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
                   ]
                 }
               }
-            [c1], [] -> [
+            Ok(c1), Error(_) -> [
               c1 |> set.insert(j2),
               ..list.filter(circuits, fn(circuit) { circuit != c1 })
             ]
-            [], [c2] -> [
+            Error(_), Ok(c2) -> [
               c2 |> set.insert(j1),
               ..list.filter(circuits, fn(circuit) { circuit != c2 })
             ]
-            [], [] -> [set.from_list([j1, j2]), ..circuits]
-            _, _ -> circuits |> io.debug("Not merging circuits")
+            Error(_), Error(_) -> [set.from_list([j1, j2]), ..circuits]
           }
         }
         _ -> circuits
@@ -116,7 +115,7 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
   let distance_map = all_distances(junctions)
   let distances = dict.keys(distance_map) |> list.sort(int.compare)
 
-  let #(last_two, _) =
+  let #(#(#(x1, _, _), #(x2, _, _)), _) =
     distances
     |> list.fold_until(
       #(#(#(0, 0, 0), #(0, 0, 0)), []),
@@ -127,11 +126,11 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
             let last_two = #(j1, j2)
             case
               circuits
-              |> list.filter(fn(circuit) { set.contains(circuit, j1) }),
+              |> list.find(fn(circuit) { set.contains(circuit, j1) }),
               circuits
-              |> list.filter(fn(circuit) { set.contains(circuit, j2) })
+              |> list.find(fn(circuit) { set.contains(circuit, j2) })
             {
-              [c1], [c2] ->
+              Ok(c1), Ok(c2) ->
                 case c1 == c2 {
                   True -> #(last_two, circuits)
                   False -> {
@@ -144,16 +143,18 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
                     ])
                   }
                 }
-              [c1], [] -> #(last_two, [
+              Ok(c1), Error(_) -> #(last_two, [
                 c1 |> set.insert(j2),
                 ..list.filter(circuits, fn(circuit) { circuit != c1 })
               ])
-              [], [c2] -> #(last_two, [
+              Error(_), Ok(c2) -> #(last_two, [
                 c2 |> set.insert(j1),
                 ..list.filter(circuits, fn(circuit) { circuit != c2 })
               ])
-              [], [] -> #(last_two, [set.from_list([j1, j2]), ..circuits])
-              _, _ -> last_circuits |> io.debug("Not merging circuits")
+              Error(_), Error(_) -> #(last_two, [
+                set.from_list([j1, j2]),
+                ..circuits
+              ])
             }
           }
           _ -> last_circuits
@@ -161,15 +162,11 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
 
         let result = #(last_two, circuits)
 
-        case list.length(circuits) {
-          1 ->
-            case list.first(circuits) {
-              Ok(first) ->
-                case set.size(first) == len_junctions {
-                  True -> list.Stop(result)
-                  False -> list.Continue(result)
-                }
-              _ -> list.Continue(result)
+        case circuits {
+          [first] ->
+            case set.size(first) == len_junctions {
+              True -> list.Stop(result)
+              False -> list.Continue(result)
             }
 
           _ -> list.Continue(result)
@@ -177,8 +174,7 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
       },
     )
 
-  let #(j1, j2) = last_two
-  j1.0 * j2.0
+  x1 * x2
 }
 
 pub fn main() {
