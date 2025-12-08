@@ -112,6 +112,7 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
 
 fn run2(lines: List(String), _: RunEnv) -> Int {
   let junctions = parse_input(lines)
+  let len_junctions = list.length(junctions)
   let distance_map = all_distances(junctions)
   let distances = dict.keys(distance_map) |> list.sort(int.compare)
 
@@ -158,13 +159,20 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
           _ -> last_circuits
         }
 
-        case list.first(circuits) {
-          Ok(first) ->
-            case set.size(first) == list.length(junctions) {
-              True -> list.Stop(#(last_two, circuits))
-              False -> list.Continue(#(last_two, circuits))
+        let result = #(last_two, circuits)
+
+        case list.length(circuits) {
+          1 ->
+            case list.first(circuits) {
+              Ok(first) ->
+                case set.size(first) == len_junctions {
+                  True -> list.Stop(result)
+                  False -> list.Continue(result)
+                }
+              _ -> list.Continue(result)
             }
-          _ -> list.Continue(#(last_two, circuits))
+
+          _ -> list.Continue(result)
         }
       },
     )
