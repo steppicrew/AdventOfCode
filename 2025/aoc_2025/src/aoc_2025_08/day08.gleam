@@ -13,7 +13,7 @@ const day = 8
 type Coord =
   #(Int, Int, Int)
 
-type Joint =
+type Connection =
   #(Coord, Coord)
 
 fn parse_input(lines: List(String)) -> List(Coord) {
@@ -39,7 +39,7 @@ fn distance(j1: Coord, j2: Coord) -> Int {
   dx * dx + dy * dy + dz * dz
 }
 
-fn get_sorted_connections(junktions: List(Coord)) -> List(Joint) {
+fn get_sorted_connections(junktions: List(Coord)) -> List(Connection) {
   junktions
   |> list.index_fold([], fn(acc, j1, i1) {
     junktions
@@ -50,6 +50,52 @@ fn get_sorted_connections(junktions: List(Coord)) -> List(Joint) {
   |> list.map(fn(connection) { connection.0 })
 }
 
+fn join_junctions(
+  circuits: List(set.Set(Coord)),
+  connection: Connection,
+) -> List(set.Set(Coord)) {
+  let #(j1, j2) = connection
+  case
+    circuits
+    |> list.find(fn(circuit) { set.contains(circuit, j1) }),
+    circuits
+    |> list.find(fn(circuit) { set.contains(circuit, j2) })
+  {
+    // Both joint already in circuits
+    Ok(c1), Ok(c2) ->
+      case c1 == c2 {
+        // Both joints in same circuit
+        True -> circuits
+
+        // Both joints in different circuits -> merge circuits
+        False -> {
+          let c = set.union(c1, c2)
+          [
+            c,
+            ..list.filter(circuits, fn(circuit) {
+              circuit != c1 && circuit != c2
+            })
+          ]
+        }
+      }
+
+    // Only joint 1 already in a circuit -> add joint 2 to it
+    Ok(c1), Error(_) -> [
+      c1 |> set.insert(j2),
+      ..list.filter(circuits, fn(circuit) { circuit != c1 })
+    ]
+
+    // Only joint 2 already in a circuit -> add joint 1 to it
+    Error(_), Ok(c2) -> [
+      c2 |> set.insert(j1),
+      ..list.filter(circuits, fn(circuit) { circuit != c2 })
+    ]
+
+    // Neither joint in a circuit yet -> create new circuit
+    Error(_), Error(_) -> [set.from_list([j1, j2]), ..circuits]
+  }
+}
+
 fn run1(lines: List(String), _: RunEnv) -> Int {
   let junctions = parse_input(lines)
 
@@ -58,45 +104,9 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
     _ -> 1000
   }
 
-  let circuits =
-    get_sorted_connections(junctions)
-    |> list.take(max_connections)
-    |> list.fold([], fn(circuits, connection) {
-      let #(j1, j2) = connection
-      let circuits = case
-        circuits
-        |> list.find(fn(circuit) { set.contains(circuit, j1) }),
-        circuits
-        |> list.find(fn(circuit) { set.contains(circuit, j2) })
-      {
-        Ok(c1), Ok(c2) ->
-          case c1 == c2 {
-            True -> circuits
-            False -> {
-              let c = set.union(c1, c2)
-              [
-                c,
-                ..list.filter(circuits, fn(circuit) {
-                  circuit != c1 && circuit != c2
-                })
-              ]
-            }
-          }
-        Ok(c1), Error(_) -> [
-          c1 |> set.insert(j2),
-          ..list.filter(circuits, fn(circuit) { circuit != c1 })
-        ]
-        Error(_), Ok(c2) -> [
-          c2 |> set.insert(j1),
-          ..list.filter(circuits, fn(circuit) { circuit != c2 })
-        ]
-        Error(_), Error(_) -> [set.from_list([j1, j2]), ..circuits]
-      }
-
-      circuits
-    })
-
-  circuits
+  get_sorted_connections(junctions)
+  |> list.take(max_connections)
+  |> list.fold([], join_junctions)
   |> list.map(fn(circuit) { set.size(circuit) })
   |> list.sort(fn(a, b) { int.compare(b, a) })
   |> list.take(3)
@@ -109,57 +119,27 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
 
   let #(#(#(x1, _, _), #(x2, _, _)), _) =
     get_sorted_connections(junctions)
-    |> list.fold_until(
-      #(#(#(0, 0, 0), #(0, 0, 0)), []),
-      fn(last_circuits, connection) {
-        let #(j1, j2) = connection
-        let #(_, circuits) = last_circuits
-        let #(last_connection_added, circuits) = case
-          circuits
-          |> list.find(fn(circuit) { set.contains(circuit, j1) }),
-          circuits
-          |> list.find(fn(circuit) { set.contains(circuit, j2) })
-        {
-          Ok(c1), Ok(c2) ->
-            case c1 == c2 {
-              True -> #(connection, circuits)
-              False -> {
-                let c = set.union(c1, c2)
-                #(connection, [
-                  c,
-                  ..list.filter(circuits, fn(circuit) {
-                    circuit != c1 && circuit != c2
-                  })
-                ])
-              }
-            }
-          Ok(c1), Error(_) -> #(connection, [
-            c1 |> set.insert(j2),
-            ..list.filter(circuits, fn(circuit) { circuit != c1 })
-          ])
-          Error(_), Ok(c2) -> #(connection, [
-            c2 |> set.insert(j1),
-            ..list.filter(circuits, fn(circuit) { circuit != c2 })
-          ])
-          Error(_), Error(_) -> #(connection, [
-            set.from_list([j1, j2]),
-            ..circuits
-          ])
-        }
+    |> list.fold_until(#(#(#(0, 0, 0), #(0, 0, 0)), []), fn(acc, connection) {
+      let #(_, circuits) = acc
+      let circuits = join_junctions(circuits, connection)
 
-        let result = #(last_connection_added, circuits)
+      let new_acc = #(connection, circuits)
 
-        case circuits {
-          [first] ->
-            case set.size(first) == len_junctions {
-              True -> list.Stop(result)
-              False -> list.Continue(result)
-            }
+      case circuits {
+        // There is only one circuit
+        [only] ->
+          case set.size(only) == len_junctions {
+            // All junctions are connected
+            True -> list.Stop(new_acc)
 
-          _ -> list.Continue(result)
-        }
-      },
-    )
+            // Not all junctions are connected
+            False -> list.Continue(new_acc)
+          }
+
+        // There are multiple circuits
+        _ -> list.Continue(new_acc)
+      }
+    })
 
   x1 * x2
 }
