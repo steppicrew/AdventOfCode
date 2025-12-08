@@ -10,13 +10,13 @@ const year = 2025
 
 const day = 8
 
-type Coord =
+type Joint =
   #(Int, Int, Int)
 
 type Connection =
-  #(Coord, Coord)
+  #(Joint, Joint)
 
-fn parse_input(lines: List(String)) -> List(Coord) {
+fn parse_input(lines: List(String)) -> List(Joint) {
   lines
   |> list.filter_map(fn(line) {
     case line |> string.split(",") {
@@ -30,7 +30,7 @@ fn parse_input(lines: List(String)) -> List(Coord) {
   })
 }
 
-fn distance(j1: Coord, j2: Coord) -> Int {
+fn distance(j1: Joint, j2: Joint) -> Int {
   let #(x1, y1, z1) = j1
   let #(x2, y2, z2) = j2
   let dx = x1 - x2
@@ -39,7 +39,7 @@ fn distance(j1: Coord, j2: Coord) -> Int {
   dx * dx + dy * dy + dz * dz
 }
 
-fn get_sorted_connections(junktions: List(Coord)) -> List(Connection) {
+fn get_sorted_connections(junktions: List(Joint)) -> List(Connection) {
   junktions
   |> list.index_fold([], fn(acc, j1, i1) {
     junktions
@@ -51,9 +51,9 @@ fn get_sorted_connections(junktions: List(Coord)) -> List(Connection) {
 }
 
 fn join_junctions(
-  circuits: List(set.Set(Coord)),
+  circuits: List(set.Set(Joint)),
   connection: Connection,
-) -> List(set.Set(Coord)) {
+) -> List(set.Set(Joint)) {
   let #(j1, j2) = connection
   case
     circuits
