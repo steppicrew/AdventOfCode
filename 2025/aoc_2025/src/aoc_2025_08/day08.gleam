@@ -119,27 +119,25 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
 
   let #(#(#(x1, _, _), #(x2, _, _)), _) =
     get_sorted_connections(junctions)
-    |> list.fold_until(#(#(#(0, 0, 0), #(0, 0, 0)), []), fn(acc, connection) {
-      let #(_, circuits) = acc
-      let circuits = join_junctions(circuits, connection)
+    |> list.fold_until(
+      #(#(#(0, 0, 0), #(0, 0, 0)), set.new()),
+      fn(acc, connection) {
+        let #(_, connected_joints) = acc
+        let #(j1, j2) = connection
+        let new_connected_joints =
+          connected_joints |> set.insert(j1) |> set.insert(j2)
 
-      let new_acc = #(connection, circuits)
+        let new_acc = #(connection, new_connected_joints)
 
-      case circuits {
-        // There is only one circuit
-        [only] ->
-          case set.size(only) == len_junctions {
-            // All junctions are connected
-            True -> list.Stop(new_acc)
+        case set.size(new_connected_joints) == len_junctions {
+          // All junctions are connected
+          True -> list.Stop(new_acc)
 
-            // Not all junctions are connected
-            False -> list.Continue(new_acc)
-          }
-
-        // There are multiple circuits
-        _ -> list.Continue(new_acc)
-      }
-    })
+          // Not all junctions are connected
+          False -> list.Continue(new_acc)
+        }
+      },
+    )
 
   x1 * x2
 }
