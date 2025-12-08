@@ -105,28 +105,36 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
   }
 
   get_sorted_connections(junctions)
+  // Only take the first N connections to limit runtime
   |> list.take(max_connections)
+  // Build list of circuits
   |> list.fold([], join_junctions)
+  // Map to circuit sizes
   |> list.map(fn(circuit) { set.size(circuit) })
+  // Sort sizes descending
   |> list.sort(fn(a, b) { int.compare(b, a) })
+  // Take the top 3 largest circuits
   |> list.take(3)
+  // Multiply their sizes
   |> int.product
 }
 
 fn run2(lines: List(String), _: RunEnv) -> Int {
   let junctions = parse_input(lines)
 
-  let #(#(#(x1, _, _), #(x2, _, _)), _) =
+  // Add connections until all junctions are connected
+  // Mutliply the x-values of the last two connections added
+  let #(#(x1, _, _), #(x2, _, _), _) =
     get_sorted_connections(junctions)
     |> list.fold_until(
-      #(#(#(0, 0, 0), #(0, 0, 0)), set.from_list(junctions)),
+      #(#(0, 0, 0), #(0, 0, 0), set.from_list(junctions)),
       fn(acc, connection) {
-        let #(_, not_seen_joints) = acc
+        let #(_, _, not_seen_joints) = acc
         let #(j1, j2) = connection
         let not_seen_joints =
           not_seen_joints |> set.delete(j1) |> set.delete(j2)
 
-        let new_acc = #(connection, not_seen_joints)
+        let new_acc = #(j1, j2, not_seen_joints)
 
         case set.is_empty(not_seen_joints) {
           // All junctions are connected
