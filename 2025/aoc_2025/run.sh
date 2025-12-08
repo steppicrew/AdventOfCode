@@ -13,7 +13,7 @@ SRC_BASE="src"
 if [ -n "$1" ]; then
   DAY=$1
 else
-  DAY=$(date -u +%d)
+  DAY=$(date -u +%-d)
 fi
 
 if [ -n "$2" ]; then
