@@ -123,12 +123,11 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
       fn(acc, connection) {
         let #(_, not_seen_joints) = acc
         let #(j1, j2) = connection
-        let new_not_seen_joints =
-          not_seen_joints |> set.delete(j1) |> set.delete(j2)
+        let not_seen_joints = not_seen_joints |> set.drop([j1, j2])
 
-        let new_acc = #(connection, new_not_seen_joints)
+        let new_acc = #(connection, not_seen_joints)
 
-        case set.is_empty(new_not_seen_joints) {
+        case set.is_empty(not_seen_joints) {
           // All junctions are connected
           True -> list.Stop(new_acc)
 
