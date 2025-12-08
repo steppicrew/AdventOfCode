@@ -1,4 +1,3 @@
-import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
@@ -11,17 +10,27 @@ const year = 2025
 
 const day = 8
 
-fn parse_input(lines: List(String)) -> List(#(Int, Int, Int)) {
+type Coord =
+  #(Int, Int, Int)
+
+type Joint =
+  #(Coord, Coord)
+
+fn parse_input(lines: List(String)) -> List(Coord) {
   lines
   |> list.filter_map(fn(line) {
-    case line |> string.split(",") |> list.map(int.parse) {
-      [Ok(x), Ok(y), Ok(z)] -> Ok(#(x, y, z))
+    case line |> string.split(",") {
+      [x, y, z] ->
+        case int.parse(x), int.parse(y), int.parse(z) {
+          Ok(x), Ok(y), Ok(z) -> Ok(#(x, y, z))
+          _, _, _ -> Error(Nil)
+        }
       _ -> Error(Nil)
     }
   })
 }
 
-fn distance(j1: #(Int, Int, Int), j2: #(Int, Int, Int)) -> Int {
+fn distance(j1: Coord, j2: Coord) -> Int {
   let #(x1, y1, z1) = j1
   let #(x2, y2, z2) = j2
   let dx = x1 - x2
@@ -30,30 +39,19 @@ fn distance(j1: #(Int, Int, Int), j2: #(Int, Int, Int)) -> Int {
   dx * dx + dy * dy + dz * dz
 }
 
-fn all_distances(
-  junktions: List(#(Int, Int, Int)),
-) -> Dict(Int, #(#(Int, Int, Int), #(Int, Int, Int))) {
+fn get_sorted_connections(junktions: List(Coord)) -> List(Joint) {
   junktions
-  |> list.index_fold(dict.new(), fn(acc, j1, i1) {
+  |> list.index_fold([], fn(acc, j1, i1) {
     junktions
     |> list.drop(i1 + 1)
-    |> list.fold(acc, fn(acc, j2) {
-      case dict.has_key(acc, distance(j1, j2)) {
-        True -> {
-          #(j1, j2) |> io.debug("Duplicate distance found")
-          Nil
-        }
-        False -> Nil
-      }
-      dict.insert(acc, distance(j1, j2), #(j1, j2))
-    })
+    |> list.fold(acc, fn(acc, j2) { [#(#(j1, j2), distance(j1, j2)), ..acc] })
   })
+  |> list.sort(fn(a, b) { int.compare(a.1, b.1) })
+  |> list.map(fn(connection) { connection.0 })
 }
 
 fn run1(lines: List(String), _: RunEnv) -> Int {
   let junctions = parse_input(lines)
-  let distance_map = all_distances(junctions)
-  let distances = dict.keys(distance_map) |> list.sort(int.compare)
 
   let max_connections = case list.length(lines) {
     20 -> 10
@@ -61,42 +59,38 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
   }
 
   let circuits =
-    distances
+    get_sorted_connections(junctions)
     |> list.take(max_connections)
-    |> list.fold([], fn(circuits, distance) {
-      let circuits = case dict.get(distance_map, distance) {
-        Ok(#(j1, j2)) -> {
-          case
-            circuits
-            |> list.find(fn(circuit) { set.contains(circuit, j1) }),
-            circuits
-            |> list.find(fn(circuit) { set.contains(circuit, j2) })
-          {
-            Ok(c1), Ok(c2) ->
-              case c1 == c2 {
-                True -> circuits
-                False -> {
-                  let c = set.union(c1, c2)
-                  [
-                    c,
-                    ..list.filter(circuits, fn(circuit) {
-                      circuit != c1 && circuit != c2
-                    })
-                  ]
-                }
-              }
-            Ok(c1), Error(_) -> [
-              c1 |> set.insert(j2),
-              ..list.filter(circuits, fn(circuit) { circuit != c1 })
-            ]
-            Error(_), Ok(c2) -> [
-              c2 |> set.insert(j1),
-              ..list.filter(circuits, fn(circuit) { circuit != c2 })
-            ]
-            Error(_), Error(_) -> [set.from_list([j1, j2]), ..circuits]
+    |> list.fold([], fn(circuits, connection) {
+      let #(j1, j2) = connection
+      let circuits = case
+        circuits
+        |> list.find(fn(circuit) { set.contains(circuit, j1) }),
+        circuits
+        |> list.find(fn(circuit) { set.contains(circuit, j2) })
+      {
+        Ok(c1), Ok(c2) ->
+          case c1 == c2 {
+            True -> circuits
+            False -> {
+              let c = set.union(c1, c2)
+              [
+                c,
+                ..list.filter(circuits, fn(circuit) {
+                  circuit != c1 && circuit != c2
+                })
+              ]
+            }
           }
-        }
-        _ -> circuits
+        Ok(c1), Error(_) -> [
+          c1 |> set.insert(j2),
+          ..list.filter(circuits, fn(circuit) { circuit != c1 })
+        ]
+        Error(_), Ok(c2) -> [
+          c2 |> set.insert(j1),
+          ..list.filter(circuits, fn(circuit) { circuit != c2 })
+        ]
+        Error(_), Error(_) -> [set.from_list([j1, j2]), ..circuits]
       }
 
       circuits
@@ -112,55 +106,48 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
 fn run2(lines: List(String), _: RunEnv) -> Int {
   let junctions = parse_input(lines)
   let len_junctions = list.length(junctions)
-  let distance_map = all_distances(junctions)
-  let distances = dict.keys(distance_map) |> list.sort(int.compare)
 
   let #(#(#(x1, _, _), #(x2, _, _)), _) =
-    distances
+    get_sorted_connections(junctions)
     |> list.fold_until(
       #(#(#(0, 0, 0), #(0, 0, 0)), []),
-      fn(last_circuits, distance) {
+      fn(last_circuits, connection) {
+        let #(j1, j2) = connection
         let #(_, circuits) = last_circuits
-        let #(last_two, circuits) = case dict.get(distance_map, distance) {
-          Ok(#(j1, j2)) -> {
-            let last_two = #(j1, j2)
-            case
-              circuits
-              |> list.find(fn(circuit) { set.contains(circuit, j1) }),
-              circuits
-              |> list.find(fn(circuit) { set.contains(circuit, j2) })
-            {
-              Ok(c1), Ok(c2) ->
-                case c1 == c2 {
-                  True -> #(last_two, circuits)
-                  False -> {
-                    let c = set.union(c1, c2)
-                    #(last_two, [
-                      c,
-                      ..list.filter(circuits, fn(circuit) {
-                        circuit != c1 && circuit != c2
-                      })
-                    ])
-                  }
-                }
-              Ok(c1), Error(_) -> #(last_two, [
-                c1 |> set.insert(j2),
-                ..list.filter(circuits, fn(circuit) { circuit != c1 })
-              ])
-              Error(_), Ok(c2) -> #(last_two, [
-                c2 |> set.insert(j1),
-                ..list.filter(circuits, fn(circuit) { circuit != c2 })
-              ])
-              Error(_), Error(_) -> #(last_two, [
-                set.from_list([j1, j2]),
-                ..circuits
-              ])
+        let #(last_connection_added, circuits) = case
+          circuits
+          |> list.find(fn(circuit) { set.contains(circuit, j1) }),
+          circuits
+          |> list.find(fn(circuit) { set.contains(circuit, j2) })
+        {
+          Ok(c1), Ok(c2) ->
+            case c1 == c2 {
+              True -> #(connection, circuits)
+              False -> {
+                let c = set.union(c1, c2)
+                #(connection, [
+                  c,
+                  ..list.filter(circuits, fn(circuit) {
+                    circuit != c1 && circuit != c2
+                  })
+                ])
+              }
             }
-          }
-          _ -> last_circuits
+          Ok(c1), Error(_) -> #(connection, [
+            c1 |> set.insert(j2),
+            ..list.filter(circuits, fn(circuit) { circuit != c1 })
+          ])
+          Error(_), Ok(c2) -> #(connection, [
+            c2 |> set.insert(j1),
+            ..list.filter(circuits, fn(circuit) { circuit != c2 })
+          ])
+          Error(_), Error(_) -> #(connection, [
+            set.from_list([j1, j2]),
+            ..circuits
+          ])
         }
 
-        let result = #(last_two, circuits)
+        let result = #(last_connection_added, circuits)
 
         case circuits {
           [first] ->
