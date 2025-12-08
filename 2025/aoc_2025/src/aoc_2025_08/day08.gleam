@@ -60,11 +60,11 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
     _ -> 1000
   }
 
-  let #(_, circuits) =
+  let circuits =
     distances
-    |> list.fold_until(#(0, []), fn(count_circuits, distance) {
-      let #(count, circuits) = count_circuits
-      let #(count, circuits) = case dict.get(distance_map, distance) {
+    |> list.take(max_connections)
+    |> list.fold([], fn(circuits, distance) {
+      let circuits = case dict.get(distance_map, distance) {
         Ok(#(j1, j2)) -> {
           case
             circuits
@@ -74,36 +74,33 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
           {
             [c1], [c2] ->
               case c1 == c2 {
-                True -> #(count + 1, circuits)
+                True -> circuits
                 False -> {
                   let c = set.union(c1, c2)
-                  #(count + 1, [
+                  [
                     c,
                     ..list.filter(circuits, fn(circuit) {
                       circuit != c1 && circuit != c2
                     })
-                  ])
+                  ]
                 }
               }
-            [c1], [] -> #(count + 1, [
+            [c1], [] -> [
               c1 |> set.insert(j2),
               ..list.filter(circuits, fn(circuit) { circuit != c1 })
-            ])
-            [], [c2] -> #(count + 1, [
+            ]
+            [], [c2] -> [
               c2 |> set.insert(j1),
               ..list.filter(circuits, fn(circuit) { circuit != c2 })
-            ])
-            [], [] -> #(count + 1, [set.from_list([j1, j2]), ..circuits])
-            _, _ -> count_circuits |> io.debug("Not merging circuits")
+            ]
+            [], [] -> [set.from_list([j1, j2]), ..circuits]
+            _, _ -> circuits |> io.debug("Not merging circuits")
           }
         }
-        _ -> count_circuits
+        _ -> circuits
       }
 
-      case count < max_connections {
-        True -> list.Continue(#(count, circuits))
-        False -> list.Stop(#(count, circuits))
-      }
+      circuits
     })
 
   circuits
