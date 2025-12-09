@@ -4,7 +4,6 @@ import gleam/list
 import gleam/option.{None, Some}
 import gleam/order
 import gleam/result
-import gleam/set
 import gleam/string
 import tools/io.{type RunEnv}
 import tools/types.{Expected}
@@ -43,12 +42,14 @@ fn get_size(p1: #(Int, Int), p2: #(Int, Int)) -> Int {
 fn run1(lines: List(String), _: RunEnv) -> Int {
   let tiles = parse_input(lines)
   tiles
-  |> list.index_fold([], fn(acc, tile1, i1) {
+  |> list.index_fold(0, fn(max_size, tile1, i1) {
     tiles
     |> list.drop(i1 + 1)
-    |> list.fold(acc, fn(acc, tile2) { [get_size(tile1, tile2), ..acc] })
+    |> list.fold(max_size, fn(max_size, tile2) {
+      let size = get_size(tile1, tile2)
+      int.max(max_size, size)
+    })
   })
-  |> list.fold(0, fn(size, acc) { int.max(acc, size) })
 }
 
 fn extend(acc: List(#(Int, Int)), x1: Int, x2: Int) -> List(#(Int, Int)) {
@@ -83,16 +84,43 @@ fn print_ranges(ranges: List(#(Int, List(#(Int, Int))))) {
   })
 }
 
-fn two_lists_are_equal(a: List(l), b: List(l)) -> Bool {
-  case list.length(a) == list.length(b) {
-    False -> False
-    True ->
-      list.zip(a, b)
-      |> list.all(fn(pair) {
-        let #(x, y) = pair
-        x == y
-      })
-  }
+fn rect_is_inside(
+  tile1: #(Int, Int),
+  tile2: #(Int, Int),
+  merged_ranges: List(#(#(Int, Int), List(#(Int, Int)))),
+) -> Bool {
+  let #(x1, y1) = tile1
+  let #(x2, y2) = tile2
+  let x_min = int.min(x1, x2)
+  let x_max = int.max(x1, x2)
+  let y_min = int.min(y1, y2)
+  let y_max = int.max(y1, y2)
+
+  merged_ranges
+  |> list.fold(True, fn(acc, band) {
+    case acc {
+      False -> False
+      // already failed earlier, keep False
+      True -> {
+        let #(#(ry1, ry2), ranges) = band
+
+        // Only care about bands that intersect [y_min, y_max]
+        case ry2 >= y_min && ry1 <= y_max {
+          False ->
+            // This band is outside our vertical span: no constraint from it
+            True
+
+          True ->
+            // For this band we need some x-range that covers [x_min, x_max]
+            ranges
+            |> list.any(fn(range) {
+              let #(rx1, rx2) = range
+              rx1 <= x_min && rx2 >= x_max
+            })
+        }
+      }
+    }
+  })
 }
 
 fn run2(lines: List(String), _: RunEnv) -> Int {
@@ -262,7 +290,7 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
         [] -> [#(#(y, y), ranges)]
         [last_line, ..rest] -> {
           let #(#(last_y1, _), last_ranges) = last_line
-          case two_lists_are_equal(last_ranges, ranges) {
+          case last_ranges == ranges {
             True -> [#(#(last_y1, y), ranges), ..rest]
             False -> [#(#(y, y), ranges), last_line, ..rest]
           }
@@ -276,45 +304,26 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
   // ranges |> io.debug("Ranges")
   // #() |> io.debug("Done ranges")
 
-  let result =
+  tiles
+  |> list.index_fold(0, fn(best, tile1, i1) {
     tiles
-    |> list.index_fold([], fn(acc, tile1, i1) {
-      tiles
-      |> list.drop(i1 + 1)
-      |> list.fold(acc, fn(acc, tile2) {
-        [#(tile1, tile2, get_size(tile1, tile2)), ..acc]
-      })
-    })
-    |> list.sort(fn(a, b) {
-      let #(_, _, size1) = a
-      let #(_, _, size2) = b
-      int.compare(size2, size1)
-    })
-    |> list.find(fn(rect) {
-      let #(tile1, tile2, _) = rect
-      let #(x1, y1) = tile1
-      let #(x2, y2) = tile2
-      let #(x_min, x_max) = #(int.min(x1, x2), int.max(x1, x2))
-      let #(y_min, y_max) = #(int.min(y1, y2), int.max(y1, y2))
-      merged_ranges
-      |> list.filter(fn(ranges) {
-        let #(#(ry1, ry2), _) = ranges
-        ry2 >= y_min && ry1 <= y_max
-      })
-      |> list.all(fn(ranges) {
-        let #(_, ranges) = ranges
-        ranges
-        |> list.any(fn(range) {
-          let #(rx1, rx2) = range
-          rx1 <= x_min && rx2 >= x_max
-        })
-      })
-    })
+    |> list.drop(i1 + 1)
+    |> list.fold(best, fn(best, tile2) {
+      let size = get_size(tile1, tile2)
 
-  case result {
-    Ok(#(_, _, size)) -> size
-    Error(_) -> 0
-  }
+      case size > best {
+        False ->
+          // Rectangle cannot improve the current best, skip expensive check
+          best
+
+        True ->
+          case rect_is_inside(tile1, tile2, merged_ranges) {
+            True -> size
+            False -> best
+          }
+      }
+    })
+  })
 }
 
 pub fn main() {
