@@ -206,6 +206,14 @@ pub fn debug(data: a, label: String) -> a {
   data
 }
 
+pub fn println(msg: String) {
+  io.println(msg)
+}
+
+pub fn print(msg: String) {
+  io.print(msg)
+}
+
 pub fn log_debug(data: a, label: String, env: RunEnv) -> a {
   let message = debug_message(data, label)
   io.println(message)
