@@ -51,6 +51,50 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
   |> list.fold(0, fn(size, acc) { int.max(acc, size) })
 }
 
+fn extend(acc: List(#(Int, Int)), x1: Int, x2: Int) -> List(#(Int, Int)) {
+  case acc {
+    [] -> [#(x1, x2)]
+    [last, ..rest] -> {
+      let #(last_x1, last_x2) = last
+      case x1 <= last_x2 {
+        True -> [#(last_x1, x2), ..rest]
+        False -> [#(x1, x2), last, ..rest]
+      }
+    }
+  }
+}
+
+fn print_ranges(ranges: List(#(Int, List(#(Int, Int))))) {
+  ranges
+  |> list.each(fn(range) {
+    let #(y, ranges) = range
+    io.print(y |> int.to_string |> string.pad_start(4, "0") <> ": ")
+    ranges
+    |> list.fold(0, fn(last_x, range) {
+      let #(x1, x2) = range
+      case last_x < x1 {
+        True -> io.print(string.repeat(" ", x1 - last_x))
+        _ -> Nil
+      }
+      io.print(string.repeat("#", x2 - x1 + 1))
+      x2 + 1
+    })
+    io.println("")
+  })
+}
+
+fn two_lists_are_equal(a: List(l), b: List(l)) -> Bool {
+  case list.length(a) == list.length(b) {
+    False -> False
+    True ->
+      list.zip(a, b)
+      |> list.all(fn(pair) {
+        let #(x, y) = pair
+        x == y
+      })
+  }
+}
+
 fn run2(lines: List(String), _: RunEnv) -> Int {
   let tiles = parse_input(lines)
 
@@ -102,54 +146,135 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
         c -> c
       }
     })
-
-  #() |> io.debug("Sorted Border")
-
-  let #(area, _) =
-    sorted_border
-    |> list.fold(#(set.new(), None), fn(acc, point_tuple) {
-      let #(area, prev_type) = acc
-      let #(point, point_type) = point_tuple
-      case prev_type, point_type {
-        _, Horizontal -> #(area |> set.insert(point), Some(point_tuple))
-        _, Corner -> #(area |> set.insert(point), Some(point_tuple))
-        _, VerticalRight -> #(area |> set.insert(point), Some(point_tuple))
-        None, VerticalLeft -> {
-          #(acc, point_tuple)
-          |> io.debug("Unexpected VerticalLeft at start (None, VerticalLeft)")
-          #(area, Some(point_tuple))
+    |> list.fold([], fn(acc, border_item) {
+      case acc {
+        [] -> [[border_item]]
+        [[last, ..rest_line], ..rest] -> {
+          let #(#(_, last_y), _) = last
+          let #(#(_, y), _) = border_item
+          case last_y == y {
+            True -> [[border_item, last, ..rest_line], ..rest]
+            _ -> [[border_item], ..acc]
+          }
         }
-        Some(#(#(prev_x, prev_y), prev_type)), VerticalLeft -> {
-          let #(x, y) = point
-          case prev_y == y, prev_type {
-            True, VerticalRight -> {
-              let area =
-                list.range(prev_x, x)
-                |> list.fold(area, fn(area, x) { area |> set.insert(#(x, y)) })
-              #(area, None)
+        _ -> acc
+      }
+    })
+    |> list.map(fn(line) { list.reverse(line) })
+    |> list.reverse()
+
+  // sorted_border |> io.debug("Sorted Border")
+
+  let ranges =
+    sorted_border
+    |> list.map(fn(line) {
+      line
+      |> list.window_by_2
+      |> list.fold(#(0, []), fn(acc, pair) {
+        let #(#(#(x1, y), type1), #(#(x2, _), type2)) = pair
+        let #(_, acc) = acc
+        let acc = case type1, type2 {
+          VerticalLeft, VerticalLeft -> {
+            pair |> io.debug("Unexpected VerticalLeft, VerticalLeft")
+            acc
+          }
+          Horizontal, VerticalLeft -> {
+            pair |> io.debug("Unexpected Horizontal, VerticalRight")
+            acc
+          }
+          VerticalRight, VerticalLeft -> extend(acc, x1, x2)
+          Corner, VerticalLeft -> extend(acc, x1, x2)
+
+          VerticalRight, VerticalRight -> {
+            pair |> io.debug("Unexpected VerticalRight, VerticalRight")
+            acc
+          }
+          Horizontal, VerticalRight -> {
+            pair |> io.debug("Unexpected Horizontal, VerticalRight")
+            acc
+          }
+          VerticalLeft, VerticalRight -> acc
+          Corner, VerticalRight -> acc
+
+          Horizontal, Horizontal -> extend(acc, x1, x2)
+          Corner, Horizontal -> extend(acc, x1, x2)
+          _, Horizontal -> {
+            pair |> io.debug("Unexpected _, Horizontal")
+            acc
+          }
+
+          VerticalLeft, Corner -> {
+            case x1 + 1 == x2 {
+              True -> extend(acc, x1, x2)
+              False -> [#(x2, x2), ..acc]
             }
-            True, Corner -> {
-              let area =
-                list.range(prev_x, x)
-                |> list.fold(area, fn(area, x) { area |> set.insert(#(x, y)) })
-              #(area, Some(point_tuple))
+          }
+          VerticalRight, Corner -> extend(acc, x1, x2)
+          Horizontal, Corner -> {
+            case x1 + 1 == x2 {
+              True -> extend(acc, x1, x2)
+              False -> {
+                pair |> io.debug("Unexpected _, Horizontal")
+                acc
+              }
             }
-            True, _ -> {
-              #(#(prev_x, prev_y), prev_type, point, point_type)
-              |> io.debug("Unexpected VerticalLeft at start (True, _)")
-              #(area, Some(point_tuple))
+          }
+          Corner, Corner -> {
+            case x1 + 1 == x2 {
+              True -> extend(acc, x1, x2)
+              False -> [#(x2, x2), ..acc]
             }
-            False, _ -> {
-              #(#(prev_x, prev_y), prev_type, point, point_type)
-              |> io.debug("Unexpected VerticalLeft at start (False, _)")
-              #(area, Some(point_tuple))
-            }
+          }
+        }
+        #(y, acc)
+      })
+    })
+    |> list.map(fn(y_ranges) {
+      let #(y, ranges) = y_ranges
+      #(y, ranges |> list.reverse())
+    })
+
+  // ranges |> print_ranges()
+  // ranges |> io.debug("Ranges before merge")
+
+  // ranges
+  // |> list.each(fn(ranges) {
+  //   let #(y, ranges) = ranges
+  //   ranges
+  //   |> list.window_by_2
+  //   |> list.each(fn(pair) {
+  //     let #(#(x11, x12), #(x21, x22)) = pair
+  //     case x11 > x12 || x21 > x22 || x21 <= x12 {
+  //       True -> {
+  //         #(y, pair) |> io.debug("Overlapping ranges")
+  //         Nil
+  //       }
+  //       _ -> Nil
+  //     }
+  //   })
+  // })
+
+  let merged_ranges =
+    ranges
+    |> list.fold([], fn(last_lines, new_line) {
+      let #(y, ranges) = new_line
+      case last_lines {
+        [] -> [#(#(y, y), ranges)]
+        [last_line, ..rest] -> {
+          let #(#(last_y1, _), last_ranges) = last_line
+          case two_lists_are_equal(last_ranges, ranges) {
+            True -> [#(#(last_y1, y), ranges), ..rest]
+            False -> [#(#(y, y), ranges), last_line, ..rest]
           }
         }
       }
     })
+    |> list.reverse()
 
-  area |> set.size() |> io.debug("Area size")
+  // merged_ranges |> list.take(2) |> io.debug("Merged Ranges")
+
+  // ranges |> io.debug("Ranges")
+  // #() |> io.debug("Done ranges")
 
   let result =
     tiles
@@ -166,13 +291,23 @@ fn run2(lines: List(String), _: RunEnv) -> Int {
       int.compare(size2, size1)
     })
     |> list.find(fn(rect) {
-      let #(t1, t2, _) = rect
-      let #(x1, y1) = t1
-      let #(x2, y2) = t2
-      list.range(x1, x2)
-      |> list.all(fn(x) {
-        list.range(y1, y2)
-        |> list.all(fn(y) { set.contains(area, #(x, y)) })
+      let #(tile1, tile2, _) = rect
+      let #(x1, y1) = tile1
+      let #(x2, y2) = tile2
+      let #(x_min, x_max) = #(int.min(x1, x2), int.max(x1, x2))
+      let #(y_min, y_max) = #(int.min(y1, y2), int.max(y1, y2))
+      merged_ranges
+      |> list.filter(fn(ranges) {
+        let #(#(ry1, ry2), _) = ranges
+        ry2 >= y_min && ry1 <= y_max
+      })
+      |> list.all(fn(ranges) {
+        let #(_, ranges) = ranges
+        ranges
+        |> list.any(fn(range) {
+          let #(rx1, rx2) = range
+          rx1 <= x_min && rx2 >= x_max
+        })
       })
     })
 
@@ -188,7 +323,8 @@ pub fn main() {
     day,
     [
       Expected(1, Some(50), Some(24)),
-      Expected(0, Some(4_740_155_680), None),
+      Expected(2, Some(70), Some(24)),
+      Expected(0, Some(4_740_155_680), Some(1_543_501_936)),
     ],
     run1,
     run2,
