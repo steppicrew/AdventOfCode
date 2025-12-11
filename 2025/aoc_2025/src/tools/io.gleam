@@ -133,7 +133,7 @@ fn create_env(path: String) -> RunEnv {
   }
 
   RunEnv(log: fn(msg) {
-    let _ = simplifile.append(path, msg)
+    let _ = simplifile.append(path, msg <> "\n")
     Nil
   })
 }
