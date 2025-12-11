@@ -82,20 +82,20 @@ fn count_pathes2(
                   _ -> {
                     let #(counts, cache) =
                       count_pathes2(devices, device, seen, cache)
-                    let counts = case device == "fft", device == "dac" {
-                      True, False -> #(
+                    let counts = case device {
+                      device if device == "fft" -> #(
                         0,
                         counts.0 + counts.1,
                         0,
                         counts.2 + counts.3,
                       )
-                      False, True -> #(
+                      device if device == "dac" -> #(
                         0,
                         0,
                         counts.0 + counts.2,
                         counts.1 + counts.3,
                       )
-                      _, _ -> counts
+                      _ -> counts
                     }
                     // #(device, counts)|>io.debug("")
                     let cache = dict.insert(cache, device, counts)
