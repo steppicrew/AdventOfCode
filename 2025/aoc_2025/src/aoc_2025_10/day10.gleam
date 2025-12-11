@@ -184,6 +184,17 @@ fn sub_voltage(buttons: ButtonSet, factor: Int, joltage: Joltages) -> Joltages {
   }
 }
 
+fn get_max_button_count(button: ButtonSet, joltage: Joltages) -> Int {
+  list.zip(button, joltage)
+  |> list.fold(10_000, fn(max, button_joltage) {
+    let #(b, j) = button_joltage
+    case b {
+      1 -> int.min(max, j)
+      _ -> max
+    }
+  })
+}
+
 /// Get all combinations of the button sequeneces
 /// max if the nuber of button left
 /// Returns all combinations with count for each sequence
@@ -191,43 +202,43 @@ fn sub_voltage(buttons: ButtonSet, factor: Int, joltage: Joltages) -> Joltages {
 /// Return Error on error or empty button sequence
 fn get_buttons_combinations(
   buttons: ButtonsSequence,
-  max: Int,
+  joltage: Joltages,
+  max_remaining: Int,
 ) -> Result(List(List(#(Int, ButtonSet))), Nil) {
-  case buttons, max {
-    _, max if max < 0 -> {
-      #(buttons, max) |> io.debug("Error1")
-      Error(Nil)
-    }
-    [], max if max > 0 -> {
-      // #(buttons, max) |> io.debug("Error2")
-      Error(Nil)
-    }
-    [], _ -> Ok([[]])
-    _, 0 -> Ok([[]])
-    _, 1 -> {
-      Ok(buttons |> list.map(fn(b) { [#(1, b)] }))
-    }
-    [first], max -> Ok([[#(max, first)]])
-    [first, ..remaining], max -> {
-      case get_buttons_combinations(remaining, max) {
-        Ok(follow_combis) -> {
-          Ok(
-            list.range(max - 1, 1)
-            |> list.fold([[#(max, first)], ..follow_combis], fn(acc, i) {
-              case get_buttons_combinations(remaining, max - i) {
-                Ok(other_combis) ->
-                  other_combis
-                  |> list.fold(acc, fn(acc, c) { [[#(i, first), ..c], ..acc] })
-                _ -> acc
-              }
-            }),
-          )
-        }
-        Error(_) -> {
-          #(buttons, max) |> io.debug("Error4")
-          Error(Nil)
-        }
+  let a = case buttons {
+    [] -> Ok([[]])
+    [button] -> {
+      let max = get_max_button_count(button, joltage)
+      case max < max_remaining {
+        True -> Error(Nil)
+        False -> Ok([[#(int.max(max, max_remaining), button)]])
       }
+    }
+    [button, ..remaining] -> {
+      let max = int.min(max_remaining, get_max_button_count(button, joltage))
+      Ok(
+        list.range(0, max)
+        |> list.fold([], fn(acc0, count) {
+          let joltage = sub_voltage(button, count, joltage)
+          let a = case
+            get_buttons_combinations(remaining, joltage, max_remaining - count)
+          {
+            Ok(combis) -> {
+              combis
+              |> list.fold(acc0, fn(acc, combi) {
+                case count {
+                  0 -> [combi, ..acc]
+                  _ -> {
+                    let combo = #(count, button)
+                    [[combo, ..combi], ..acc]
+                  }
+                }
+              })
+            }
+            Error(_) -> acc0
+          }
+        }),
+      )
     }
   }
 }
@@ -306,9 +317,9 @@ fn iterate_run2(
       // #(buttons, joltage) |> io.log_debug("iterate2b", env)
 
       // Get minimal and maxmial joltage > 0 and their indexes
-      let #(min_joltage, max_joltage) =
+      let max_joltage =
         joltage
-        |> list.index_fold(#(#(10_000, 0), 0), fn(acc, j, i) {
+        |> list.index_fold(#(0, 0), fn(acc, j, i) {
           case j {
             0 -> acc
             j if j < 0 -> {
@@ -316,45 +327,38 @@ fn iterate_run2(
               acc
             }
             _ -> {
-              let #(#(min, _), max) = acc
-              #(
-                case min > j {
-                  True -> #(j, i)
-                  False -> acc.0
-                },
-                int.max(j, max),
-              )
+              let #(max, _) = acc
+              case max < j {
+                True -> #(j, i)
+                False -> acc
+              }
             }
           }
         })
 
-      case min_joltage, max_joltage, max {
-        // No min joltage found -> should not happen (there should be no buttons)
-        #(10_000, 0), _, _ -> {
-          #(buttons, joltage, max) |> io.debug("This should not happen")
-          None
-        }
-
+      case max_joltage, max {
         // If largest joltage is larger the max -> no solution
-        _, max_joltage, max if max < max_joltage -> {
+        #(max_joltage, _), max if max < max_joltage -> {
           // #(max_joltage, max) |> io.debug("Cancel2")
           None
         }
 
         // try smallest joltage
-        #(min_joltage, min_joltage_index), _, _ -> {
+        #(max_joltage, max_joltage_index), _ -> {
           // find all buttons that change that joltage
           let possible_buttons =
             buttons
-            |> list.fold([], fn(possible_buttons, buttons) {
-              case buttons |> list.drop(min_joltage_index) |> list.first {
-                Ok(1) -> [buttons, ..possible_buttons]
+            |> list.fold([], fn(possible_buttons, button) {
+              case button |> list.drop(max_joltage_index) |> list.first {
+                Ok(1) -> [button, ..possible_buttons]
                 _ -> possible_buttons
               }
             })
 
           // get all combinations of those buttons to eliminate that voltage
-          case get_buttons_combinations(possible_buttons, min_joltage) {
+          case
+            get_buttons_combinations(possible_buttons, joltage, max_joltage)
+          {
             Error(_) -> {
               // #(possible_buttons, joltage, min_joltage, min_joltage_index)
               // |> io.debug("This should not happen 2")
@@ -377,7 +381,7 @@ fn iterate_run2(
                 })
                 |> list.sort(fn(a, b) { int.compare(b.1, a.1) })
 
-              let cost = min_joltage
+              let cost = max_joltage
 
               // button_combis |> io.debug("Button Combis")
               let count =
