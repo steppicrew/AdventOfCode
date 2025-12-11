@@ -370,26 +370,6 @@ fn iterate_run2(
 
       let #(selected_joltage_index, max_joltage) = select1(joltage)
 
-      let selected_joltage_index =
-        joltage
-        |> list.index_fold(#(10_000, 0), fn(acc, j, i) {
-          case j {
-            0 -> acc
-            j if j < 0 -> {
-              j |> io.log_debug("Strange joltage", env)
-              acc
-            }
-            _ -> {
-              let #(selected, _) = acc
-              case selected > j {
-                True -> #(j, i)
-                False -> acc
-              }
-            }
-          }
-        })
-      let max_joltage = get_max_joltage(joltage)
-
       case selected_joltage_index {
         // If largest joltage is larger the max -> no solution
         _ if max_needed < max_joltage -> {
