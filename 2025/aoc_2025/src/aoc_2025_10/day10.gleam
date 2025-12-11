@@ -3,6 +3,7 @@ import gleam/int
 import gleam/list.{Continue, Stop}
 import gleam/option.{type Option, None, Some}
 import gleam/result
+import gleam/set.{type Set}
 import gleam/string
 import tools/io.{type RunEnv}
 import tools/types.{Expected}
@@ -204,16 +205,16 @@ fn empty_joltage(joltage: Joltages) -> Joltages {
 /// Returns all combinations with count for each sequence
 /// [[#(2, [..button1]), #(1, [..button2])], [#(1, [..button1]), #(2, [..button2])]]
 /// Return Error on error or empty button sequence
-fn get_buttons_combinations(
+fn get_new_joltages(
   buttons: ButtonsSequence,
   joltage: Joltages,
   max_remaining: Int,
-) -> Result(List(#(List(#(Int, ButtonSet)), Joltages)), Nil) {
+) -> Result(List(Joltages), Nil) {
   case buttons {
     // No button -> Return empty list if nothing was requested, Error otherwise
     [] ->
       case max_remaining == 0 {
-        True -> Ok([#([], joltage)])
+        True -> Ok([joltage])
         False -> Error(Nil)
       }
 
@@ -223,9 +224,7 @@ fn get_buttons_combinations(
       case max >= max_remaining {
         True -> {
           let count = int.max(max, max_remaining)
-          Ok([
-            #([#(count, button)], sub_button(joltage, button, count)),
-          ])
+          Ok([sub_button(joltage, button, count)])
         }
         False -> Error(Nil)
       }
@@ -236,25 +235,10 @@ fn get_buttons_combinations(
         list.range(0, max)
         |> list.fold([], fn(acc0, count) {
           let new_joltage = sub_button(joltage, button, count)
-          case
-            get_buttons_combinations(
-              remaining,
-              new_joltage,
-              max_remaining - count,
-            )
-          {
+          case get_new_joltages(remaining, new_joltage, max_remaining - count) {
             Ok(combis) -> {
               combis
-              |> list.fold(acc0, fn(acc, combi_joltage) {
-                let #(combi, joltage) = combi_joltage
-                case count {
-                  0 -> [#(combi, new_joltage), ..acc]
-                  _ -> {
-                    let combo = #(count, button)
-                    [#([combo, ..combi], new_joltage), ..acc]
-                  }
-                }
-              })
+              |> list.fold(acc0, fn(acc, new_joltage) { [new_joltage, ..acc] })
             }
             Error(_) -> acc0
           }
@@ -377,33 +361,22 @@ fn iterate_run2(
             })
 
           // get all combinations of those buttons to eliminate that voltage
-          case
-            get_buttons_combinations(possible_buttons, joltage, max_joltage)
-          {
+          case get_new_joltages(possible_buttons, joltage, max_joltage) {
             Error(_) -> {
               // #(possible_buttons, joltage, min_joltage, min_joltage_index)
               // |> io.debug("This should not happen 2")
               None
             }
-            Ok(button_combis) -> {
+            Ok(new_joltages) -> {
               // get new joltages, sorted by lowest remaining joltage
-              let new_joltages_max =
-                // process all button combis
-                button_combis
-                |> list.fold([], fn(new_joltages, combo_joltage) {
-                  let #(_, new_joltage) = combo_joltage
-                  [#(new_joltage, get_max_joltage(new_joltage)), ..new_joltages]
-                })
-                |> list.sort(fn(a, b) { int.compare(a.1, b.1) })
 
               let cost = max_joltage
 
               // button_combis |> io.debug("Button Combis")
               let count =
-                new_joltages_max
+                new_joltages
                 // |> io.debug("Possibilities")
-                |> list.fold(max_needed, fn(max, joltage_max) {
-                  let #(joltage, _) = joltage_max
+                |> list.fold(max_needed, fn(max, joltage) {
                   case iterate_run2(buttons, joltage, max - cost, env) {
                     Some(c) -> {
                       // #(count, c) |> io.debug("Success")
@@ -455,8 +428,8 @@ pub fn main() {
     day,
     [
       Expected(1, Some(7), Some(33)),
-      Expected(2, Some(3), None),
-      //Expected(0, Some(428), None),
+      // Expected(2, Some(3), None),
+      Expected(0, Some(428), None),
     ],
     run1,
     run2,
