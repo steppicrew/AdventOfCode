@@ -240,6 +240,10 @@ fn min_max_joltage(joltage: Joltages) -> #(Int, Int) {
   })
 }
 
+fn get_max_joltage(joltage: Joltages) -> Int {
+  joltage |> list.fold(0, fn(max, j) { int.max(max, j) })
+}
+
 // Get min/max of joltages greater than 0
 fn min_max_joltage0(joltage: Joltages) -> #(Option(Int), Option(Int)) {
   joltage
@@ -357,47 +361,34 @@ fn iterate_run2(
               None
             }
             Ok(button_combis) -> {
-              let #(possibilities, _) =
+              // get new joltages, sorted by lowest remaining joltage
+              let new_joltages_max =
                 // process all button combis
                 button_combis
-                |> list.fold(#([], max), fn(acc, combo) {
-                  let #(possibilities, max) = acc
+                |> list.fold([], fn(new_joltages, combo) {
                   // calculate new joltage after this combination is pressed
-                  let joltage =
+                  let new_joltage =
                     combo
                     |> list.fold(joltage, fn(joltage, button) {
                       let #(button_count, button) = button
                       sub_voltage(button, button_count, joltage)
                     })
-                  // let #(min_joltage2, max_joltage2) = min_max_joltage(joltage)
-                  // case min_joltage2, max_joltage2 {
-                  //   min_j, _ if min_j < 0 -> acc
-                  //   _, max_j if max_j < max -> #(
-                  //     [#(min_joltage, joltage)],
-                  //     max_j,
-                  //   )
-                  //   _, max_j if max_j == max -> #(
-                  //     [#(min_joltage, joltage), ..possibilities],
-                  //     max,
-                  //   )
-                  //   _, _ -> acc
-                  // }
-
-                  // Return a list of ([..(steps, new_joltage)], )
-                  #([#(min_joltage, joltage), ..possibilities], max)
+                  [#(new_joltage, get_max_joltage(new_joltage)), ..new_joltages]
                 })
+                |> list.sort(fn(a, b) { int.compare(b.1, a.1) })
+
+              let cost = min_joltage
 
               // button_combis |> io.debug("Button Combis")
               let count =
-                possibilities
+                new_joltages_max
                 // |> io.debug("Possibilities")
-                |> list.fold(max, fn(max, p) {
-                  let #(count, joltage) = p
-                  let min1 = max - count
-                  case iterate_run2(buttons, joltage, min1, env) {
+                |> list.fold(max, fn(max, joltage_max) {
+                  let #(joltage, _) = joltage_max
+                  case iterate_run2(buttons, joltage, max - cost, env) {
                     Some(c) -> {
                       // #(count, c) |> io.debug("Success")
-                      int.min(max, count + c)
+                      int.min(max, cost + c)
                     }
                     None -> {
                       // io.println("None found")
