@@ -280,6 +280,51 @@ fn min_max_joltage0(joltage: Joltages) -> #(Option(Int), Option(Int)) {
   })
 }
 
+fn select1(joltage: Joltages) {
+  let selected_joltage_index =
+    joltage
+    |> list.index_fold(#(10_000, 0), fn(acc, j, i) {
+      case j {
+        0 -> acc
+        j if j < 0 -> {
+          j |> io.debug("Strange joltage")
+          acc
+        }
+        _ -> {
+          let #(selected, _) = acc
+          case selected > j {
+            True -> #(j, i)
+            False -> acc
+          }
+        }
+      }
+    })
+  let max_joltage = get_max_joltage(joltage)
+  #(selected_joltage_index, max_joltage)
+}
+
+fn select2(joltage: Joltages) {
+  let selected_joltage_index =
+    joltage
+    |> list.index_fold(#(0, 0), fn(acc, j, i) {
+      case j {
+        0 -> acc
+        j if j < 0 -> {
+          j |> io.debug("Strange joltage")
+          acc
+        }
+        _ -> {
+          let #(selected, _) = acc
+          case selected < j {
+            True -> #(j, i)
+            False -> acc
+          }
+        }
+      }
+    })
+  #(selected_joltage_index, selected_joltage_index.0)
+}
+
 /// Iterate throu buttons
 /// buttons: a sequence of buttons
 /// joltage: joltages
@@ -322,9 +367,12 @@ fn iterate_run2(
       // #(buttons, joltage) |> io.log_debug("iterate2b", env)
 
       // Get maxmial joltage and its index
-      let max_joltage =
+
+      let #(selected_joltage_index, max_joltage) = select1(joltage)
+
+      let selected_joltage_index =
         joltage
-        |> list.index_fold(#(0, 0), fn(acc, j, i) {
+        |> list.index_fold(#(10_000, 0), fn(acc, j, i) {
           case j {
             0 -> acc
             j if j < 0 -> {
@@ -332,36 +380,37 @@ fn iterate_run2(
               acc
             }
             _ -> {
-              let #(max, _) = acc
-              case max < j {
+              let #(selected, _) = acc
+              case selected > j {
                 True -> #(j, i)
                 False -> acc
               }
             }
           }
         })
+      let max_joltage = get_max_joltage(joltage)
 
-      case max_joltage, max_needed {
+      case selected_joltage_index {
         // If largest joltage is larger the max -> no solution
-        #(max_joltage, _), max_needed if max_needed < max_joltage -> {
+        _ if max_needed < max_joltage -> {
           // #(max_joltage, max) |> io.debug("Cancel2")
           None
         }
 
         // try largest joltage
-        #(max_joltage, max_joltage_index), _ -> {
+        #(selected_joltage, selected_joltage_index) -> {
           // find all buttons that change that joltage
           let possible_buttons =
             buttons
             |> list.fold([], fn(possible_buttons, button) {
-              case button |> list.drop(max_joltage_index) |> list.first {
+              case button |> list.drop(selected_joltage_index) |> list.first {
                 Ok(1) -> [button, ..possible_buttons]
                 _ -> possible_buttons
               }
             })
 
           // get all combinations of those buttons to eliminate that voltage
-          case get_new_joltages(possible_buttons, joltage, max_joltage) {
+          case get_new_joltages(possible_buttons, joltage, selected_joltage) {
             Error(_) -> {
               // #(possible_buttons, joltage, min_joltage, min_joltage_index)
               // |> io.debug("This should not happen 2")
@@ -370,7 +419,7 @@ fn iterate_run2(
             Ok(new_joltages) -> {
               // get new joltages, sorted by lowest remaining joltage
 
-              let cost = max_joltage
+              let cost = selected_joltage
 
               // button_combis |> io.debug("Button Combis")
               let count =
