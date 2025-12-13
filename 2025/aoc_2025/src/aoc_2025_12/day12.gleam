@@ -210,7 +210,7 @@ fn solve1(
           |> list.any(fn(shape) {
             case set_shape_at(x, y, shape, area, last_value) {
               Some(area) -> {
-                print_area(max_x, max_y, area)
+                // print_area(max_x, max_y, area)
                 case count {
                   1 ->
                     solve1(
@@ -259,6 +259,7 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
       #(0, 0),
       -1,
     )
+    |> io.debug("Result")
   })
 }
 
@@ -272,7 +273,7 @@ pub fn main() {
     day,
     [
       Expected(1, Some(2), Some(0)),
-      // Expected(0, None, None),
+      Expected(0, None, None),
     ],
     run1,
     run2,
