@@ -409,7 +409,7 @@ fn solve1(
                       [#(count - 1, shapes), ..remaining],
                       shape_num,
                       area,
-                      #(x, y),
+                      #(x + 1, y),
                     )
                 }
               }
@@ -428,15 +428,10 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
   areas
   |> list.count(fn(area) {
     let #(#(x, y), shape_count) = area
-    solve1(
-      x - 3,
-      y - 3,
+    let shape_counts =
       list.zip(shape_count, shapes)
-        |> list.filter(fn(pair) { pair.0 > 0 }),
-      -1,
-      dict.new(),
-      #(0, 0),
-    )
+      |> list.filter(fn(pair) { pair.0 > 0 })
+    solve1(x - 3, y - 3, shape_counts, -1, dict.new(), #(0, 0))
     |> io.debug("Result")
   })
 }
