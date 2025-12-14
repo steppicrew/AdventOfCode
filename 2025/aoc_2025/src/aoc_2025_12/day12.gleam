@@ -19,7 +19,13 @@ const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 type Coord =
   #(Int, Int)
 
-fn get_shape(shape: Set(Coord)) -> String {
+type Shape =
+  Set(Coord)
+
+type ShapeSet =
+  List(Shape)
+
+fn shape_to_string(shape: Shape) -> String {
   list.range(-1, 1)
   |> list.fold("", fn(before, y) {
     before
@@ -35,8 +41,8 @@ fn get_shape(shape: Set(Coord)) -> String {
   })
 }
 
-fn print_shape(shape: Set(Coord)) -> Nil {
-  io.println(get_shape(shape))
+fn print_shape(shape: Shape) -> Nil {
+  io.println(shape_to_string(shape))
 }
 
 fn print_area(max_x: Int, max_y: Int, area: Dict(Coord, Int)) {
@@ -60,7 +66,9 @@ fn print_area(max_x: Int, max_y: Int, area: Dict(Coord, Int)) {
   })
 }
 
-fn parse_lines(lines: List(String)) {
+fn parse_lines(
+  lines: List(String),
+) -> #(List(ShapeSet), List(#(#(Int, Int), List(Int)))) {
   let #(shapes, areas) =
     lines
     |> list.fold(#([], []), fn(acc, line) {
@@ -106,7 +114,7 @@ fn parse_lines(lines: List(String)) {
       }
     })
 
-  let rotate_shape = fn(shape: Set(Coord)) {
+  let rotate_shape = fn(shape: Shape) -> Shape {
     shape
     |> set.map(fn(c) {
       let #(x, y) = c
@@ -114,7 +122,7 @@ fn parse_lines(lines: List(String)) {
     })
   }
 
-  let flip_shape = fn(shape: Set(Coord)) {
+  let flip_shape = fn(shape: Shape) -> Shape {
     shape
     |> set.map(fn(c) {
       let #(x, y) = c
@@ -122,7 +130,7 @@ fn parse_lines(lines: List(String)) {
     })
   }
 
-  let get_all_patters = fn(shape: Set(Coord)) -> List(Set(Coord)) {
+  let get_all_patters = fn(shape: Shape) -> ShapeSet {
     let rotated =
       list.range(1, 3)
       |> list.fold([shape], fn(acc, _) {
@@ -161,7 +169,7 @@ fn parse_lines(lines: List(String)) {
 fn set_shape_at(
   x: Int,
   y: Int,
-  shape: Set(Coord),
+  shape: Shape,
   area: Dict(Coord, Int),
   value: Int,
 ) -> Option(Dict(Coord, Int)) {
@@ -184,61 +192,26 @@ fn set_shape_at(
 fn solve1(
   max_x: Int,
   max_y: Int,
-  shape_counts: List(#(Int, List(Set(Coord)))),
-  shape_type: Int,
+  available_shapes: List(List(ShapeSet)),
+  shape_name: Int,
   area: Dict(Coord, Int),
-  last_xy: #(Int, Int),
-  last_value: Int,
 ) -> Bool {
-  let #(last_x, last_y) = last_xy
-  let last_value = last_value + 1
-  case shape_counts {
+  case available_shapes {
     [] -> True
-    [first_shape_count, ..remaining] -> {
-      let #(count, shapes) = first_shape_count
-      let x_range = list.range(1, max_x)
-      list.range(last_y, max_y)
-      |> list.any(fn(y) {
-        let x_range = case y == last_y, last_x < max_x {
-          False, _ -> x_range
-          True, True -> list.range(last_x, max_x)
-          True, False -> list.new()
-        }
-        x_range
-        |> list.any(fn(x) {
-          shapes
-          |> list.any(fn(shape) {
-            case set_shape_at(x, y, shape, area, last_value) {
-              Some(area) -> {
-                // print_area(max_x, max_y, area)
-                case count {
-                  1 ->
-                    solve1(
-                      max_x,
-                      max_y,
-                      remaining,
-                      shape_type + 1,
-                      area,
-                      #(0, 0),
-                      last_value,
-                    )
-                  _ ->
-                    solve1(
-                      max_x,
-                      max_y,
-                      [#(count - 1, shapes), ..remaining],
-                      shape_type,
-                      area,
-                      #(x, y),
-                      last_value,
-                    )
-                }
-              }
-              None -> False
-            }
-          })
+    [[], ..rest] -> solve1(max_x, max_y, rest, shape_name, area)
+    [[main_shape, ..remaining_shapes1], ..rest] -> {
+      let new_available_shapes = [remaining_shapes1, ..rest]
+      let test_shapes =
+        new_available_shapes
+        |> list.fold([], fn(acc, shapes) {
+          case shapes {
+            [] -> acc
+            [first, ..] -> [first, ..acc]
+          }
         })
-      })
+
+      #(main_shape, test_shapes) |> io.debug("Main/Test")
+      True
     }
   }
 }
@@ -248,18 +221,24 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
 
   areas
   |> list.count(fn(area) {
-    let #(#(x, y), indexes) = area
-    solve1(
-      x - 3,
-      y - 3,
-      list.zip(indexes, shapes)
-        |> list.filter(fn(pair) { pair.0 > 0 }),
-      0,
-      dict.new(),
-      #(0, 0),
-      -1,
-    )
+    let #(#(x, y), shape_count) = area
+    let available_shapes =
+      list.zip(shape_count, shapes)
+      |> list.fold([], fn(acc, count_shapes) {
+        let #(count, shapes) = count_shapes
+        case count {
+          0 -> acc
+          _ -> [
+            list.range(1, count)
+              |> list.fold([], fn(acc, _) { [shapes, ..acc] }),
+            ..acc
+          ]
+        }
+      })
+
+    solve1(x - 3, y - 3, available_shapes, 0, dict.new())
     |> io.debug("Result")
+    True
   })
 }
 
@@ -273,7 +252,7 @@ pub fn main() {
     day,
     [
       Expected(1, Some(2), Some(0)),
-      Expected(0, None, None),
+      // Expected(0, None, None),
     ],
     run1,
     run2,
