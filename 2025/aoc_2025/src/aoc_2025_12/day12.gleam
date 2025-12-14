@@ -357,16 +357,21 @@ fn parse_lines(lines: List(String)) -> #(List(ShapeSet), List(AreaData)) {
 }
 
 fn solve1(
-  max_x: Int,
-  max_y: Int,
+  real_max_x: Int,
+  real_max_y: Int,
   shape_counts: List(#(Int, ShapeSet)),
-  shape_type: Int,
+  shape_num: Int,
   area: Dict(Coord, Int),
   last_xy: #(Int, Int),
-  last_value: Int,
 ) -> Bool {
+  // For the first shape we only have to try the first quadrant
+  let #(max_x, max_y) = case shape_num < 0 {
+    False -> #(real_max_x, real_max_y)
+    True -> #({ real_max_x + 1 } / 2, { real_max_y + 1 } / 2)
+  }
+
   let #(last_x, last_y) = last_xy
-  let last_value = last_value + 1
+  let shape_num = shape_num + 1
   case shape_counts {
     [] -> True
     [first_shape_count, ..remaining] -> {
@@ -384,29 +389,27 @@ fn solve1(
           shapes
           |> list.any(fn(shape) {
             let #(_, _, set_shape) = shape
-            case set_shape(x, y, last_value, area) {
+            case set_shape(x, y, shape_num, area) {
               Some(area) -> {
                 // print_area(max_x, max_y, area)
                 case count {
                   1 ->
                     solve1(
-                      max_x,
-                      max_y,
+                      real_max_x,
+                      real_max_y,
                       remaining,
-                      shape_type + 1,
+                      shape_num,
                       area,
                       #(0, 0),
-                      last_value,
                     )
                   _ ->
                     solve1(
-                      max_x,
-                      max_y,
+                      real_max_x,
+                      real_max_y,
                       [#(count - 1, shapes), ..remaining],
-                      shape_type,
+                      shape_num,
                       area,
                       #(x, y),
-                      last_value,
                     )
                 }
               }
@@ -424,16 +427,15 @@ fn run1(lines: List(String), _: RunEnv) -> Int {
 
   areas
   |> list.count(fn(area) {
-    let #(#(x, y), indexes) = area
+    let #(#(x, y), shape_count) = area
     solve1(
       x - 3,
       y - 3,
-      list.zip(indexes, shapes)
+      list.zip(shape_count, shapes)
         |> list.filter(fn(pair) { pair.0 > 0 }),
-      0,
+      -1,
       dict.new(),
       #(0, 0),
-      -1,
     )
     |> io.debug("Result")
   })
