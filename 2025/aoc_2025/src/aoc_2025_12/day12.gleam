@@ -425,19 +425,44 @@ fn solve1(
 fn run1(lines: List(String), _: RunEnv) -> Int {
   let #(shapes, areas) = parse_lines(lines)
 
-  areas
-  |> list.count(fn(area) {
-    let #(#(x, y), shape_count) = area
-    let shape_counts =
-      list.zip(shape_count, shapes)
-      |> list.filter(fn(pair) { pair.0 > 0 })
-    solve1(x - 3, y - 3, shape_counts, -1, dict.new(), #(0, 0))
-    |> io.debug("Result")
-  })
+  case list.length(lines) < 100 {
+    True -> {
+      areas
+      |> list.count(fn(area) {
+        let #(#(x, y), shape_count) = area
+        solve1(
+          x - 3,
+          y - 3,
+          list.zip(shape_count, shapes)
+            |> list.filter(fn(pair) { pair.0 > 0 }),
+          -1,
+          dict.new(),
+          #(0, 0),
+        )
+      })
+    }
+    False -> {
+      areas
+      |> list.count(fn(area) {
+        let #(#(x, y), shape_count) = area
+        list.zip(shape_count, shapes)
+        |> list.fold(0, fn(sum, count_shapes) {
+          let #(count, shapes) = count_shapes
+          sum
+          + case shapes {
+            [#(_, count, _), ..] -> count
+            _ -> 0
+          }
+          * count
+        })
+        <= x * y
+      })
+    }
+  }
 }
 
-fn run2(lines: List(String), _: RunEnv) -> Int {
-  list.length(lines)
+fn run2(_: List(String), _: RunEnv) -> Int {
+  0
 }
 
 pub fn main() {
@@ -446,7 +471,7 @@ pub fn main() {
     day,
     [
       Expected(1, Some(2), Some(0)),
-      Expected(0, None, None),
+      Expected(0, Some(497), Some(0)),
     ],
     run1,
     run2,
