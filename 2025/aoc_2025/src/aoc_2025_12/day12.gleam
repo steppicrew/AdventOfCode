@@ -425,40 +425,33 @@ fn solve1(
 fn run1(lines: List(String), _: RunEnv) -> Int {
   let #(shapes, areas) = parse_lines(lines)
 
-  case list.length(lines) < 100 {
-    True -> {
-      areas
-      |> list.count(fn(area) {
-        let #(#(x, y), shape_count) = area
-        solve1(
-          x - 3,
-          y - 3,
-          list.zip(shape_count, shapes)
-            |> list.filter(fn(pair) { pair.0 > 0 }),
-          -1,
-          dict.new(),
-          #(0, 0),
-        )
-      })
-    }
-    False -> {
-      areas
-      |> list.count(fn(area) {
-        let #(#(x, y), shape_count) = area
-        list.zip(shape_count, shapes)
-        |> list.fold(0, fn(sum, count_shapes) {
-          let #(count, shapes) = count_shapes
-          sum
-          + case shapes {
-            [#(_, count, _), ..] -> count
-            _ -> 0
-          }
-          * count
-        })
-        <= x * y
-      })
-    }
-  }
+  areas
+  |> list.filter(fn(area) {
+    let #(#(x, y), shape_count) = area
+    list.zip(shape_count, shapes)
+    |> list.fold(0, fn(sum, count_shapes) {
+      let #(count, shapes) = count_shapes
+      sum
+      + case shapes {
+        [#(_, count, _), ..] -> count
+        _ -> 0
+      }
+      * count
+    })
+    <= x * y
+  })
+  |> list.count(fn(area) {
+    let #(#(x, y), shape_count) = area
+    solve1(
+      x - 3,
+      y - 3,
+      list.zip(shape_count, shapes)
+        |> list.filter(fn(pair) { pair.0 > 0 }),
+      -1,
+      dict.new(),
+      #(0, 0),
+    )
+  })
 }
 
 fn run2(_: List(String), _: RunEnv) -> Int {
