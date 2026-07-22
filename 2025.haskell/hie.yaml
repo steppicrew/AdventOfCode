@@ -1,0 +1,15 @@
+# Cradle mapping for haskell-language-server.
+# Order matters: HLS matches the most specific (longest) path prefix first,
+# so the aoc-lib and dispatcher entries must precede the catch-all Y<year>
+# entries that belong to the `days` library.
+cradle:
+  cabal:
+    - path: "./lib"
+      component: "x2025-haskell:lib:aoc-lib"
+
+    - path: "./app/Main.hs"
+      component: "x2025-haskell:exe:aoc"
+
+    # Day solutions live under Y<year>/. Add a line per year.
+    - path: "./Y2025"
+      component: "x2025-haskell:lib:days"

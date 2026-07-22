@@ -1,0 +1,10 @@
+dist-newstyle/
+*.o
+*.hi
+*.dyn_o
+*.dyn_hi
+.ghc.environment.*
+
+# Real puzzle inputs are personal to each AoC account; keep them out of git.
+# Reference sets (DayNN_input_refN.txt) are committed so days stay runnable.
+Y*/Day*_input.txt

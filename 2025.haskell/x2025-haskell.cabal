@@ -1,0 +1,45 @@
+cabal-version:      3.0
+name:               x2025-haskell
+version:            0.1.0.0
+synopsis:           Advent of Code solutions in Haskell (multi-year)
+license:            MIT
+license-file:       LICENSE
+author:             stephan hantigk
+maintainer:         s.hantigk@runlevel3.de
+category:           Testing
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+
+-- Shared warning flags for every stanza.
+common warnings
+    ghc-options: -Wall
+
+-- Shared helpers: input reading, debug messages, output, parsing.
+library aoc-lib
+    import:           warnings
+    hs-source-dirs:   lib
+    exposed-modules:  AoC
+    build-depends:
+        base ^>=4.18.2.1,
+        containers,
+        split
+    default-language: Haskell2010
+    default-extensions: ExistentialQuantification
+
+-- All day solutions, one module per day under Y<year>/. Each Y<year>.DayNN
+-- module exposes `solve :: Day`. new-day.sh adds a module here for each new day.
+library days
+    import:           warnings
+    hs-source-dirs:   .
+    exposed-modules:
+        Y2025.Day01
+    build-depends:    base ^>=4.18.2.1, aoc-lib
+    default-language: Haskell2010
+
+-- Dispatcher: `cabal run aoc -- <year> <day> [dataset]`.
+executable aoc
+    import:           warnings
+    hs-source-dirs:   app
+    main-is:          Main.hs
+    build-depends:    base ^>=4.18.2.1, aoc-lib, days, containers
+    default-language: Haskell2010

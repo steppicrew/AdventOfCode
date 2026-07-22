@@ -1,0 +1,15 @@
+packages: .
+
+-- Arch Linux's system GHC (pacman `ghc`) ships only dynamic interface files
+-- (*.dyn_hi), not the static *.hi files GHC's default static linking needs.
+-- Without this, builds fail with "Could not find module 'Prelude'".
+--
+-- Compile and link everything dynamically. `-dynamic` makes GHC read the
+-- .dyn_hi interfaces Arch provides; disabling `library-vanilla` /
+-- `-dynamic-too` stops cabal from also attempting a static build (which
+-- would fail for the same missing-.hi reason and warns about -dynamic-too).
+package x2025-haskell
+  shared: True
+  executable-dynamic: True
+  library-vanilla: False
+  ghc-options: -dynamic
